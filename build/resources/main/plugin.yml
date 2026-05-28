@@ -1,0 +1,89 @@
+name: AstraSMP
+version: 1.0.0
+main: com.astrasmp.AstraSMPPlugin
+api-version: '1.21'
+author: CheterinTeam
+softdepend: [PlaceholderAPI]
+
+commands:
+  menu:
+    description: Открыть главное меню сервера
+  spawn:
+    description: Телепортация на спавн
+  rtp:
+    description: Телепортация в случайное безопасное место
+  balance:
+    aliases: [bal]
+    description: Посмотреть количество монет
+  pay:
+    description: Перевести монеты другому игроку
+  sell:
+    description: Продать ресурсы из инвентаря
+  ah:
+    description: Открыть аукцион предметов
+  link:
+    description: Привязать игровой аккаунт к Discord
+  mmr:
+    description: Узнать свой текущий рейтинг
+  top:
+    description: Посмотреть таблицу лидеров
+  stats:
+    description: Подробная статистика игрока
+  contract:
+    description: Управление контрактами на убийство
+  items:
+    description: Просмотр уникальных артефактов
+  marry:
+    description: Создать семью с другим игроком
+  unmarry:
+    description: Подать на развод
+  help:
+    description: Список команд ChetCraft.
+    aliases: [?]
+  quest:
+    description: Посмотреть текущее задание и прогресс
+    aliases: [quests, задания]
+  pvp:
+    description: Телепорт на PvP арену
+  casino:
+    description: Телепорт в Казино
+  eventshop:
+    description: Телепорт в Ивент Шоп
+  guild:
+    description: Главная команда управления гильдиями
+    aliases: [ g, клан, гильдия ]
+  afk:
+    description: Телепорт в AFK зону
+  duel:
+    description: Вызвать игрока на дуэль
+    usage: /duel <ник>
+  admin:
+    description: Панель управления сервером
+    usage: /admin <give|npc|event|setcoins|awardblock|setspawn|reload>
+    permission: astrasmp.admin
+  invsee:
+    description: Просмотр содержимого инвентаря игрока
+    permission: astrasmp.admin
+  freeze:
+    description: Заморозить игрока (ограничить движения)
+    permission: astrasmp.admin
+  unfreeze:
+    description: Снять заморозку с игрока
+    permission: astrasmp.admin
+  prefix:
+    description: Установить кастомный префикс и цвет игроку
+    usage: /prefix <игрок> <текст> <цвет>
+    permission: astrasmp.admin
+  unprefix:
+    description: Удалить кастомный префикс у игрока
+    permission: astrasmp.admin
+  setrtpblock:
+    description: Сделать блок под ногами точкой RTP
+    permission: astrasmp.admin
+
+
+
+permissions:
+  astrasmp.admin:
+    description: Полный доступ ко всем административным функциям ChetCraft
+    default: op

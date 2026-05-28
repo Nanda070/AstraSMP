@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: org.apache.commons:commons-collections4:4.5.0" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="org.apache.commons" artifactId="commons-collections4" version="4.5.0" baseVersion="4.5.0" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-collections4/4.5.0/e5cf89f0c6e132fc970bd9a465fdcb8dbe94f75a/commons-collections4-4.5.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-collections4/4.5.0/cd8129982bd27070d10a9a37b616468ada48e9b8/commons-collections4-4.5.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
