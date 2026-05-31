@@ -1,6 +1,5 @@
 package com.astrasmp.util;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -9,8 +8,9 @@ import java.util.List;
 public final class TextUtil {
     private TextUtil() {}
 
+    @SuppressWarnings("deprecation")
     public static String color(String text) {
-        return ChatColor.translateAlternateColorCodes('&', text == null ? "" : text);
+        return org.bukkit.ChatColor.translateAlternateColorCodes('&', text == null ? "" : text);
     }
 
     public static void send(CommandSender sender, String text) {

@@ -77,7 +77,17 @@ public final class DiscordBridge {
     }
 
     public void sendChat(String player, String message) {
-        sendToChannel("discord.chat-channel-id", "**" + player + "**: " + message);
+        sendToChannel("discord.chat-channel-id", "💬 `" + player + "` **»** " + message);
+    }
+
+    public void sendJoinQuitMessage(String player, boolean join) {
+        String icon = join ? "🟢" : "🔴";
+        String action = join ? "присоединился к игре" : "покинул сервер";
+        sendToChannel("discord.chat-channel-id", "**[ChetCraft]** " + icon + " **" + player + "** " + action + ".");
+    }
+
+    public void sendDeathMessage(String player, String reason) {
+        sendToChannel("discord.chat-channel-id", "☠️ **" + player + "** " + reason);
     }
 
     public void sendEventEmbed(String eventName) {
@@ -92,12 +102,12 @@ public final class DiscordBridge {
         String timeMSK = ZonedDateTime.now(ZoneId.of("Europe/Moscow")).format(DateTimeFormatter.ofPattern("HH:mm"));
 
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setTitle("🚀 Начало ивента на ChetCraft!");
-        embed.setDescription("На сервере начался ивент: **" + eventName + "**");
-        embed.setColor(new Color(0x00FFFF));
-        embed.addField("🕒 Время (МСК)", timeMSK, true);
-        embed.addField("🎮 Заходи сейчас!", "IP: play.chetcraft.ru", true);
-        embed.setFooter("ChetCraft Production");
+        embed.setTitle("✨ Глобальное Событие: " + eventName + " ✨");
+        embed.setDescription("🔥 **Внимание всем игрокам!** 🔥\nНа сервере только что стартовало событие: **" + eventName + "**!\n\n⚔️ Не упустите шанс принять участие и сразиться за уникальные награды.");
+        embed.setColor(new Color(0xFF4500)); // OrangeRed
+        embed.addField("🕒 Время (МСК)", "`" + timeMSK + "`", true);
+        embed.addField("🎮 Как зайти?", "`IP: play.chetcraft.ru`", true);
+        embed.setFooter("ChetCraft Network • Участвуй и побеждай!");
 
         String mention = roleId.isBlank() ? "" : "<@&" + roleId + ">";
         channel.sendMessage(mention).setEmbeds(embed.build()).queue();
@@ -242,11 +252,18 @@ public final class DiscordBridge {
                             .addOption(OptionType.STRING, "code", "Код привязки из /link в игре", true),
                     Commands.slash("reload", "Перезагрузить конфиг плагина (только для администраторов)"),
                     Commands.slash("event", "Запустить ивент на сервере (только для администраторов)")
-                            .addOption(OptionType.STRING, "type", "Тип ивента", true)
+                            .addOption(OptionType.STRING, "type", "Тип ивента", true),
+                    Commands.slash("online", "Посмотреть список игроков на сервере"),
+                    Commands.slash("player", "Посмотреть статистику игрока")
+                            .addOption(OptionType.STRING, "name", "Ник игрока", true)
             ).queue(
                     cmds -> plugin.getLogger().info("[Discord] Слэш-команды зарегистрированы (" + cmds.size() + " шт.)"),
                     error -> plugin.getLogger().severe("[Discord] Ошибка регистрации слэш-команд: " + error.getMessage())
             );
+        }
+
+        private EmbedBuilder baseEmbed() {
+            return new EmbedBuilder().setFooter("ChetCraft Network", null).setTimestamp(java.time.Instant.now());
         }
 
         @Override
@@ -295,7 +312,49 @@ public final class DiscordBridge {
                         });
                     }
                     
-                    event.reply("✅ Успешно! Аккаунт **" + pName + "** привязан.").setEphemeral(true).queue();
+                    EmbedBuilder embed = baseEmbed().setColor(new Color(0x55FF55)).setDescription("✅ Успешно! Аккаунт **" + pName + "** привязан.");
+                    event.replyEmbeds(embed.build()).setEphemeral(true).queue();
+                }
+
+                case "online" -> {
+                    int count = Bukkit.getOnlinePlayers().size();
+                    if (count == 0) {
+                        event.replyEmbeds(baseEmbed().setColor(new Color(0xFF5555)).setDescription("На сервере сейчас никого нет :(").build()).queue();
+                        return;
+                    }
+                    StringBuilder sb = new StringBuilder();
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        sb.append("`").append(p.getName()).append("` ");
+                    }
+                    EmbedBuilder embed = baseEmbed();
+                    embed.setTitle("🌐 Игроки онлайн: " + count);
+                    embed.setDescription(sb.toString());
+                    embed.setColor(new Color(0x55FF55));
+                    event.replyEmbeds(embed.build()).queue();
+                }
+
+                case "player" -> {
+                    var nameOption = event.getOption("name");
+                    if (nameOption == null) {
+                        event.reply("❌ Укажи ник игрока.").setEphemeral(true).queue();
+                        return;
+                    }
+                    String name = nameOption.getAsString();
+                    OfflinePlayer target = Bukkit.getOfflinePlayer(name);
+                    PlayerProfile profile = plugin.getServices().store().profile(target.getUniqueId().toString(), target.getName());
+
+                    EmbedBuilder embed = baseEmbed();
+                    embed.setTitle("📊 Статистика: " + name);
+                    embed.setColor(new Color(0x00FFFF));
+                    embed.setThumbnail("https://mc-heads.net/avatar/" + name + "/100.png");
+                    embed.addField("💰 Баланс", "`" + profile.getCoins() + " ❂`", true);
+                    embed.addField("🏆 MMR", "`" + profile.getMmr() + "`", true);
+                    embed.addField("✨ Event Points", "`" + profile.getEventPoints() + "`", true);
+
+                    Guild g = plugin.getServices().guilds() != null ? plugin.getServices().guilds().getPlayerGuild(target.getUniqueId()) : null;
+                    embed.addField("🛡️ Гильдия", g != null ? "`" + g.getName() + "`" : "`Нет`", false);
+
+                    event.replyEmbeds(embed.build()).queue();
                 }
 
                 case "reload" -> {
@@ -306,7 +365,8 @@ public final class DiscordBridge {
                     event.deferReply(true).queue();
                     Bukkit.getScheduler().runTask(plugin, () -> {
                         plugin.reloadConfig();
-                        event.getHook().sendMessage("✅ Конфиг перезагружен.").queue();
+                        EmbedBuilder embed = baseEmbed().setColor(new Color(0x55FF55)).setDescription("✅ Конфиг успешно перезагружен.");
+                        event.getHook().sendMessageEmbeds(embed.build()).queue();
                     });
                 }
 
@@ -325,9 +385,14 @@ public final class DiscordBridge {
                     Bukkit.getScheduler().runTask(plugin, () -> {
                         try {
                             events.start(EventService.EventType.valueOf(type), null);
-                            event.getHook().sendMessage("🚀 Запущен ивент: **" + type + "**").queue();
+                            EmbedBuilder embed = baseEmbed().setColor(new Color(0x55FF55)).setDescription("🚀 Запущен ивент: **" + type + "**");
+                            event.getHook().sendMessageEmbeds(embed.build()).queue();
                         } catch (IllegalArgumentException ex) {
-                            event.getHook().sendMessage("❌ Неизвестный тип ивента: `" + type + "`").queue();
+                            String types = java.util.Arrays.stream(EventService.EventType.values())
+                                    .map(e -> "`" + e.name() + "`").reduce((a, b) -> a + ", " + b).orElse("");
+                            EmbedBuilder embed = baseEmbed().setColor(new Color(0xFF5555))
+                                    .setDescription("❌ Неизвестный тип: `" + type + "`\n📝 Доступные: " + types);
+                            event.getHook().sendMessageEmbeds(embed.build()).queue();
                         }
                     });
                 }
@@ -339,82 +404,16 @@ public final class DiscordBridge {
             if (event.getAuthor().isBot()) return;
 
             String chatChannelId = plugin.getConfig().getString("discord.chat-channel-id", "");
-            String controlChannelId = plugin.getConfig().getString("discord.control-channel-id", "");
-            String prefix = plugin.getConfig().getString("discord.prefix", "!as");
 
+            // Ретрансляция сообщений из Discord в игровой чат
             if (event.getChannel().getId().equals(chatChannelId)) {
                 String content = event.getMessage().getContentDisplay();
+                String authorName = event.getAuthor().getGlobalName() != null
+                        ? event.getAuthor().getGlobalName()
+                        : event.getAuthor().getName();
                 Bukkit.getScheduler().runTask(plugin, () ->
-                        Bukkit.broadcast(Component.text(TextUtil.color("&9[Discord] &f" + event.getAuthor().getName() + "&7: &f" + content)))
+                        Bukkit.broadcast(Component.text(TextUtil.color("&9[Discord] &f" + authorName + "&7: &f" + content)))
                 );
-                return;
-            }
-
-            if (!event.getChannel().getId().equals(controlChannelId)) return;
-
-            String raw = event.getMessage().getContentRaw().trim();
-            if (!raw.startsWith(prefix)) return;
-
-            String[] parts = raw.substring(prefix.length()).trim().split("\\s+");
-            if (parts.length == 0 || parts[0].isBlank()) return;
-
-            String sub = parts[0].toLowerCase(Locale.ROOT);
-
-            if (sub.equals("link")) {
-                if (parts.length < 2) {
-                    event.getChannel().sendMessage("❌ Используй: " + prefix + " link <code>").queue();
-                    return;
-                }
-                String code = parts[1];
-                var match = plugin.getServices().store().links().values().stream()
-                        .filter(link -> code.equalsIgnoreCase(link.getCode()))
-                        .findFirst().orElse(null);
-
-                if (match == null) {
-                    event.getChannel().sendMessage("❌ Код не найден.").queue();
-                    return;
-                }
-
-                match.setVerified(true);
-                match.setDiscordId(event.getAuthor().getId());
-                plugin.getServices().store().requestSave();
-
-                String linkedRoleId = Objects.requireNonNullElse(plugin.getConfig().getString("discord.linked-role-id", ""), "");
-                if (!linkedRoleId.isBlank() && event.isFromGuild() && event.getMember() != null) {
-                    net.dv8tion.jda.api.entities.Guild g = event.getGuild();
-                    Member m = event.getMember();
-                    Role role = g.getRoleById(linkedRoleId);
-                    if (role != null) g.addRoleToMember(Objects.requireNonNull(m), role).queue();
-                }
-
-                Player player = Bukkit.getPlayer(UUID.fromString(match.getUuid()));
-                if (player != null) {
-                    Bukkit.getScheduler().runTask(plugin, () -> {
-                        plugin.getServices().quests().checkProgress(player, 10, 1);
-                        TextUtil.send(player, "&a&lChetCraft &8» &fАккаунт привязан! Роль в Discord и награда выданы.");
-                    });
-                }
-                event.getChannel().sendMessage("✅ Успешно! Аккаунт привязан.").queue();
-                return;
-            }
-
-            if (!isAdmin(event.getMember())) return;
-
-            switch (sub) {
-                case "reload" -> Bukkit.getScheduler().runTask(plugin, () -> {
-                    plugin.reloadConfig();
-                    event.getChannel().sendMessage("✅ Конфиг перезагружен.").queue();
-                });
-                case "event" -> {
-                    if (parts.length < 2) return;
-                    String type = parts[1].toUpperCase();
-                    Bukkit.getScheduler().runTask(plugin, () -> {
-                        try {
-                            events.start(EventService.EventType.valueOf(type), null);
-                            event.getChannel().sendMessage("🚀 Запущен ивент: " + type).queue();
-                        } catch (Exception ex) { event.getChannel().sendMessage("❌ Ошибка типа.").queue(); }
-                    });
-                }
             }
         }
     }

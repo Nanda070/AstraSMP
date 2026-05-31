@@ -58,6 +58,7 @@ public final class PlayerListener implements Listener {
     // ==========================================
     // ЛОГИКА ВХОДА И ПРИВЕТСТВИЯ
     // ==========================================
+    @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
         Player p = event.getPlayer();
@@ -70,7 +71,7 @@ public final class PlayerListener implements Listener {
             updateTab(p);
         }, 20L);
 
-        services.discord().sendLog("Join: " + p.getName());
+        services.discord().sendJoinQuitMessage(p.getName(), true);
         services.afk().updateActivity(p);
         giveMenuCompass(p);
     }
@@ -95,10 +96,11 @@ public final class PlayerListener implements Listener {
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 1.5f);
     }
 
+    @SuppressWarnings("deprecation")
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         event.setQuitMessage(TextUtil.color("&8[&c-&8] &f" + event.getPlayer().getName()));
-        services.discord().sendLog("Quit: " + event.getPlayer().getName());
+        services.discord().sendJoinQuitMessage(event.getPlayer().getName(), false);
         services.store().requestSave();
         services.afk().removePlayer(event.getPlayer());
 
@@ -164,6 +166,7 @@ public final class PlayerListener implements Listener {
     // ==========================================
     // ПЕРЕДВИЖЕНИЕ И НАГРАДЫ
     // ==========================================
+    @SuppressWarnings("deprecation")
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
@@ -181,7 +184,7 @@ public final class PlayerListener implements Listener {
             services.afk().updateActivity(player);
             Location loc = player.getLocation().getBlock().getLocation();
 
-            if (services.store().getRtpBlocks().contains(loc)) player.performCommand("rtp");
+            if (services.store().getRtpBlocks().contains(com.astrasmp.util.LocationKey.fromLocation(loc))) player.performCommand("rtp");
 
             Location locBelow = player.getLocation().clone().subtract(0, 0.5, 0).getBlock().getLocation();
             Long awardAmount = services.store().getAwardAmount(locBelow);
@@ -252,6 +255,17 @@ public final class PlayerListener implements Listener {
             int gain = services.mmr().adjustOnKill(killer, victim);
             long bounty = services.contracts().handleKillReward(killer, victim);
             killer.sendMessage(TextUtil.color("&aУбийство! &f+" + gain + " MMR" + (bounty > 0 ? " &7и награда &f" + bounty + " ❂" : "")));
+
+            // Уведомление в Discord о PvP
+            String deathMsg = "убит игроком **" + killer.getName() + "**";
+            services.discord().sendDeathMessage(victim.getName(), deathMsg);
+        } else {
+            // Смерть не от игрока (окружающая среда)
+            Component deathComponent = event.deathMessage();
+            String rawReason = deathComponent != null
+                    ? net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(deathComponent)
+                    : "погиб";
+            services.discord().sendDeathMessage(victim.getName(), rawReason);
         }
         services.store().requestSave();
     }

@@ -41,6 +41,7 @@ public final class ItemRegistry {
         return expected != null && expected.equalsIgnoreCase(id);
     }
 
+    @SuppressWarnings("deprecation")
     public static ItemStack build(String id, Material material, String name, List<String> lore, int customModelData, boolean glowing) {
         ItemStack stack = new ItemStack(material);
         ItemMeta meta = stack.getItemMeta();
@@ -69,6 +70,7 @@ public final class ItemRegistry {
         return stack;
     }
 
+    @SuppressWarnings("deprecation")
     private static ItemStack buildTool(String id, Material material, String name, List<String> lore, int customModelData) {
         ItemStack stack = build(id, material, name, lore, customModelData, false);
         Enchantment efficiency = org.bukkit.Registry.ENCHANTMENT.get(NamespacedKey.minecraft("efficiency"));
@@ -213,6 +215,13 @@ public final class ItemRegistry {
         return item;
     }
 
+    public static ItemStack trampoline() {
+        return build("trampoline", Material.SLIME_BLOCK, "§aУлучшенный Батут", List.of(
+                "§7Отбивает вас высоко в воздух",
+                "§7и поглощает урон от падения."
+        ), 9001, true);
+    }
+
     public static List<ItemStack> showcase() {
         return List.of(
                 mining3x3(), mining5x5(), veinMiner(), autoSmelt(), magnet(),
@@ -231,7 +240,8 @@ public final class ItemRegistry {
                 inquisitorHelmet(), inquisitorChestplate(), inquisitorLeggings(), inquisitorBoots(),
                 juggernautHelmet(), juggernautChestplate(), juggernautLeggings(), juggernautBoots(),
                 minerHelmet(), minerChestplate(), minerLeggings(), minerBoots(),
-                bloodHunterHelmet(), bloodHunterChestplate(), bloodHunterLeggings(), bloodHunterBoots()
+                bloodHunterHelmet(), bloodHunterChestplate(), bloodHunterLeggings(), bloodHunterBoots(),
+                trampoline()
         ));
         return items;
     }

@@ -15,7 +15,6 @@ import com.astrasmp.AstraSMPPlugin;
 import com.astrasmp.util.TextUtil;
 
 public final class DuelService implements Listener {
-    private final AstraSMPPlugin plugin;
     private final ServiceManager services;
 
     // Кто кому отправил запрос (K: Отправитель, V: Получатель)
@@ -24,7 +23,6 @@ public final class DuelService implements Listener {
     private final Map<UUID, UUID> activeDuels = new HashMap<>();
 
     public DuelService(AstraSMPPlugin plugin, ServiceManager services) {
-        this.plugin = plugin;
         this.services = services;
     }
 

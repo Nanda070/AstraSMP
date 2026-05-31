@@ -20,13 +20,22 @@ public final class RtpCommand implements CommandExecutor {
         if (!(sender instanceof Player player)) return true;
 
         int radius = 1000;
-        int x = random.nextInt(radius * 2) - radius;
-        int z = random.nextInt(radius * 2) - radius;
-        Location loc = player.getWorld().getHighestBlockAt(x, z).getLocation().add(0.5, 1, 0.5);
+        Location loc = null;
+        int maxAttempts = 10;
 
-        if (loc.getBlock().getRelative(0, -1, 0).getType() == Material.WATER) {
-            TextUtil.send(player, "&cЛокация в воде, попробуйте еще раз.");
-            return true;
+        for (int i = 0; i < maxAttempts; i++) {
+            int x = random.nextInt(radius * 2) - radius;
+            int z = random.nextInt(radius * 2) - radius;
+            loc = player.getWorld().getHighestBlockAt(x, z).getLocation().add(0.5, 1, 0.5);
+
+            Material type = loc.getBlock().getRelative(0, -1, 0).getType();
+            if (type != Material.WATER && type != Material.LAVA) {
+                break;
+            }
+            if (i == maxAttempts - 1) {
+                TextUtil.send(player, "&cНе удалось найти безопасную локацию, попробуйте еще раз.");
+                return true;
+            }
         }
 
         player.teleport(loc);

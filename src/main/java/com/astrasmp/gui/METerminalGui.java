@@ -40,6 +40,7 @@ public class METerminalGui implements Listener {
         this.HASH_KEY = new NamespacedKey(services.plugin(), "me_item_hash");
     }
 
+    @SuppressWarnings("deprecation")
     public void open(Player player, MENetwork network) {
         TerminalSession session = sessions.computeIfAbsent(player.getUniqueId(), k -> new TerminalSession(network));
         session.network = network;
@@ -52,7 +53,8 @@ public class METerminalGui implements Listener {
 
         for (Map.Entry<String, Long> entry : network.getStorage().entrySet()) {
             ItemStack item = ItemSerializer.fromBase64(entry.getKey());
-            if (item == null) continue;
+            if (item == null)
+                continue;
 
             if (session.searchQuery != null) {
                 String itemName = item.hasItemMeta() && item.getItemMeta().hasDisplayName()
@@ -109,11 +111,13 @@ public class METerminalGui implements Listener {
             inv.setItem(53, createButton(Material.ARROW, "§aСлед. страница", "§7Текущая: " + (session.page + 1)));
         }
 
-        String searchLore = session.searchQuery == null ? "§7Кликните, чтобы найти предмет" : "§7Текущий фильтр: §e" + session.searchQuery;
+        String searchLore = session.searchQuery == null ? "§7Кликните, чтобы найти предмет"
+                : "§7Текущий фильтр: §e" + session.searchQuery;
         inv.setItem(48, createButton(Material.NAME_TAG, "§eПоиск", searchLore));
 
         if (session.searchQuery != null) {
-            inv.setItem(50, createButton(Material.BARRIER, "§cСбросить поиск", "§7Кликните, чтобы показать все предметы"));
+            inv.setItem(50,
+                    createButton(Material.BARRIER, "§cСбросить поиск", "§7Кликните, чтобы показать все предметы"));
         }
 
         long currentLoad = network.getCurrentLoad();
@@ -139,16 +143,18 @@ public class METerminalGui implements Listener {
         return item;
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("deprecation")
     @EventHandler
     public void onClick(InventoryClickEvent event) {
         String viewTitle = event.getView().getTitle();
-        if (!viewTitle.startsWith("§8ME Терминал") && !viewTitle.startsWith("ME Терминал")) return;
+        if (!viewTitle.startsWith("§8ME Терминал") && !viewTitle.startsWith("ME Терминал"))
+            return;
         event.setCancelled(true);
 
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInv = event.getClickedInventory();
-        if (clickedInv == null) return;
+        if (clickedInv == null)
+            return;
 
         TerminalSession session = sessions.get(player.getUniqueId());
         if (session == null || session.network == null) {
@@ -161,7 +167,8 @@ public class METerminalGui implements Listener {
         // Положить в сеть
         if (clickedInv.equals(event.getView().getBottomInventory())) {
             ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getType().isAir()) return;
+            if (clickedItem == null || clickedItem.getType().isAir())
+                return;
 
             String meType = services.meNetwork().getMETypeFromItem(clickedItem);
             if (meType != null && meType.startsWith("cell")) {
@@ -189,7 +196,8 @@ public class METerminalGui implements Listener {
             int slot = event.getSlot();
             ItemStack currentItem = event.getCurrentItem();
 
-            if (currentItem == null || currentItem.getType().isAir()) return;
+            if (currentItem == null || currentItem.getType().isAir())
+                return;
 
             if (slot == 45 && currentItem.getType() == Material.ARROW) {
                 session.page = Math.max(0, session.page - 1);
@@ -214,13 +222,17 @@ public class METerminalGui implements Listener {
                 return;
             }
 
-            if (!currentItem.hasItemMeta()) return;
+            if (!currentItem.hasItemMeta())
+                return;
 
-            String hash = currentItem.getItemMeta().getPersistentDataContainer().get(HASH_KEY, PersistentDataType.STRING);
-            if (hash == null) return;
+            String hash = currentItem.getItemMeta().getPersistentDataContainer().get(HASH_KEY,
+                    PersistentDataType.STRING);
+            if (hash == null)
+                return;
 
             ItemStack realItem = ItemSerializer.fromBase64(hash);
-            if (realItem == null) return;
+            if (realItem == null)
+                return;
 
             long amountToExtract = event.isRightClick() ? 1 : realItem.getMaxStackSize();
             long extracted = network.extractItem(hash, amountToExtract);
@@ -238,7 +250,7 @@ public class METerminalGui implements Listener {
         }
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("deprecation")
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
@@ -266,7 +278,6 @@ public class METerminalGui implements Listener {
         }
     }
 
-    @SuppressWarnings("unused")
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
         // Оставлено для расширения

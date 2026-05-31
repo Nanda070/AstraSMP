@@ -3,8 +3,8 @@ plugins {
     id("io.github.goooler.shadow") version "8.1.8"
 }
 
-group = providers.gradleProperty("group").get()
-version = providers.gradleProperty("version").get()
+group = "com.astrasmp"
+version = "1.0-SNAPSHOT"
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(21))

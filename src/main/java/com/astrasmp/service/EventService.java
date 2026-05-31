@@ -59,7 +59,6 @@ public final class EventService {
 
     private final AstraSMPPlugin plugin;
     private final EconomyService economy;
-    private final MMRService mmr;
     private final Random random = new Random();
     private final AtomicReference<ActiveEvent> active = new AtomicReference<>();
     private BossBar bossBar;
@@ -76,7 +75,6 @@ public final class EventService {
     public EventService(AstraSMPPlugin plugin, EconomyService economy, MMRService mmr) {
         this.plugin = plugin;
         this.economy = economy;
-        this.mmr = mmr;
     }
 
     public boolean isBloodNight() {
@@ -107,6 +105,7 @@ public final class EventService {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void startBloodNightTask() {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             World world = Bukkit.getWorld(plugin.getConfig().getString("server.world-name", "world"));
@@ -179,6 +178,7 @@ public final class EventService {
         return true;
     }
 
+    @SuppressWarnings("deprecation")
     private void completeStart(EventType type, Location loc) {
         LivingEntity boss = null;
         List<ArmorStand> holograms = new ArrayList<>();
@@ -269,29 +269,60 @@ public final class EventService {
             Inventory inv = chest.getInventory();
             inv.clear();
 
+            // 1. Заполнение базовым пулом (от 3 до 5 слотов)
             int itemsCount = 3 + random.nextInt(3);
             for (int i = 0; i < itemsCount; i++) {
-                int slot = random.nextInt(inv.getSize());
-                inv.setItem(slot, generateRandomLoot());
+                int slot = getEmptySlot(inv);
+                inv.setItem(slot, generateBasicLoot());
+            }
+
+            // 2. Единичный ролл на кастомный предмет для всего сундука
+            double customChance = getCustomChanceByEvent(type);
+            if (random.nextDouble() <= customChance) {
+                int slot = getEmptySlot(inv);
+                inv.setItem(slot, generateCustomLoot());
             }
         }
     }
 
-    private ItemStack generateRandomLoot() {
-        // Уникальный предмет с шансом 18%
-        if (random.nextDouble() <= 0.18) {
-            List<ItemStack> customs = new ArrayList<>(ItemRegistry.showcase());
+    private int getEmptySlot(Inventory inv) {
+        int slot;
+        do {
+            slot = random.nextInt(inv.getSize());
+        } while (inv.getItem(slot) != null);
+        return slot;
+    }
 
-            // Добавляем артефакты и релики в пул ивентов
-            customs.add(ItemRegistry.relic("time_core", Material.CLOCK, "§dЯдро времени", "Замедляет время вокруг владельца."));
-            customs.add(ItemRegistry.artifact("heart_of_world", Material.HEART_OF_THE_SEA, "§bСердце мира", "Пассивная защита для носителя."));
+    private double getCustomChanceByEvent(EventType type) {
+        // Шансы масштабируются в зависимости от редкости/сложности ивента
+        return switch (type) {
+            case CHAOS -> 0.20;    // Самый редкий ивент - 20% шанс
+            case METEOR -> 0.12;
+            case BOSS -> 0.0;      // У босса свой лут
+            case TREASURE -> 0.08;
+            case AIRDROP -> 0.05;  // Частый ивент - низкий шанс (5%)
+        };
+    }
 
-            return customs.get(random.nextInt(customs.size())).clone();
-        }
+    private ItemStack generateCustomLoot() {
+        List<ItemStack> customs = new ArrayList<>(ItemRegistry.showcase());
+        
+        // Артефакты интегрируются прямо в выборку
+        customs.add(ItemRegistry.relic("time_core", Material.CLOCK, "§dЯдро времени", "Замедляет время вокруг владельца."));
+        customs.add(ItemRegistry.artifact("heart_of_world", Material.HEART_OF_THE_SEA, "§bСердце мира", "Пассивная защита для носителя."));
 
-        // Порезанный базовый лут
-        Material[] basicLoot = {Material.IRON_INGOT, Material.GOLD_INGOT, Material.DIAMOND, Material.EMERALD, Material.EXPERIENCE_BOTTLE};
-        return new ItemStack(basicLoot[random.nextInt(basicLoot.length)], 1 + random.nextInt(2));
+        return customs.get(random.nextInt(customs.size())).clone();
+    }
+
+    private ItemStack generateBasicLoot() {
+        Material[] basicLoot = {
+            Material.IRON_INGOT, Material.GOLD_INGOT, 
+            Material.DIAMOND, Material.EMERALD, 
+            Material.EXPERIENCE_BOTTLE, Material.GOLDEN_APPLE
+        };
+        // Увеличен объем базового лута для рентабельности
+        int amount = 3 + random.nextInt(6); 
+        return new ItemStack(basicLoot[random.nextInt(basicLoot.length)], amount);
     }
 
     private void tick() {
@@ -368,6 +399,7 @@ public final class EventService {
         return plugin.getConfig().getLong("events." + type.name().toLowerCase() + ".duration-minutes", 15L) * 60L * 1000L;
     }
 
+    @SuppressWarnings("deprecation")
     private ArmorStand spawnHologram(Location loc, String text) {
         return loc.getWorld().spawn(loc, ArmorStand.class, as -> {
             as.setVisible(false);
@@ -378,6 +410,7 @@ public final class EventService {
         });
     }
 
+    @SuppressWarnings("deprecation")
     private LivingEntity spawnBoss(Location loc) {
         return (WitherSkeleton) loc.getWorld().spawn(loc, WitherSkeleton.class, entity -> {
             // Титул теперь привязан к самому боссу

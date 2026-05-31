@@ -125,7 +125,6 @@ public class MEDriveGui implements Listener {
         return item;
     }
 
-    @SuppressWarnings("unused")
     @EventHandler
     public void onClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof DriveHolder)) return;
@@ -164,7 +163,6 @@ public class MEDriveGui implements Listener {
         }
     }
 
-    @SuppressWarnings("unused")
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
         if (event.getInventory().getHolder() instanceof DriveHolder holder) {

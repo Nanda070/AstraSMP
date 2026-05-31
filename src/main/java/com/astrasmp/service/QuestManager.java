@@ -19,7 +19,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 
 public final class QuestManager {
-    private final AstraSMPPlugin plugin;
     private final ServiceManager services;
     private final Map<Integer, QuestData> questRegistry = new ConcurrentHashMap<>();
 
@@ -27,7 +26,6 @@ public final class QuestManager {
     private record PlayerRewardContext(Player player, PlayerProfile profile) {}
 
     public QuestManager(AstraSMPPlugin plugin, ServiceManager services) {
-        this.plugin = plugin;
         this.services = services;
         initQuests();
     }

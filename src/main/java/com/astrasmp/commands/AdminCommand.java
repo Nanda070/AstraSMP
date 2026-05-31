@@ -306,6 +306,9 @@ public final class AdminCommand implements CommandExecutor, TabCompleter {
             case "relic_time_core" -> ItemRegistry.relic("time_core", Material.CLOCK, "§dЯдро времени", "Замедляет время вокруг владельца.");
             case "relic_void_fragment" -> ItemRegistry.relic("void_fragment", Material.AMETHYST_SHARD, "§5Фрагмент пустоты", "Рывок через пустоту.");
             case "artifact_heart_of_world" -> ItemRegistry.artifact("heart_of_world", Material.HEART_OF_THE_SEA, "§bСердце мира", "Пассивная защита для носителя.");
+            
+            // Батут
+            case "trampoline" -> ItemRegistry.trampoline();
             default -> null;
         };
 
@@ -365,7 +368,8 @@ public final class AdminCommand implements CommandExecutor, TabCompleter {
                         "juggernaut_helmet", "juggernaut_chestplate", "juggernaut_leggings", "juggernaut_boots",
                         "miner_helmet", "miner_chestplate", "miner_leggings", "miner_boots",
                         "bloodhunter_helmet", "bloodhunter_chestplate", "bloodhunter_leggings", "bloodhunter_boots",
-                        "trophy_common", "trophy_legendary", "relic_time_core", "relic_void_fragment", "artifact_heart_of_world"
+                        "trophy_common", "trophy_legendary", "relic_time_core", "relic_void_fragment", "artifact_heart_of_world",
+                        "trampoline"
                 ).stream().filter(s -> s.startsWith(args[2].toLowerCase())).toList();
             }
             if (args[0].equalsIgnoreCase("me")) {

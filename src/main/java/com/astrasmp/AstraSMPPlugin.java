@@ -17,77 +17,50 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-/**
- * Основной класс плагина AstraSMP.
- * ChetCraft Production Base - Релизная версия с поддержкой ME-системы и БД
- */
 public final class AstraSMPPlugin extends JavaPlugin {
 
     private static AstraSMPPlugin instance;
 
     private ServiceManager services;
     private DatabaseService database;
-    private DiscordBridge discordBridge;
 
     @Override
     public void onEnable() {
         instance = this;
 
-        // Инициализация реестра предметов
         ItemRegistry.init(this);
 
-        // 1. Конфиги
         saveDefaultConfig();
         saveResource("messages.yml", false);
 
-        // 2. Инициализация Базы Данных
         database = new DatabaseService(this);
         database.connect();
 
-        // 3. Сервисы
+        // ServiceManager сам инициализирует и поднимет DiscordBridge внутри bootstrap()
         services = new ServiceManager(this);
         services.bootstrap();
 
-        // Инициализация и запуск Discord моста (Строго до загрузки гильдий)
-        discordBridge = new DiscordBridge(
-                this,
-                services.economy(),
-                services.mmr(),
-                services.contracts(),
-                services.events(),
-                services.leaderboard()
-        );
-        discordBridge.connect();
-
-        // 4. Данные гильдий
         if (services.guilds() != null) {
             services.guilds().loadAll();
         }
 
-        // 5. Регистрация кастомных рецептов и слушателя валидации
         RecipeService recipeService = new RecipeService(this);
         recipeService.registerAll();
         getServer().getPluginManager().registerEvents(recipeService, this);
 
-        // 6. Команды
         registerCommands();
 
-        // 7. Регистрация Слушателей
         var pm = getServer().getPluginManager();
-
-        // Базовые слушатели
         pm.registerEvents(new PlayerListener(this, services), this);
         pm.registerEvents(new MenuListener(services), this);
         pm.registerEvents(new ItemAbilityListener(this, services), this);
         pm.registerEvents(new ArmorMechanicsListener(this, services), this);
         pm.registerEvents(new RegionListener(services), this);
-
-        // Слушатели ME-системы (Блоки и GUI)
         pm.registerEvents(new MEBlockListener(services), this);
+        pm.registerEvents(new TrampolineListener(this, services.store()), this);
         pm.registerEvents(new com.astrasmp.gui.METerminalGui(services), this);
         pm.registerEvents(new com.astrasmp.gui.MEDriveGui(services), this);
 
-        // 8. Пассивные эффекты
         startPassiveEffectsTask();
 
         getLogger().info("=======================================");
@@ -105,12 +78,8 @@ public final class AstraSMPPlugin extends JavaPlugin {
             if (services.guilds() != null) {
                 services.guilds().saveAll();
             }
+            // Вызов services.shutdown() корректно завершит работу DiscordBridge
             services.shutdown();
-        }
-
-        // Отключение Discord бота для высвобождения потоков JDA
-        if (discordBridge != null) {
-            discordBridge.shutdown();
         }
 
         if (database != null) {
@@ -128,8 +97,9 @@ public final class AstraSMPPlugin extends JavaPlugin {
         return services;
     }
 
+    // Проксируем получение DiscordBridge через ServiceManager
     public DiscordBridge getDiscord() {
-        return this.discordBridge;
+        return services != null ? services.discord() : null;
     }
 
     public DatabaseService getDatabase() {
@@ -157,7 +127,6 @@ public final class AstraSMPPlugin extends JavaPlugin {
     }
 
     private void registerCommands() {
-        // Команды управления и экономики
         bind("guild", new GuildCommand(services));
         bind("menu", new MenuCommand(services));
         bind("balance", new BalanceCommand(services));
@@ -166,8 +135,6 @@ public final class AstraSMPPlugin extends JavaPlugin {
         bind("ah", new AuctionCommand(services));
         bind("link", new LinkCommand(services));
         bind("admin", new AdminCommand(services));
-
-        // Статистика и геймплей
         bind("mmr", new MMRCommand(services));
         bind("top", new TopCommand(services));
         bind("stats", new StatsCommand(services));
@@ -175,7 +142,6 @@ public final class AstraSMPPlugin extends JavaPlugin {
         bind("items", new ItemsCommand(services));
         bind("quest", new QuestCommand(services));
 
-        // Кастомизация и социальное
         PrefixCommand prefixExecutor = new PrefixCommand(services);
         bind("prefix", prefixExecutor);
         bind("unprefix", prefixExecutor);
@@ -184,19 +150,23 @@ public final class AstraSMPPlugin extends JavaPlugin {
         bind("marry", marryExecutor);
         bind("unmarry", marryExecutor);
 
-        // Утилиты модерации
         bind("invsee", new InvseeCommand());
         FreezeCommand freezeExecutor = new FreezeCommand(services);
         bind("freeze", freezeExecutor);
         bind("unfreeze", freezeExecutor);
 
-        // Навигация
         bind("spawn", new SpawnCommand(this, services));
         bind("rtp", new RtpCommand(services));
         bind("setrtpblock", new RtpBlockCommand(services));
         bind("help", new HelpCommand(services));
 
-        // Локации
+        bind("gm", new GmCommand());
+        bind("dm", new DmCommand());
+        VanishCommand vanishCmd = new VanishCommand(this);
+        bind("vanish", vanishCmd);
+        bind("unvanish", vanishCmd);
+        getServer().getPluginManager().registerEvents(vanishCmd, this);
+
         LocationCommand locCmd = new LocationCommand(services);
         if (getCommand("pvp") != null) getCommand("pvp").setExecutor(locCmd);
         if (getCommand("casino") != null) getCommand("casino").setExecutor(locCmd);

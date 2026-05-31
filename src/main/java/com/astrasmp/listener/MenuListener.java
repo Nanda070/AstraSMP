@@ -1,12 +1,9 @@
 package com.astrasmp.listener;
 
 import com.astrasmp.gui.GuiManager;
-import com.astrasmp.items.ItemRegistry;
 import com.astrasmp.model.Guild;
-import com.astrasmp.model.PlayerProfile;
 import com.astrasmp.service.ServiceManager;
 import com.astrasmp.util.TextUtil;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -19,12 +16,10 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 

@@ -33,6 +33,7 @@ public final class DataStore {
     private final Map<Long, ContractRecord> contracts = new ConcurrentHashMap<>();
     
     private final Set<LocationKey> rtpBlocks = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Set<LocationKey> trampolineBlocks = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final Map<UUID, MENetwork> meNetworks = new ConcurrentHashMap<>();
     
     private final Map<LocationKey, Long> awardBlocks = new ConcurrentHashMap<>();
@@ -53,6 +54,7 @@ public final class DataStore {
         links.clear();
         contracts.clear();
         rtpBlocks.clear();
+        trampolineBlocks.clear();
         meNetworks.clear();
         awardBlocks.clear();
         awardHistory.clear();
@@ -75,6 +77,7 @@ public final class DataStore {
         // Загрузка локальных файлов конфигурации YAML
         loadLinks();
         loadRtpBlocks();
+        loadTrampolines();
         loadAwards();
     }
 
@@ -89,6 +92,7 @@ public final class DataStore {
     public Map<String, LinkRecord> links() { return links; }
     public Map<Long, ContractRecord> contracts() { return contracts; }
     public Set<LocationKey> getRtpBlocks() { return rtpBlocks; }
+    public Set<LocationKey> getTrampolineBlocks() { return trampolineBlocks; }
     public Map<UUID, MENetwork> meNetworks() { return meNetworks; }
 
     public Collection<AuctionLot> activeLots() {
@@ -118,6 +122,7 @@ public final class DataStore {
         
         saveLinks();
         saveRtpBlocks();
+        saveTrampolines();
         saveAwards();
     }
 
@@ -177,6 +182,31 @@ public final class DataStore {
             yml.save(f); 
         } catch (IOException e) { 
             plugin.getLogger().log(Level.SEVERE, "Критическая ошибка сохранения файла rtp_blocks.yml", e); 
+        }
+    }
+
+    private void loadTrampolines() {
+        File f = file("trampoline_blocks.yml");
+        if (!f.exists()) return;
+        YamlConfiguration yml = YamlConfiguration.loadConfiguration(f);
+        for (String s : yml.getStringList("blocks")) {
+            String[] p = s.split(",");
+            if (p.length == 4) {
+                trampolineBlocks.add(new LocationKey(p[0], Integer.parseInt(p[1]), Integer.parseInt(p[2]), Integer.parseInt(p[3])));
+            }
+        }
+    }
+
+    private void saveTrampolines() {
+        File f = file("trampoline_blocks.yml");
+        YamlConfiguration yml = new YamlConfiguration();
+        List<String> locs = new ArrayList<>();
+        trampolineBlocks.forEach(l -> locs.add(l.worldName() + "," + l.x() + "," + l.y() + "," + l.z()));
+        yml.set("blocks", locs);
+        try { 
+            yml.save(f); 
+        } catch (IOException e) { 
+            plugin.getLogger().log(Level.SEVERE, "Критическая ошибка сохранения файла trampoline_blocks.yml", e); 
         }
     }
 

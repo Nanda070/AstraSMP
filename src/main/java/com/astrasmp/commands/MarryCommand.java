@@ -24,6 +24,7 @@ public final class MarryCommand implements CommandExecutor, TabCompleter {
         this.services = services;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player player)) return true;
@@ -128,6 +129,7 @@ public final class MarryCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void completeMarriage(Player p1, Player p2) {
         PlayerProfile profile1 = services.economy().profile(p1.getUniqueId(), p1.getName());
         PlayerProfile profile2 = services.economy().profile(p2.getUniqueId(), p2.getName());

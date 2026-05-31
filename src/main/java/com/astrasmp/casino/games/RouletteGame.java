@@ -143,7 +143,6 @@ public class RouletteGame implements CasinoGame, Listener, InventoryHolder {
         new BukkitRunnable() {
             int tick = 0;
             final int maxTicks = 40; // Длина прокрутки
-            double delay = 1.0; // Для имитации замедления
 
             @Override
             public void run() {

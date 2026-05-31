@@ -32,7 +32,6 @@ import com.astrasmp.util.TextUtil;
 import net.kyori.adventure.text.Component;
 
 public final class NpcShopService implements Listener {
-    private final AstraSMPPlugin plugin;
     private final ServiceManager services;
     private final NamespacedKey npcKey;
     private final NamespacedKey priceKey;
@@ -40,7 +39,6 @@ public final class NpcShopService implements Listener {
     private final NamespacedKey vegasActionKey;
 
     public NpcShopService(AstraSMPPlugin plugin, ServiceManager services) {
-        this.plugin = plugin;
         this.services = services;
         this.npcKey = new NamespacedKey(plugin, "npc_shop_type");
         this.priceKey = new NamespacedKey(plugin, "shop_price");
@@ -48,6 +46,7 @@ public final class NpcShopService implements Listener {
         this.vegasActionKey = new NamespacedKey(plugin, "vegas_action");
     }
 
+    @SuppressWarnings("deprecation")
     public void spawnNpc(Player player, String type) {
         Villager npc = (Villager) player.getWorld().spawnEntity(player.getLocation(), EntityType.VILLAGER);
         npc.setAI(false);
@@ -210,6 +209,7 @@ public final class NpcShopService implements Listener {
         inv.setItem(41, build(Material.IRON_BARS, 16, "§7Железная решетка", 300, "coins"));
         inv.setItem(42, build(Material.AMETHYST_BLOCK, 64, "§dАметистовый блок", 500, "coins"));
         inv.setItem(43, build(Material.COPPER_BLOCK, 64, "§6Медный блок", 400, "coins"));
+        inv.setItem(44, buildShopItem(ItemRegistry.trampoline(), 50000, "coins"));
         p.openInventory(inv);
     }
 
@@ -314,10 +314,28 @@ public final class NpcShopService implements Listener {
 
         ItemStack giveItem = event.getCurrentItem().clone();
         ItemMeta giveMeta = giveItem.getItemMeta();
-        giveMeta.lore(null);
-        giveMeta.getPersistentDataContainer().remove(priceKey);
-        giveMeta.getPersistentDataContainer().remove(currencyKey);
-        giveItem.setItemMeta(giveMeta);
+
+        // Если это кастомный предмет (с custom_id) — восстанавливаем лор из ItemRegistry
+        // чтобы не затирать описание предмета при очистке служебных данных магазина
+        String customId = giveMeta.getPersistentDataContainer().get(
+                new NamespacedKey(services.plugin(), "custom_id"),
+                org.bukkit.persistence.PersistentDataType.STRING);
+        if (customId == null) {
+            // Для кастомного id из другого namespace
+            customId = giveMeta.getPersistentDataContainer().get(
+                    new NamespacedKey("astrasmp", "custom_id"),
+                    org.bukkit.persistence.PersistentDataType.STRING);
+        }
+
+        if (customId != null && customId.equals("trampoline")) {
+            giveItem = com.astrasmp.items.ItemRegistry.trampoline();
+            giveItem.setAmount(1);
+        } else {
+            giveMeta.lore(null);
+            giveMeta.getPersistentDataContainer().remove(priceKey);
+            giveMeta.getPersistentDataContainer().remove(currencyKey);
+            giveItem.setItemMeta(giveMeta);
+        }
 
         player.getInventory().addItem(giveItem);
         TextUtil.send(player, "&aПокупка успешна!");

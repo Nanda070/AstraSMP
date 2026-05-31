@@ -65,7 +65,7 @@ public class MEBlockListener implements Listener {
                 event.setCancelled(true); // Отменяем стандартное использование блока
 
                 MENode clickedNode = network.getNodes().stream()
-                        .filter(n -> n.getLocation().equals(loc))
+                        .filter(n -> n.getLocation().equals(com.astrasmp.util.LocationKey.fromLocation(loc)))
                         .findFirst().orElse(null);
 
                 if (clickedNode == null) return;

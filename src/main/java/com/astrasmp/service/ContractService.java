@@ -6,7 +6,6 @@ import com.astrasmp.model.PlayerProfile;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.UUID;
 
 public final class ContractService {

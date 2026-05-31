@@ -16,12 +16,9 @@ import com.astrasmp.model.PlayerProfile;
 public final class AuctionService {
     private final AstraSMPPlugin plugin;
     private final DataStore store;
-    private final EconomyService economy;
-
     public AuctionService(AstraSMPPlugin plugin, DataStore store, EconomyService economy) {
         this.plugin = plugin;
         this.store = store;
-        this.economy = economy;
     }
 
     public int limit() {
@@ -91,6 +88,7 @@ public final class AuctionService {
         return true;
     }
 
+    @SuppressWarnings("deprecation")
     public List<AuctionLot> search(String term) {
         String q = term == null ? "" : term.toLowerCase(Locale.ROOT);
         return store.activeLots().stream().filter(l -> {

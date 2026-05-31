@@ -10,10 +10,8 @@ import com.astrasmp.service.ServiceManager;
 import com.astrasmp.util.TextUtil;
 
 public final class HelpCommand implements CommandExecutor {
-    private final ServiceManager services;
-
     public HelpCommand(ServiceManager services) {
-        this.services = services;
+        // Services not used in HelpCommand currently
     }
 
     @Override
@@ -24,6 +22,7 @@ public final class HelpCommand implements CommandExecutor {
         TextUtil.send(player, "&f/menu &7- Главное меню сервера");
         TextUtil.send(player, "&f/balance &7- Проверить свой баланс");
         TextUtil.send(player, "&f/pay &7- Перевести монеты игроку");
+        TextUtil.send(player, "&f/dm &7- Написать личное сообщение");
         TextUtil.send(player, "&f/ah &7- Аукцион предметов");
         TextUtil.send(player, "&f/link &7- Привязать Discord (&aБонус!&7)");
         TextUtil.send(player, "&f/quest &7- Список твоих заданий");
