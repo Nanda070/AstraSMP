@@ -265,7 +265,7 @@ public final class DataStore {
     }
 
     public PlayerProfile profile(String uuid, String name) {
-        PlayerProfile p = profiles.computeIfAbsent(uuid, k -> new PlayerProfile(uuid, name, 0L, 1000, 0, 0, 0L, 0, "", 1));
+        PlayerProfile p = profiles.computeIfAbsent(uuid, k -> new PlayerProfile(uuid, name, 0L, 50, 0, 0, 0L, 0, "", 1));
         if (name != null) p.setName(name);
         return p;
     }

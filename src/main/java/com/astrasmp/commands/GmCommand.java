@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public final class GmCommand implements CommandExecutor {
+public final class GmCommand implements CommandExecutor, org.bukkit.command.TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player player)) {
@@ -42,5 +42,14 @@ public final class GmCommand implements CommandExecutor {
         player.setGameMode(gm);
         TextUtil.send(player, "&aВаш игровой режим изменен на &e" + gm.name());
         return true;
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
+        if (args.length == 1) {
+            java.util.List<String> modes = java.util.List.of("0", "1", "2", "3");
+            return modes.stream().filter(m -> m.startsWith(args[0])).toList();
+        }
+        return java.util.Collections.emptyList();
     }
 }

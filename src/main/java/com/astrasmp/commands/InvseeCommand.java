@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class InvseeCommand implements CommandExecutor {
+public class InvseeCommand implements CommandExecutor, org.bukkit.command.TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player admin)) return true;
@@ -30,5 +30,11 @@ public class InvseeCommand implements CommandExecutor {
         admin.openInventory(target.getInventory());
         TextUtil.send(admin, "&aОткрыт инвентарь игрока &f" + target.getName());
         return true;
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
+        if (args.length == 1) return null; // Bukkit will autocomplete online players
+        return java.util.Collections.emptyList();
     }
 }

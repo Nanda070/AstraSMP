@@ -10,7 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class FreezeCommand implements CommandExecutor {
+public class FreezeCommand implements CommandExecutor, org.bukkit.command.TabCompleter {
     private final ServiceManager services;
 
     public FreezeCommand(ServiceManager services) {
@@ -48,5 +48,11 @@ public class FreezeCommand implements CommandExecutor {
         }
 
         return true;
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
+        if (args.length == 1) return null;
+        return java.util.Collections.emptyList();
     }
 }

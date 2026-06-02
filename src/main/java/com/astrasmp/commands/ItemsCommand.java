@@ -14,7 +14,7 @@ public final class ItemsCommand implements CommandExecutor {
             sender.sendMessage("Player only.");
             return true;
         }
-        services.gui().openItems(player);
+        services.gui().openItems(player, 0);
         return true;
     }
 }

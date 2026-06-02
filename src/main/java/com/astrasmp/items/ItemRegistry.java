@@ -123,40 +123,40 @@ public final class ItemRegistry {
     // ==========================================
 
     // 1. СЕТ НАЕМНИКА
-    public static ItemStack mercenaryHelmet() { return buildArmor("mercenary_helmet", Material.LEATHER_HELMET, "§8Капюшон Наемника", List.of("§7Сет Наемника (1/4)", "§8Бонус: §cУдар в спину (+25% урона)"), 7001, Color.BLACK, false); }
-    public static ItemStack mercenaryChestplate() { return buildArmor("mercenary_chestplate", Material.LEATHER_CHESTPLATE, "§8Куртка Наемника", List.of("§7Сет Наемника (2/4)", "§8Бонус: §cУдар в спину (+25% урона)"), 7002, Color.BLACK, false); }
-    public static ItemStack mercenaryLeggings() { return buildArmor("mercenary_leggings", Material.LEATHER_LEGGINGS, "§8Штаны Наемника", List.of("§7Сет Наемника (3/4)", "§8Бонус: §cУдар в спину (+25% урона)"), 7003, Color.BLACK, false); }
-    public static ItemStack mercenaryBoots() { return buildArmor("mercenary_boots", Material.LEATHER_BOOTS, "§8Ботинки Наемника", List.of("§7Сет Наемника (4/4)", "§8Бонус: §cУдар в спину (+25% урона)"), 7004, Color.BLACK, false); }
+    public static ItemStack mercenaryHelmet() { ItemStack s = buildArmor("mercenary_helmet", Material.LEATHER_HELMET, "§8Капюшон Наемника", List.of("§7Сет Наемника (1/4)", "§8Бонус: §cУдар в спину (+25% урона)"), 7001, Color.BLACK, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 3); return s; }
+    public static ItemStack mercenaryChestplate() { ItemStack s = buildArmor("mercenary_chestplate", Material.LEATHER_CHESTPLATE, "§8Куртка Наемника", List.of("§7Сет Наемника (2/4)", "§8Бонус: §cУдар в спину (+25% урона)"), 7002, Color.BLACK, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 3); return s; }
+    public static ItemStack mercenaryLeggings() { ItemStack s = buildArmor("mercenary_leggings", Material.LEATHER_LEGGINGS, "§8Штаны Наемника", List.of("§7Сет Наемника (3/4)", "§8Бонус: §cУдар в спину (+25% урона)"), 7003, Color.BLACK, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 3); return s; }
+    public static ItemStack mercenaryBoots() { ItemStack s = buildArmor("mercenary_boots", Material.LEATHER_BOOTS, "§8Ботинки Наемника", List.of("§7Сет Наемника (4/4)", "§8Бонус: §cУдар в спину (+25% урона)"), 7004, Color.BLACK, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 3); return s; }
 
     // 2. СЕТ БЕРСЕРКА
-    public static ItemStack berserkerHelmet() { return buildArmor("berserker_helmet", Material.IRON_HELMET, "§cШлем Берсерка", List.of("§7Сет Берсерка (1/4)", "§8Бонус: §cСила при низком здоровье"), 7011, null, false); }
-    public static ItemStack berserkerChestplate() { return buildArmor("berserker_chestplate", Material.IRON_CHESTPLATE, "§cНагрудник Берсерка", List.of("§7Сет Берсерка (2/4)", "§8Бонус: §cСила при низком здоровье"), 7012, null, false); }
-    public static ItemStack berserkerLeggings() { return buildArmor("berserker_leggings", Material.IRON_LEGGINGS, "§cПоножи Берсерка", List.of("§7Сет Берсерка (3/4)", "§8Бонус: §cСила при низком здоровье"), 7013, null, false); }
-    public static ItemStack berserkerBoots() { return buildArmor("berserker_boots", Material.IRON_BOOTS, "§cБотинки Берсерка", List.of("§7Сет Берсерка (4/4)", "§8Бонус: §cСила при низком здоровье"), 7014, null, false); }
+    public static ItemStack berserkerHelmet() { ItemStack s = buildArmor("berserker_helmet", Material.IRON_HELMET, "§cШлем Берсерка", List.of("§7Сет Берсерка (1/4)", "§8Бонус: §cСила при низком здоровье"), 7011, null, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 4); return s; }
+    public static ItemStack berserkerChestplate() { ItemStack s = buildArmor("berserker_chestplate", Material.IRON_CHESTPLATE, "§cНагрудник Берсерка", List.of("§7Сет Берсерка (2/4)", "§8Бонус: §cСила при низком здоровье"), 7012, null, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 4); return s; }
+    public static ItemStack berserkerLeggings() { ItemStack s = buildArmor("berserker_leggings", Material.IRON_LEGGINGS, "§cПоножи Берсерка", List.of("§7Сет Берсерка (3/4)", "§8Бонус: §cСила при низком здоровье"), 7013, null, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 4); return s; }
+    public static ItemStack berserkerBoots() { ItemStack s = buildArmor("berserker_boots", Material.IRON_BOOTS, "§cБотинки Берсерка", List.of("§7Сет Берсерка (4/4)", "§8Бонус: §cСила при низком здоровье"), 7014, null, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 4); return s; }
 
     // 3. СЕТ ИНКВИЗИТОРА
-    public static ItemStack inquisitorHelmet() { return buildArmor("inquisitor_helmet", Material.IRON_HELMET, "§eШлем Инквизитора", List.of("§7Сет Инквизитора (1/4)", "§8Бонус: §eИммунитет к дебаффам оружия"), 7021, null, false); }
-    public static ItemStack inquisitorChestplate() { return buildArmor("inquisitor_chestplate", Material.IRON_CHESTPLATE, "§eНагрудник Инквизитора", List.of("§7Сет Инквизитора (2/4)", "§8Бонус: §eИммунитет к дебаффам оружия"), 7022, null, false); }
-    public static ItemStack inquisitorLeggings() { return buildArmor("inquisitor_leggings", Material.IRON_LEGGINGS, "§eПоножи Инквизитора", List.of("§7Сет Инквизитора (3/4)", "§8Бонус: §eИммунитет к дебаффам оружия"), 7023, null, false); }
-    public static ItemStack inquisitorBoots() { return buildArmor("inquisitor_boots", Material.IRON_BOOTS, "§eСапоги Инквизитора", List.of("§7Сет Инквизитора (4/4)", "§8Бонус: §eИммунитет к дебаффам оружия"), 7024, null, false); }
+    public static ItemStack inquisitorHelmet() { ItemStack s = buildArmor("inquisitor_helmet", Material.IRON_HELMET, "§eШлем Инквизитора", List.of("§7Сет Инквизитора (1/4)", "§8Бонус: §eИммунитет к дебаффам оружия"), 7021, null, false); s.addUnsafeEnchantment(Enchantment.PROJECTILE_PROTECTION, 4); return s; }
+    public static ItemStack inquisitorChestplate() { ItemStack s = buildArmor("inquisitor_chestplate", Material.IRON_CHESTPLATE, "§eНагрудник Инквизитора", List.of("§7Сет Инквизитора (2/4)", "§8Бонус: §eИммунитет к дебаффам оружия"), 7022, null, false); s.addUnsafeEnchantment(Enchantment.PROJECTILE_PROTECTION, 4); return s; }
+    public static ItemStack inquisitorLeggings() { ItemStack s = buildArmor("inquisitor_leggings", Material.IRON_LEGGINGS, "§eПоножи Инквизитора", List.of("§7Сет Инквизитора (3/4)", "§8Бонус: §eИммунитет к дебаффам оружия"), 7023, null, false); s.addUnsafeEnchantment(Enchantment.PROJECTILE_PROTECTION, 4); return s; }
+    public static ItemStack inquisitorBoots() { ItemStack s = buildArmor("inquisitor_boots", Material.IRON_BOOTS, "§eСапоги Инквизитора", List.of("§7Сет Инквизитора (4/4)", "§8Бонус: §eИммунитет к дебаффам оружия"), 7024, null, false); s.addUnsafeEnchantment(Enchantment.PROJECTILE_PROTECTION, 4); return s; }
 
     // 4. СЕТ ДЖАГГЕРНАУТА
-    public static ItemStack juggernautHelmet() { return buildArmor("juggernaut_helmet", Material.NETHERITE_HELMET, "§8Шлем Джаггернаута", List.of("§7Сет Джаггернаута (1/4)", "§8Бонус: §7Анти-отбрасывание и -15% урона"), 7031, null, true); }
-    public static ItemStack juggernautChestplate() { return buildArmor("juggernaut_chestplate", Material.NETHERITE_CHESTPLATE, "§8Нагрудник Джаггернаута", List.of("§7Сет Джаггернаута (2/4)", "§8Бонус: §7Анти-отбрасывание и -15% урона"), 7032, null, true); }
-    public static ItemStack juggernautLeggings() { return buildArmor("juggernaut_leggings", Material.NETHERITE_LEGGINGS, "§8Поножи Джаггернаута", List.of("§7Сет Джаггернаута (3/4)", "§8Бонус: §7Анти-отбрасывание и -15% урона"), 7033, null, true); }
-    public static ItemStack juggernautBoots() { return buildArmor("juggernaut_boots", Material.NETHERITE_BOOTS, "§8Сапоги Джаггернаута", List.of("§7Сет Джаггернаута (4/4)", "§8Бонус: §7Анти-отбрасывание и -15% урона"), 7034, null, true); }
+    public static ItemStack juggernautHelmet() { ItemStack s = buildArmor("juggernaut_helmet", Material.NETHERITE_HELMET, "§8Шлем Джаггернаута", List.of("§7Сет Джаггернаута (1/4)", "§8Бонус: §7Анти-отбрасывание и -15% урона"), 7031, null, true); s.addUnsafeEnchantment(Enchantment.PROTECTION, 5); return s; }
+    public static ItemStack juggernautChestplate() { ItemStack s = buildArmor("juggernaut_chestplate", Material.NETHERITE_CHESTPLATE, "§8Нагрудник Джаггернаута", List.of("§7Сет Джаггернаута (2/4)", "§8Бонус: §7Анти-отбрасывание и -15% урона"), 7032, null, true); s.addUnsafeEnchantment(Enchantment.PROTECTION, 5); return s; }
+    public static ItemStack juggernautLeggings() { ItemStack s = buildArmor("juggernaut_leggings", Material.NETHERITE_LEGGINGS, "§8Поножи Джаггернаута", List.of("§7Сет Джаггернаута (3/4)", "§8Бонус: §7Анти-отбрасывание и -15% урона"), 7033, null, true); s.addUnsafeEnchantment(Enchantment.PROTECTION, 5); return s; }
+    public static ItemStack juggernautBoots() { ItemStack s = buildArmor("juggernaut_boots", Material.NETHERITE_BOOTS, "§8Сапоги Джаггернаута", List.of("§7Сет Джаггернаута (4/4)", "§8Бонус: §7Анти-отбрасывание и -15% урона"), 7034, null, true); s.addUnsafeEnchantment(Enchantment.PROTECTION, 5); return s; }
 
     // 5. ШАХТЕРСКИЙ ЭКЗОСКЕЛЕТ
-    public static ItemStack minerHelmet() { return buildArmor("miner_helmet", Material.DIAMOND_HELMET, "§bЭкзоскелет: Шлем", List.of("§7Шахтерский Сет (1/4)", "§8Бонус: §bСпешка II и Ночное зрение"), 7041, null, false); }
-    public static ItemStack minerChestplate() { return buildArmor("miner_chestplate", Material.DIAMOND_CHESTPLATE, "§bЭкзоскелет: Корпус", List.of("§7Шахтерский Сет (2/4)", "§8Бонус: §bСпешка II и Ночное зрение"), 7042, null, false); }
-    public static ItemStack minerLeggings() { return buildArmor("miner_leggings", Material.DIAMOND_LEGGINGS, "§bЭкзоскелет: Поножи", List.of("§7Шахтерский Сет (3/4)", "§8Бонус: §bСпешка II и Ночное зрение"), 7043, null, false); }
-    public static ItemStack minerBoots() { return buildArmor("miner_boots", Material.DIAMOND_BOOTS, "§bЭкзоскелет: Ботинки", List.of("§7Шахтерский Сет (4/4)", "§8Бонус: §bСпешка II и Ночное зрение"), 7044, null, false); }
+    public static ItemStack minerHelmet() { ItemStack s = buildArmor("miner_helmet", Material.DIAMOND_HELMET, "§bЭкзоскелет: Шлем", List.of("§7Шахтерский Сет (1/4)", "§8Бонус: §bСпешка II и Ночное зрение"), 7041, null, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 4); return s; }
+    public static ItemStack minerChestplate() { ItemStack s = buildArmor("miner_chestplate", Material.DIAMOND_CHESTPLATE, "§bЭкзоскелет: Корпус", List.of("§7Шахтерский Сет (2/4)", "§8Бонус: §bСпешка II и Ночное зрение"), 7042, null, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 4); return s; }
+    public static ItemStack minerLeggings() { ItemStack s = buildArmor("miner_leggings", Material.DIAMOND_LEGGINGS, "§bЭкзоскелет: Поножи", List.of("§7Шахтерский Сет (3/4)", "§8Бонус: §bСпешка II и Ночное зрение"), 7043, null, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 4); return s; }
+    public static ItemStack minerBoots() { ItemStack s = buildArmor("miner_boots", Material.DIAMOND_BOOTS, "§bЭкзоскелет: Ботинки", List.of("§7Шахтерский Сет (4/4)", "§8Бонус: §bСпешка II и Ночное зрение"), 7044, null, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 4); return s; }
 
     // 6. СЕТ ОХОТНИКА КРОВАВОЙ НОЧИ
-    public static ItemStack bloodHunterHelmet() { return buildArmor("bloodhunter_helmet", Material.DIAMOND_HELMET, "§4Шлем Кровавой Ночи", List.of("§7Сет Охотника (1/4)", "§8Бонус: §cЗащита от мобов Кровавой Ночи"), 7051, null, false); }
-    public static ItemStack bloodHunterChestplate() { return buildArmor("bloodhunter_chestplate", Material.DIAMOND_CHESTPLATE, "§4Нагрудник Кровавой Ночи", List.of("§7Сет Охотника (2/4)", "§8Бонус: §cЗащита от мобов Кровавой Ночи"), 7052, null, false); }
-    public static ItemStack bloodHunterLeggings() { return buildArmor("bloodhunter_leggings", Material.DIAMOND_LEGGINGS, "§4Поножи Кровавой Ночи", List.of("§7Сет Охотника (3/4)", "§8Бонус: §cЗащита от мобов Кровавой Ночи"), 7053, null, false); }
-    public static ItemStack bloodHunterBoots() { return buildArmor("bloodhunter_boots", Material.DIAMOND_BOOTS, "§4Сапоги Кровавой Ночи", List.of("§7Сет Охотника (4/4)", "§8Бонус: §cЗащита от мобов Кровавой Ночи"), 7054, null, false); }
+    public static ItemStack bloodHunterHelmet() { ItemStack s = buildArmor("bloodhunter_helmet", Material.DIAMOND_HELMET, "§4Шлем Кровавой Ночи", List.of("§7Сет Охотника (1/4)", "§8Бонус: §cЗащита от мобов Кровавой Ночи"), 7051, null, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 5); return s; }
+    public static ItemStack bloodHunterChestplate() { ItemStack s = buildArmor("bloodhunter_chestplate", Material.DIAMOND_CHESTPLATE, "§4Нагрудник Кровавой Ночи", List.of("§7Сет Охотника (2/4)", "§8Бонус: §cЗащита от мобов Кровавой Ночи"), 7052, null, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 5); return s; }
+    public static ItemStack bloodHunterLeggings() { ItemStack s = buildArmor("bloodhunter_leggings", Material.DIAMOND_LEGGINGS, "§4Поножи Кровавой Ночи", List.of("§7Сет Охотника (3/4)", "§8Бонус: §cЗащита от мобов Кровавой Ночи"), 7053, null, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 5); return s; }
+    public static ItemStack bloodHunterBoots() { ItemStack s = buildArmor("bloodhunter_boots", Material.DIAMOND_BOOTS, "§4Сапоги Кровавой Ночи", List.of("§7Сет Охотника (4/4)", "§8Бонус: §cЗащита от мобов Кровавой Ночи"), 7054, null, false); s.addUnsafeEnchantment(Enchantment.PROTECTION, 5); return s; }
 
     // ==========================================
     // СУЩЕСТВУЮЩИЕ ПРЕДМЕТЫ
@@ -177,11 +177,44 @@ public final class ItemRegistry {
     public static ItemStack magnetNetherite() { return buildTool("magnet", Material.NETHERITE_PICKAXE, "§eМагнит+", List.of("§7Притягивает ресурсы."), 1005); }
 
     // --- ОРУЖИЕ ---
-    public static ItemStack shadowBlade() { return build("shadowBlade", Material.NETHERITE_SWORD, "§8Теневой клинок", List.of("§7Слепота врагу, скорость себе."), 2001, false); }
-    public static ItemStack thunderHammer() { return build("thunderHammer", Material.NETHERITE_AXE, "§bМолот грома", List.of("§7Призывает молнию при ударе."), 2002, false); }
-    public static ItemStack vampireDagger() { return build("vampireDagger", Material.DIAMOND_SWORD, "§cVampire Dagger", List.of("§7Крадет здоровье врага."), 2003, false); }
-    public static ItemStack infernoSword() { return build("infernoSword", Material.NETHERITE_SWORD, "§6Меч инферно", List.of("§7Поджигает врагов в радиусе 4 блоков."), 2004, false); }
-    public static ItemStack frostAxe() { return build("frostAxe", Material.DIAMOND_AXE, "§9Ледяной топор", List.of("§7Замедляет цель."), 2005, false); }
+    public static ItemStack shadowBlade() { 
+        ItemStack stack = build("shadowBlade", Material.NETHERITE_SWORD, "§8Теневой клинок", List.of("§7Слепота врагу, скорость себе."), 2001, false);
+        stack.addUnsafeEnchantment(Enchantment.SHARPNESS, 6);
+        return stack; 
+    }
+    public static ItemStack thunderHammer() { 
+        ItemStack stack = build("thunderHammer", Material.NETHERITE_AXE, "§bМолот грома", List.of("§7Призывает молнию при ударе."), 2002, false);
+        stack.addUnsafeEnchantment(Enchantment.SHARPNESS, 6);
+        stack.addUnsafeEnchantment(Enchantment.SMITE, 5);
+        return stack; 
+    }
+    public static ItemStack vampireDagger() { 
+        ItemStack stack = build("vampireDagger", Material.DIAMOND_SWORD, "§cVampire Dagger", List.of("§7Крадет здоровье врага."), 2003, false);
+        stack.addUnsafeEnchantment(Enchantment.SHARPNESS, 5);
+        return stack; 
+    }
+    public static ItemStack infernoSword() { 
+        ItemStack stack = build("infernoSword", Material.NETHERITE_SWORD, "§6Меч инферно", List.of("§7Поджигает врагов в радиусе 4 блоков."), 2004, false);
+        stack.addUnsafeEnchantment(Enchantment.SHARPNESS, 5);
+        stack.addUnsafeEnchantment(Enchantment.FIRE_ASPECT, 3);
+        return stack; 
+    }
+    public static ItemStack frostAxe() { 
+        ItemStack stack = build("frostAxe", Material.DIAMOND_AXE, "§9Ледяной топор", List.of("§7Замедляет цель."), 2005, false);
+        stack.addUnsafeEnchantment(Enchantment.SHARPNESS, 5);
+        return stack; 
+    }
+    public static ItemStack venomBow() { 
+        ItemStack stack = build("venomBow", Material.BOW, "§2Ядовитый Лук", List.of("§7Отравляет цель."), 2006, true);
+        stack.addUnsafeEnchantment(Enchantment.POWER, 5);
+        stack.addUnsafeEnchantment(Enchantment.PUNCH, 2);
+        return stack; 
+    }
+    public static ItemStack reaperScythe() { 
+        ItemStack stack = build("reaperScythe", Material.NETHERITE_HOE, "§5Коса Жнеца", List.of("§7Массовый урон по площади."), 2007, true);
+        stack.addUnsafeEnchantment(Enchantment.SHARPNESS, 7);
+        return stack; 
+    }
 
     // --- ТОТЕМЫ ---
     public static ItemStack totemSpeed() { return build("totemSpeed", Material.TOTEM_OF_UNDYING, "§bТотем скорости", List.of("§7Пассивно дает Скорость во второй руке."), 3001, true); }
@@ -226,7 +259,7 @@ public final class ItemRegistry {
         return List.of(
                 mining3x3(), mining5x5(), veinMiner(), autoSmelt(), magnet(),
                 mining3x3Netherite(), mining5x5Netherite(), veinMinerNetherite(), autoSmeltNetherite(), magnetNetherite(),
-                shadowBlade(), thunderHammer(), vampireDagger(), infernoSword(), frostAxe(),
+                shadowBlade(), thunderHammer(), vampireDagger(), infernoSword(), frostAxe(), venomBow(), reaperScythe(),
                 totemSpeed(), totemShield(), totemLightning(), totemExplosion(), totemTeleport()
         );
     }

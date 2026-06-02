@@ -99,7 +99,7 @@ public final class MenuListener implements Listener {
         if (topHolder instanceof RecipePreviewHolder) {
             event.setCancelled(true);
             if (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.BARRIER) {
-                services.gui().openItems(player);
+                services.gui().openItems(player, 0);
                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
             }
             return;

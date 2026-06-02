@@ -6,6 +6,9 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
+import java.util.ArrayList;
+import java.util.Collections;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -17,7 +20,7 @@ import com.astrasmp.util.TextUtil;
 
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
-public final class LocationCommand implements CommandExecutor {
+public final class LocationCommand implements CommandExecutor, TabCompleter {
     private final ServiceManager services;
 
     public LocationCommand(ServiceManager services) {
@@ -75,6 +78,29 @@ public final class LocationCommand implements CommandExecutor {
         }
 
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        if (command.getName().equalsIgnoreCase("pvp") && sender.isOp()) {
+            if (args.length == 1) {
+                List<String> completions = new ArrayList<>();
+                if ("holo".startsWith(args[0].toLowerCase())) {
+                    completions.add("holo");
+                }
+                return completions;
+            } else if (args.length == 2 && args[0].equalsIgnoreCase("holo")) {
+                List<String> completions = new ArrayList<>();
+                if ("remove".startsWith(args[1].toLowerCase())) {
+                    completions.add("remove");
+                }
+                return completions;
+            }
+        }
+        if (command.getName().equalsIgnoreCase("duel")) {
+            return null; // Autocomplete online players
+        }
+        return Collections.emptyList();
     }
 
     private void spawnPvPHologram(Location loc) {

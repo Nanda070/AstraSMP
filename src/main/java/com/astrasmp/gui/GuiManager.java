@@ -232,15 +232,50 @@ public final class GuiManager {
         admin.openInventory(inv);
     }
 
-    public void openAdminItems(Player player) {
-        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.ADMIN_GIVE_ITEMS, 0, "", ""), 54, title("Админ: Выдача предметов"));
+    public void openAdminItems(Player player, int page, String category) {
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.ADMIN_GIVE_ITEMS, page, category, ""), 54, title("Выдача: " + (category.isEmpty() ? "Все" : category) + " (" + (page+1) + ")"));
         fill(inv);
-        int slot = 0;
-        for (ItemStack item : ItemRegistry.getAllItems()) {
-            if (slot >= 45) break;
-            inv.setItem(slot++, item);
+        
+        List<ItemStack> allItems = ItemRegistry.getAllItems();
+        List<ItemStack> filtered = new ArrayList<>();
+        
+        for (ItemStack item : allItems) {
+            String id = ItemRegistry.id(item);
+            if (id == null) continue;
+            boolean match = true;
+            if (category.equals("Оружие")) {
+                match = id.contains("sword") || id.contains("blade") || id.contains("hammer") || id.contains("dagger") || id.contains("axe") || id.contains("bow") || id.contains("scythe");
+            } else if (category.equals("Броня")) {
+                match = id.contains("helmet") || id.contains("chestplate") || id.contains("leggings") || id.contains("boots");
+            } else if (category.equals("Инструменты")) {
+                match = id.contains("mining") || id.contains("miner") || id.contains("smelt") || id.contains("magnet");
+            } else if (category.equals("ТоТемы")) {
+                match = id.contains("totem");
+            } else if (category.equals("МЭ Сеть")) {
+                match = id.contains("me_");
+            }
+            if (match) filtered.add(item);
         }
-        inv.setItem(49, button(Material.ARROW, "&cНазад в админ-панель"));
+
+        int maxItemsPerPage = 45;
+        int startIndex = page * maxItemsPerPage;
+        int slot = 0;
+        
+        for (int i = startIndex; i < filtered.size() && slot < maxItemsPerPage; i++) {
+            inv.setItem(slot++, filtered.get(i));
+        }
+
+        if (page > 0) inv.setItem(45, button(Material.ARROW, "&e<- Предыдущая"));
+        inv.setItem(49, button(Material.BARRIER, "&cНазад в админ-панель"));
+        if (startIndex + maxItemsPerPage < filtered.size()) inv.setItem(53, button(Material.ARROW, "&eСледующая ->"));
+        
+        inv.setItem(46, button(Material.NETHERITE_SWORD, "&aОружие", "&7Клик для фильтра"));
+        inv.setItem(47, button(Material.NETHERITE_CHESTPLATE, "&bБроня", "&7Клик для фильтра"));
+        inv.setItem(48, button(Material.DIAMOND_PICKAXE, "&eИнструменты", "&7Клик для фильтра"));
+        inv.setItem(50, button(Material.TOTEM_OF_UNDYING, "&6ТоТемы", "&7Клик для фильтра"));
+        inv.setItem(51, button(Material.LODESTONE, "&dМЭ Сеть", "&7Клик для фильтра"));
+        inv.setItem(52, button(Material.COMPASS, "&fВсе предметы", "&7Сбросить фильтр"));
+
         player.openInventory(inv);
     }
 
@@ -566,18 +601,49 @@ public final class GuiManager {
         Material AIR = Material.AIR;
         switch (id) {
             case "mining3x3" -> { return makeRecipe(Material.DIAMOND_BLOCK, Material.DIAMOND_BLOCK, Material.DIAMOND_BLOCK, Material.TNT, Material.STICK, Material.TNT, AIR, Material.STICK, AIR); }
-            case "magnet" -> { return makeRecipe(Material.REDSTONE_BLOCK, Material.IRON_BLOCK, Material.REDSTONE_BLOCK, Material.IRON_BLOCK, Material.DIAMOND_PICKAXE, Material.IRON_BLOCK, Material.REDSTONE_BLOCK, Material.IRON_BLOCK, Material.REDSTONE_BLOCK); }
-            case "frostAxe" -> { return makeRecipe(Material.BLUE_ICE, Material.BLUE_ICE, Material.BLUE_ICE, Material.BLUE_ICE, Material.DIAMOND_AXE, Material.BLUE_ICE, Material.BLUE_ICE, Material.BLUE_ICE, Material.BLUE_ICE); }
-            case "vampireDagger" -> { return makeRecipe(AIR, Material.REDSTONE_BLOCK, AIR, Material.GHAST_TEAR, Material.DIAMOND_SWORD, Material.GHAST_TEAR, AIR, Material.REDSTONE_BLOCK, AIR); }
-            case "infernoSword" -> { return makeRecipe(Material.MAGMA_BLOCK, Material.BLAZE_ROD, Material.MAGMA_BLOCK, Material.BLAZE_ROD, Material.NETHERITE_SWORD, Material.BLAZE_ROD, Material.MAGMA_BLOCK, Material.BLAZE_ROD, Material.MAGMA_BLOCK); }
+            case "mining5x5" -> { return makeRecipe(Material.NETHERITE_BLOCK, Material.NETHERITE_INGOT, Material.NETHERITE_BLOCK, Material.NETHERITE_INGOT, Material.NETHERITE_PICKAXE, Material.NETHERITE_INGOT, Material.NETHERITE_BLOCK, Material.NETHERITE_INGOT, Material.NETHERITE_BLOCK); }
+            case "veinMiner" -> { return makeRecipe(Material.AMETHYST_CLUSTER, Material.AMETHYST_CLUSTER, Material.AMETHYST_CLUSTER, Material.AMETHYST_CLUSTER, Material.NETHERITE_PICKAXE, Material.AMETHYST_CLUSTER, Material.AMETHYST_CLUSTER, Material.AMETHYST_CLUSTER, Material.AMETHYST_CLUSTER); }
+            case "autoSmelt" -> { return makeRecipe(Material.MAGMA_BLOCK, Material.MAGMA_BLOCK, Material.MAGMA_BLOCK, Material.MAGMA_BLOCK, Material.NETHERITE_PICKAXE, Material.MAGMA_BLOCK, Material.MAGMA_BLOCK, Material.MAGMA_BLOCK, Material.MAGMA_BLOCK); }
+            case "magnet" -> { return makeRecipe(Material.GOLD_INGOT, Material.IRON_INGOT, Material.GOLD_INGOT, Material.IRON_INGOT, Material.COMPASS, Material.IRON_INGOT, Material.GOLD_INGOT, Material.IRON_INGOT, Material.GOLD_INGOT); }
+            
+            case "shadowBlade" -> { return makeRecipe(Material.ECHO_SHARD, Material.COAL_BLOCK, Material.ECHO_SHARD, Material.ECHO_SHARD, Material.NETHERITE_SWORD, Material.ECHO_SHARD, Material.ECHO_SHARD, Material.COAL_BLOCK, Material.ECHO_SHARD); }
+            case "thunderHammer" -> { return makeRecipe(Material.COPPER_BLOCK, Material.LIGHTNING_ROD, Material.COPPER_BLOCK, Material.COPPER_BLOCK, Material.NETHERITE_AXE, Material.COPPER_BLOCK, Material.COPPER_BLOCK, Material.COPPER_BLOCK, Material.COPPER_BLOCK); }
+            case "vampireDagger" -> { return makeRecipe(Material.REDSTONE_BLOCK, Material.GHAST_TEAR, Material.REDSTONE_BLOCK, Material.REDSTONE_BLOCK, Material.DIAMOND_SWORD, Material.REDSTONE_BLOCK, Material.REDSTONE_BLOCK, Material.GHAST_TEAR, Material.REDSTONE_BLOCK); }
+            case "infernoSword" -> { return makeRecipe(Material.BLAZE_ROD, Material.MAGMA_CREAM, Material.BLAZE_ROD, Material.BLAZE_ROD, Material.NETHERITE_SWORD, Material.BLAZE_ROD, Material.BLAZE_ROD, Material.MAGMA_CREAM, Material.BLAZE_ROD); }
+            case "frostAxe" -> { return makeRecipe(Material.PACKED_ICE, Material.PACKED_ICE, Material.PACKED_ICE, Material.PACKED_ICE, Material.DIAMOND_AXE, Material.PACKED_ICE, Material.PACKED_ICE, Material.PACKED_ICE, Material.PACKED_ICE); }
+            case "venomBow" -> { return makeRecipe(AIR, Material.SPIDER_EYE, AIR, Material.SPIDER_EYE, Material.BOW, Material.SPIDER_EYE, AIR, Material.SPIDER_EYE, AIR); }
+            case "reaperScythe" -> { return makeRecipe(Material.NETHERITE_BLOCK, Material.NETHERITE_BLOCK, Material.NETHERITE_BLOCK, AIR, Material.NETHERITE_HOE, AIR, AIR, Material.NETHERITE_BLOCK, AIR); }
+
+            case "mercenary_helmet" -> { return makeRecipe(Material.COAL_BLOCK, Material.LEATHER, Material.COAL_BLOCK, Material.COAL_BLOCK, AIR, Material.COAL_BLOCK, AIR, AIR, AIR); }
+            case "mercenary_chestplate" -> { return makeRecipe(Material.COAL_BLOCK, AIR, Material.COAL_BLOCK, Material.COAL_BLOCK, Material.LEATHER, Material.COAL_BLOCK, Material.COAL_BLOCK, Material.COAL_BLOCK, Material.COAL_BLOCK); }
+            case "mercenary_leggings" -> { return makeRecipe(Material.COAL_BLOCK, Material.COAL_BLOCK, Material.COAL_BLOCK, Material.LEATHER, AIR, Material.LEATHER, Material.COAL_BLOCK, AIR, Material.COAL_BLOCK); }
+            case "mercenary_boots" -> { return makeRecipe(AIR, AIR, AIR, Material.COAL_BLOCK, AIR, Material.COAL_BLOCK, Material.LEATHER, AIR, Material.LEATHER); }
+
             case "berserker_helmet" -> { return makeRecipe(Material.IRON_BLOCK, Material.IRON_BLOCK, Material.IRON_BLOCK, Material.REDSTONE_BLOCK, AIR, Material.REDSTONE_BLOCK, AIR, AIR, AIR); }
             case "berserker_chestplate" -> { return makeRecipe(Material.IRON_BLOCK, AIR, Material.IRON_BLOCK, Material.IRON_BLOCK, Material.REDSTONE_BLOCK, Material.IRON_BLOCK, Material.IRON_BLOCK, Material.IRON_BLOCK, Material.IRON_BLOCK); }
             case "berserker_leggings" -> { return makeRecipe(Material.IRON_BLOCK, Material.IRON_BLOCK, Material.IRON_BLOCK, Material.REDSTONE_BLOCK, AIR, Material.REDSTONE_BLOCK, Material.IRON_BLOCK, AIR, Material.IRON_BLOCK); }
-            case "berserker_boots" -> { return makeRecipe(Material.REDSTONE_BLOCK, AIR, Material.REDSTONE_BLOCK, Material.IRON_BLOCK, AIR, Material.IRON_BLOCK, AIR, AIR, AIR); }
+            case "berserker_boots" -> { return makeRecipe(AIR, AIR, AIR, Material.REDSTONE_BLOCK, AIR, Material.REDSTONE_BLOCK, Material.IRON_BLOCK, AIR, Material.IRON_BLOCK); }
+
+            case "inquisitor_helmet" -> { return makeRecipe(Material.GOLD_BLOCK, Material.GOLD_BLOCK, Material.GOLD_BLOCK, Material.IRON_BLOCK, AIR, Material.IRON_BLOCK, AIR, AIR, AIR); }
+            case "inquisitor_chestplate" -> { return makeRecipe(Material.GOLD_BLOCK, AIR, Material.GOLD_BLOCK, Material.GOLD_BLOCK, Material.IRON_BLOCK, Material.GOLD_BLOCK, Material.GOLD_BLOCK, Material.GOLD_BLOCK, Material.GOLD_BLOCK); }
+            case "inquisitor_leggings" -> { return makeRecipe(Material.GOLD_BLOCK, Material.GOLD_BLOCK, Material.GOLD_BLOCK, Material.IRON_BLOCK, AIR, Material.IRON_BLOCK, Material.GOLD_BLOCK, AIR, Material.GOLD_BLOCK); }
+            case "inquisitor_boots" -> { return makeRecipe(AIR, AIR, AIR, Material.IRON_BLOCK, AIR, Material.IRON_BLOCK, Material.GOLD_BLOCK, AIR, Material.GOLD_BLOCK); }
+
             case "juggernaut_helmet" -> { return makeRecipe(Material.OBSIDIAN, Material.OBSIDIAN, Material.OBSIDIAN, Material.NETHERITE_INGOT, AIR, Material.NETHERITE_INGOT, AIR, AIR, AIR); }
-            case "juggernaut_chestplate" -> { return makeRecipe(Material.OBSIDIAN, AIR, Material.OBSIDIAN, Material.OBSIDIAN, Material.GOLDEN_APPLE, Material.OBSIDIAN, Material.OBSIDIAN, Material.OBSIDIAN, Material.OBSIDIAN); }
+            case "juggernaut_chestplate" -> { return makeRecipe(Material.OBSIDIAN, AIR, Material.OBSIDIAN, Material.OBSIDIAN, Material.NETHERITE_INGOT, Material.OBSIDIAN, Material.OBSIDIAN, Material.OBSIDIAN, Material.OBSIDIAN); }
             case "juggernaut_leggings" -> { return makeRecipe(Material.OBSIDIAN, Material.OBSIDIAN, Material.OBSIDIAN, Material.NETHERITE_INGOT, AIR, Material.NETHERITE_INGOT, Material.OBSIDIAN, AIR, Material.OBSIDIAN); }
-            case "juggernaut_boots" -> { return makeRecipe(Material.NETHERITE_INGOT, AIR, Material.NETHERITE_INGOT, Material.OBSIDIAN, AIR, Material.OBSIDIAN, AIR, AIR, AIR); }
+            case "juggernaut_boots" -> { return makeRecipe(AIR, AIR, AIR, Material.NETHERITE_INGOT, AIR, Material.NETHERITE_INGOT, Material.OBSIDIAN, AIR, Material.OBSIDIAN); }
+
+            case "miner_helmet" -> { return makeRecipe(Material.DIAMOND_BLOCK, Material.DIAMOND_BLOCK, Material.DIAMOND_BLOCK, Material.EMERALD, AIR, Material.EMERALD, AIR, AIR, AIR); }
+            case "miner_chestplate" -> { return makeRecipe(Material.DIAMOND_BLOCK, AIR, Material.DIAMOND_BLOCK, Material.DIAMOND_BLOCK, Material.EMERALD, Material.DIAMOND_BLOCK, Material.DIAMOND_BLOCK, Material.DIAMOND_BLOCK, Material.DIAMOND_BLOCK); }
+            case "miner_leggings" -> { return makeRecipe(Material.DIAMOND_BLOCK, Material.DIAMOND_BLOCK, Material.DIAMOND_BLOCK, Material.EMERALD, AIR, Material.EMERALD, Material.DIAMOND_BLOCK, AIR, Material.DIAMOND_BLOCK); }
+            case "miner_boots" -> { return makeRecipe(AIR, AIR, AIR, Material.EMERALD, AIR, Material.EMERALD, Material.DIAMOND_BLOCK, AIR, Material.DIAMOND_BLOCK); }
+
+            case "bloodhunter_helmet" -> { return makeRecipe(Material.REDSTONE_BLOCK, Material.REDSTONE_BLOCK, Material.REDSTONE_BLOCK, Material.DIAMOND_BLOCK, AIR, Material.DIAMOND_BLOCK, AIR, AIR, AIR); }
+            case "bloodhunter_chestplate" -> { return makeRecipe(Material.REDSTONE_BLOCK, AIR, Material.REDSTONE_BLOCK, Material.REDSTONE_BLOCK, Material.DIAMOND_BLOCK, Material.REDSTONE_BLOCK, Material.REDSTONE_BLOCK, Material.REDSTONE_BLOCK, Material.REDSTONE_BLOCK); }
+            case "bloodhunter_leggings" -> { return makeRecipe(Material.REDSTONE_BLOCK, Material.REDSTONE_BLOCK, Material.REDSTONE_BLOCK, Material.DIAMOND_BLOCK, AIR, Material.DIAMOND_BLOCK, Material.REDSTONE_BLOCK, AIR, Material.REDSTONE_BLOCK); }
+            case "bloodhunter_boots" -> { return makeRecipe(AIR, AIR, AIR, Material.DIAMOND_BLOCK, AIR, Material.DIAMOND_BLOCK, Material.REDSTONE_BLOCK, AIR, Material.REDSTONE_BLOCK); }
+
             default -> { return null; }
         }
     }
@@ -634,42 +700,33 @@ public final class GuiManager {
     // ВИТРИНА
     // ==========================================
 
-    public void openItems(Player player) {
-        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.ITEMS, 0, "", ""), 54, title("Уникальные предметы"));
+    public void openItems(Player player, int page) {
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.ITEMS, page, "", ""), 54, title("Уникальные предметы - Стр. " + (page + 1)));
         fill(inv);
 
-        inv.setItem(2, withLoreHint(ItemRegistry.mining3x3()));
-        inv.setItem(3, withLoreHint(ItemRegistry.mining5x5()));
-        inv.setItem(4, withLoreHint(ItemRegistry.veinMiner()));
-        inv.setItem(5, withLoreHint(ItemRegistry.autoSmelt()));
-        inv.setItem(6, withLoreHint(ItemRegistry.magnet()));
+        List<ItemStack> allCraftable = new ArrayList<>();
+        allCraftable.addAll(List.of(ItemRegistry.mining3x3(), ItemRegistry.mining5x5(), ItemRegistry.veinMiner(), ItemRegistry.autoSmelt(), ItemRegistry.magnet()));
+        allCraftable.addAll(List.of(ItemRegistry.mining3x3Netherite(), ItemRegistry.mining5x5Netherite(), ItemRegistry.veinMinerNetherite(), ItemRegistry.autoSmeltNetherite(), ItemRegistry.magnetNetherite()));
+        allCraftable.addAll(List.of(ItemRegistry.shadowBlade(), ItemRegistry.thunderHammer(), ItemRegistry.vampireDagger(), ItemRegistry.infernoSword(), ItemRegistry.frostAxe(), ItemRegistry.venomBow(), ItemRegistry.reaperScythe()));
+        allCraftable.addAll(List.of(ItemRegistry.mercenaryHelmet(), ItemRegistry.mercenaryChestplate(), ItemRegistry.mercenaryLeggings(), ItemRegistry.mercenaryBoots()));
+        allCraftable.addAll(List.of(ItemRegistry.berserkerHelmet(), ItemRegistry.berserkerChestplate(), ItemRegistry.berserkerLeggings(), ItemRegistry.berserkerBoots()));
+        allCraftable.addAll(List.of(ItemRegistry.inquisitorHelmet(), ItemRegistry.inquisitorChestplate(), ItemRegistry.inquisitorLeggings(), ItemRegistry.inquisitorBoots()));
+        allCraftable.addAll(List.of(ItemRegistry.juggernautHelmet(), ItemRegistry.juggernautChestplate(), ItemRegistry.juggernautLeggings(), ItemRegistry.juggernautBoots()));
+        allCraftable.addAll(List.of(ItemRegistry.minerHelmet(), ItemRegistry.minerChestplate(), ItemRegistry.minerLeggings(), ItemRegistry.minerBoots()));
+        allCraftable.addAll(List.of(ItemRegistry.bloodHunterHelmet(), ItemRegistry.bloodHunterChestplate(), ItemRegistry.bloodHunterLeggings(), ItemRegistry.bloodHunterBoots()));
+        allCraftable.addAll(List.of(ItemRegistry.totemSpeed(), ItemRegistry.totemShield(), ItemRegistry.totemLightning(), ItemRegistry.totemExplosion(), ItemRegistry.totemTeleport()));
 
-        inv.setItem(11, withLoreHint(ItemRegistry.mining3x3Netherite()));
-        inv.setItem(12, withLoreHint(ItemRegistry.mining5x5Netherite()));
-        inv.setItem(13, withLoreHint(ItemRegistry.veinMinerNetherite()));
-        inv.setItem(14, withLoreHint(ItemRegistry.autoSmeltNetherite()));
-        inv.setItem(15, withLoreHint(ItemRegistry.magnetNetherite()));
+        int maxItemsPerPage = 45;
+        int startIndex = page * maxItemsPerPage;
+        int slot = 0;
+        
+        for (int i = startIndex; i < allCraftable.size() && slot < maxItemsPerPage; i++) {
+            inv.setItem(slot++, withLoreHint(allCraftable.get(i)));
+        }
 
-        inv.setItem(20, withLoreHint(ItemRegistry.shadowBlade()));
-        inv.setItem(21, withLoreHint(ItemRegistry.thunderHammer()));
-        inv.setItem(22, withLoreHint(ItemRegistry.vampireDagger()));
-        inv.setItem(23, withLoreHint(ItemRegistry.infernoSword()));
-        inv.setItem(24, withLoreHint(ItemRegistry.frostAxe()));
-
-        inv.setItem(28, withLoreHint(ItemRegistry.mercenaryChestplate()));
-        inv.setItem(30, withLoreHint(ItemRegistry.berserkerChestplate()));
-        inv.setItem(32, withLoreHint(ItemRegistry.inquisitorChestplate()));
-        inv.setItem(34, withLoreHint(ItemRegistry.juggernautChestplate()));
-
-        inv.setItem(38, withLoreHint(ItemRegistry.totemSpeed()));
-        inv.setItem(39, withLoreHint(ItemRegistry.totemShield()));
-        inv.setItem(40, withLoreHint(ItemRegistry.totemLightning()));
-        inv.setItem(41, withLoreHint(ItemRegistry.totemExplosion()));
-        inv.setItem(42, withLoreHint(ItemRegistry.totemTeleport()));
-
-        inv.setItem(47, withLoreHint(ItemRegistry.minerChestplate()));
+        if (page > 0) inv.setItem(45, button(Material.ARROW, "&e<- Пред. страница"));
         inv.setItem(49, button(Material.BARRIER, "&cНазад в меню"));
-        inv.setItem(51, withLoreHint(ItemRegistry.bloodHunterChestplate()));
+        if (startIndex + maxItemsPerPage < allCraftable.size()) inv.setItem(53, button(Material.ARROW, "&eСлед. страница ->"));
 
         player.openInventory(inv);
     }
@@ -695,7 +752,7 @@ public final class GuiManager {
                     case 13 -> player.performCommand("quest");
                     case 20 -> openSellResources(player);
                     case 21 -> openAuction(player, 0, "");
-                    case 22 -> openItems(player);
+                    case 22 -> openItems(player, 0);
                     case 23 -> openStatsMenu(player);
                     case 24 -> openContracts(player);
                     case 31 -> {
@@ -731,7 +788,7 @@ public final class GuiManager {
             case ADMIN -> {
                 switch (event.getSlot()) {
                     case 10 -> { player.closeInventory(); TextUtil.send(player, "&eИспользуйте: &f/admin event <тип> &7или &f/admin spawnevent <тип>"); }
-                    case 11 -> openAdminItems(player);
+                    case 11 -> openAdminItems(player, 0, "");
                     case 12 -> { player.closeInventory(); TextUtil.send(player, "&eИспользуйте: &f/admin setcoins <игрок> <сумма>"); }
                     case 13 -> openAdminGuilds(player);
                     case 14 -> openPlayerList(player, "invsee");
@@ -745,7 +802,17 @@ public final class GuiManager {
             case ADMIN_GIVE_ITEMS -> {
                 if (event.getSlot() == 49) {
                     openAdmin(player);
-                } else if (event.getSlot() < 45) {
+                } else if (event.getSlot() == 45 && holder.page() > 0) {
+                    openAdminItems(player, holder.page() - 1, holder.query());
+                } else if (event.getSlot() == 53) {
+                    openAdminItems(player, holder.page() + 1, holder.query());
+                } else if (event.getSlot() == 46) openAdminItems(player, 0, "Оружие");
+                else if (event.getSlot() == 47) openAdminItems(player, 0, "Броня");
+                else if (event.getSlot() == 48) openAdminItems(player, 0, "Инструменты");
+                else if (event.getSlot() == 50) openAdminItems(player, 0, "ТоТемы");
+                else if (event.getSlot() == 51) openAdminItems(player, 0, "МЭ Сеть");
+                else if (event.getSlot() == 52) openAdminItems(player, 0, "");
+                else if (event.getSlot() < 45) {
                     player.getInventory().addItem(clicked.clone());
                     TextUtil.send(player, "&a&l[!] &aВы выдали себе предмет!");
                     player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
@@ -767,6 +834,10 @@ public final class GuiManager {
             case ITEMS -> {
                 if (event.getSlot() == 49) {
                     openMain(player);
+                } else if (event.getSlot() == 45 && holder.page() > 0) {
+                    openItems(player, holder.page() - 1);
+                } else if (event.getSlot() == 53) {
+                    openItems(player, holder.page() + 1);
                 } else if (event.getSlot() < 45) {
                     ItemMeta meta = clicked.getItemMeta();
                     if (meta != null) {
@@ -783,7 +854,7 @@ public final class GuiManager {
             }
             case RECIPE_VIEW -> {
                 if (event.getSlot() == 40) {
-                    openItems(player);
+                    openItems(player, 0);
                 }
             }
             case STATS, CONTRACTS -> {

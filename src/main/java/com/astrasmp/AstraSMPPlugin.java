@@ -168,11 +168,11 @@ public final class AstraSMPPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(vanishCmd, this);
 
         LocationCommand locCmd = new LocationCommand(services);
-        if (getCommand("pvp") != null) getCommand("pvp").setExecutor(locCmd);
-        if (getCommand("casino") != null) getCommand("casino").setExecutor(locCmd);
-        if (getCommand("eventshop") != null) getCommand("eventshop").setExecutor(locCmd);
-        if (getCommand("afk") != null) getCommand("afk").setExecutor(locCmd);
-        if (getCommand("duel") != null) getCommand("duel").setExecutor(locCmd);
+        bind("pvp", locCmd);
+        bind("casino", locCmd);
+        bind("eventshop", locCmd);
+        bind("afk", locCmd);
+        bind("duel", locCmd);
     }
 
     private void bind(String name, org.bukkit.command.CommandExecutor executor) {

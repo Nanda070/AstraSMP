@@ -11,7 +11,7 @@ import com.astrasmp.model.ContractRecord;
 import com.astrasmp.service.ServiceManager;
 import com.astrasmp.util.TextUtil;
 
-public final class ContractCommand implements CommandExecutor {
+public final class ContractCommand implements CommandExecutor, org.bukkit.command.TabCompleter {
     private final ServiceManager services;
     public ContractCommand(ServiceManager services) { this.services = services; }
 
@@ -58,5 +58,25 @@ public final class ContractCommand implements CommandExecutor {
     private boolean usage(CommandSender sender, String msg) {
         TextUtil.send(sender, msg);
         return true;
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(@org.jetbrains.annotations.NotNull CommandSender sender, @org.jetbrains.annotations.NotNull Command command, @org.jetbrains.annotations.NotNull String alias, String[] args) {
+        if (args.length == 1) {
+            java.util.List<String> subcommands = java.util.List.of("list", "create", "cancel");
+            return subcommands.stream().filter(s -> s.startsWith(args[0].toLowerCase())).toList();
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("create")) {
+            java.util.List<String> types = java.util.List.of("bounty");
+            return types.stream().filter(s -> s.startsWith(args[1].toLowerCase())).toList();
+        } else if (args.length == 3 && args[0].equalsIgnoreCase("create") && args[1].equalsIgnoreCase("bounty")) {
+            return null; // autocomplete players
+        } else if (args.length == 4 && args[0].equalsIgnoreCase("create")) {
+            return java.util.List.of("<награда_в_монетах>");
+        } else if (args.length == 5 && args[0].equalsIgnoreCase("create")) {
+            return java.util.List.of("[причина...]");
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("cancel")) {
+            return java.util.List.of("<ID_контракта>");
+        }
+        return java.util.Collections.emptyList();
     }
 }

@@ -54,6 +54,49 @@ public final class RecipeService implements Listener {
         register("frost_axe", ItemRegistry.frostAxe(), "III", "IAI", "III",
                 'I', Material.PACKED_ICE, 'A', Material.DIAMOND_AXE);
 
+        register("venom_bow", ItemRegistry.venomBow(), " S ", "SBS", " S ",
+                'S', Material.SPIDER_EYE, 'B', Material.BOW);
+
+        register("reaper_scythe", ItemRegistry.reaperScythe(), "NNN", " H ", " N ",
+                'N', Material.NETHERITE_BLOCK, 'H', Material.NETHERITE_HOE);
+
+        // --- БРОНЯ ---
+        // Mercenary
+        register("mercenary_helmet", ItemRegistry.mercenaryHelmet(), "CLC", "C C", "   ", 'C', Material.COAL_BLOCK, 'L', Material.LEATHER);
+        register("mercenary_chestplate", ItemRegistry.mercenaryChestplate(), "C C", "CLC", "CCC", 'C', Material.COAL_BLOCK, 'L', Material.LEATHER);
+        register("mercenary_leggings", ItemRegistry.mercenaryLeggings(), "CCC", "L L", "C C", 'C', Material.COAL_BLOCK, 'L', Material.LEATHER);
+        register("mercenary_boots", ItemRegistry.mercenaryBoots(), "   ", "C C", "L L", 'C', Material.COAL_BLOCK, 'L', Material.LEATHER);
+
+        // Berserker
+        register("berserker_helmet", ItemRegistry.berserkerHelmet(), "III", "R R", "   ", 'I', Material.IRON_BLOCK, 'R', Material.REDSTONE_BLOCK);
+        register("berserker_chestplate", ItemRegistry.berserkerChestplate(), "I I", "IRI", "III", 'I', Material.IRON_BLOCK, 'R', Material.REDSTONE_BLOCK);
+        register("berserker_leggings", ItemRegistry.berserkerLeggings(), "III", "R R", "I I", 'I', Material.IRON_BLOCK, 'R', Material.REDSTONE_BLOCK);
+        register("berserker_boots", ItemRegistry.berserkerBoots(), "   ", "R R", "I I", 'I', Material.IRON_BLOCK, 'R', Material.REDSTONE_BLOCK);
+
+        // Inquisitor
+        register("inquisitor_helmet", ItemRegistry.inquisitorHelmet(), "GGG", "I I", "   ", 'G', Material.GOLD_BLOCK, 'I', Material.IRON_BLOCK);
+        register("inquisitor_chestplate", ItemRegistry.inquisitorChestplate(), "G G", "GIG", "GGG", 'G', Material.GOLD_BLOCK, 'I', Material.IRON_BLOCK);
+        register("inquisitor_leggings", ItemRegistry.inquisitorLeggings(), "GGG", "I I", "G G", 'G', Material.GOLD_BLOCK, 'I', Material.IRON_BLOCK);
+        register("inquisitor_boots", ItemRegistry.inquisitorBoots(), "   ", "I I", "G G", 'G', Material.GOLD_BLOCK, 'I', Material.IRON_BLOCK);
+
+        // Juggernaut
+        register("juggernaut_helmet", ItemRegistry.juggernautHelmet(), "OOO", "N N", "   ", 'O', Material.OBSIDIAN, 'N', Material.NETHERITE_INGOT);
+        register("juggernaut_chestplate", ItemRegistry.juggernautChestplate(), "O O", "ONO", "OOO", 'O', Material.OBSIDIAN, 'N', Material.NETHERITE_INGOT);
+        register("juggernaut_leggings", ItemRegistry.juggernautLeggings(), "OOO", "N N", "O O", 'O', Material.OBSIDIAN, 'N', Material.NETHERITE_INGOT);
+        register("juggernaut_boots", ItemRegistry.juggernautBoots(), "   ", "N N", "O O", 'O', Material.OBSIDIAN, 'N', Material.NETHERITE_INGOT);
+
+        // Miner
+        register("miner_helmet", ItemRegistry.minerHelmet(), "DDD", "E E", "   ", 'D', Material.DIAMOND_BLOCK, 'E', Material.EMERALD);
+        register("miner_chestplate", ItemRegistry.minerChestplate(), "D D", "DED", "DDD", 'D', Material.DIAMOND_BLOCK, 'E', Material.EMERALD);
+        register("miner_leggings", ItemRegistry.minerLeggings(), "DDD", "E E", "D D", 'D', Material.DIAMOND_BLOCK, 'E', Material.EMERALD);
+        register("miner_boots", ItemRegistry.minerBoots(), "   ", "E E", "D D", 'D', Material.DIAMOND_BLOCK, 'E', Material.EMERALD);
+
+        // Blood Hunter
+        register("bloodhunter_helmet", ItemRegistry.bloodHunterHelmet(), "RRR", "D D", "   ", 'R', Material.REDSTONE_BLOCK, 'D', Material.DIAMOND_BLOCK);
+        register("bloodhunter_chestplate", ItemRegistry.bloodHunterChestplate(), "R R", "RDR", "RRR", 'R', Material.REDSTONE_BLOCK, 'D', Material.DIAMOND_BLOCK);
+        register("bloodhunter_leggings", ItemRegistry.bloodHunterLeggings(), "RRR", "D D", "R R", 'R', Material.REDSTONE_BLOCK, 'D', Material.DIAMOND_BLOCK);
+        register("bloodhunter_boots", ItemRegistry.bloodHunterBoots(), "   ", "D D", "R R", 'R', Material.REDSTONE_BLOCK, 'D', Material.DIAMOND_BLOCK);
+
         // --- ТОТЕМЫ ---
         register("totem_speed", ItemRegistry.totemSpeed(), "SSS", "STS", "SSS",
                 'S', Material.SUGAR, 'T', Material.TOTEM_OF_UNDYING);
