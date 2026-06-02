@@ -5,12 +5,11 @@ import com.astrasmp.service.ServiceManager;
 import com.astrasmp.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class FreezeCommand implements CommandExecutor, org.bukkit.command.TabCompleter {
+public class FreezeCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
 
     public FreezeCommand(ServiceManager services) {
@@ -55,4 +54,5 @@ public class FreezeCommand implements CommandExecutor, org.bukkit.command.TabCom
         if (args.length == 1) return null;
         return java.util.Collections.emptyList();
     }
+
 }

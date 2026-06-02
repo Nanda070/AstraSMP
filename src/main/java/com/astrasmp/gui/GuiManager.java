@@ -199,6 +199,7 @@ public final class GuiManager {
             inv.setItem(11, button(Material.WRITABLE_BOOK, "&b&lНачальный Квест", 
                 "&7Шаг: &f" + step,
                 "&7Цель: &e" + baseQ.name(),
+                "&7Действие: &b" + services.quests().generateDescription(baseQ),
                 "&7Прогресс: &a" + current + "&7/&a" + max,
                 "",
                 "&7Награда: &a" + baseQ.rewardInfo()
@@ -218,6 +219,7 @@ public final class GuiManager {
                 String status = progress >= max ? "&a✔ Выполнено" : "&eВ процессе: &a" + progress + "&7/&a" + max;
                 inv.setItem(slot++, button(mat, "&e&lЕжедневка", 
                     "&7Цель: &f" + dailyQ.name(),
+                    "&7Действие: &b" + services.quests().generateDescription(dailyQ),
                     status,
                     "",
                     "&7Награда: &a" + dailyQ.rewardInfo()
@@ -291,49 +293,87 @@ public final class GuiManager {
         admin.openInventory(inv);
     }
 
-    public void openAdminItems(Player player, int page, String category) {
-        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.ADMIN_GIVE_ITEMS, page, category, ""), 54, title("Выдача: " + (category.isEmpty() ? "Все" : category) + " (" + (page+1) + ")"));
+    public void openAdminItems(Player player, String category) {
+        if (category == null || category.isEmpty()) category = "Броня";
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.ADMIN_GIVE_ITEMS, 0, category, ""), 54, title("Выдача: " + category));
         fill(inv);
-        
-        List<ItemStack> allItems = ItemRegistry.getAllItems();
-        List<ItemStack> filtered = new ArrayList<>();
-        
-        for (ItemStack item : allItems) {
-            String id = ItemRegistry.id(item);
-            if (id == null) continue;
-            boolean match = true;
-            if (category.equals("Оружие")) {
-                match = id.contains("sword") || id.contains("blade") || id.contains("hammer") || id.contains("dagger") || id.contains("axe") || id.contains("bow") || id.contains("scythe");
-            } else if (category.equals("Броня")) {
-                match = id.contains("helmet") || id.contains("chestplate") || id.contains("leggings") || id.contains("boots");
-            } else if (category.equals("Инструменты")) {
-                match = id.contains("mining") || id.contains("miner") || id.contains("smelt") || id.contains("magnet");
-            } else if (category.equals("ТоТемы")) {
-                match = id.contains("totem");
-            } else if (category.equals("МЭ Сеть")) {
-                match = id.contains("me_");
-            }
-            if (match) filtered.add(item);
+
+        if (category.equals("Броня")) {
+            inv.setItem(10, ItemRegistry.mercenaryHelmet());
+            inv.setItem(11, ItemRegistry.berserkerHelmet());
+            inv.setItem(12, ItemRegistry.inquisitorHelmet());
+            inv.setItem(13, ItemRegistry.juggernautHelmet());
+            inv.setItem(14, ItemRegistry.minerHelmet());
+            inv.setItem(15, ItemRegistry.bloodHunterHelmet());
+
+            inv.setItem(19, ItemRegistry.mercenaryChestplate());
+            inv.setItem(20, ItemRegistry.berserkerChestplate());
+            inv.setItem(21, ItemRegistry.inquisitorChestplate());
+            inv.setItem(22, ItemRegistry.juggernautChestplate());
+            inv.setItem(23, ItemRegistry.minerChestplate());
+            inv.setItem(24, ItemRegistry.bloodHunterChestplate());
+
+            inv.setItem(28, ItemRegistry.mercenaryLeggings());
+            inv.setItem(29, ItemRegistry.berserkerLeggings());
+            inv.setItem(30, ItemRegistry.inquisitorLeggings());
+            inv.setItem(31, ItemRegistry.juggernautLeggings());
+            inv.setItem(32, ItemRegistry.minerLeggings());
+            inv.setItem(33, ItemRegistry.bloodHunterLeggings());
+
+            inv.setItem(37, ItemRegistry.mercenaryBoots());
+            inv.setItem(38, ItemRegistry.berserkerBoots());
+            inv.setItem(39, ItemRegistry.inquisitorBoots());
+            inv.setItem(40, ItemRegistry.juggernautBoots());
+            inv.setItem(41, ItemRegistry.minerBoots());
+            inv.setItem(42, ItemRegistry.bloodHunterBoots());
+        } else if (category.equals("Оружие")) {
+            inv.setItem(10, ItemRegistry.shadowBlade());
+            inv.setItem(11, ItemRegistry.infernoSword());
+            inv.setItem(12, ItemRegistry.vampireDagger());
+            
+            inv.setItem(19, ItemRegistry.frostAxe());
+            inv.setItem(20, ItemRegistry.thunderHammer());
+            
+            inv.setItem(28, ItemRegistry.venomBow());
+            inv.setItem(29, ItemRegistry.reaperScythe());
+        } else if (category.equals("Инструменты")) {
+            inv.setItem(10, ItemRegistry.mining3x3());
+            inv.setItem(11, ItemRegistry.mining5x5());
+            inv.setItem(12, ItemRegistry.veinMiner());
+            inv.setItem(13, ItemRegistry.autoSmelt());
+            inv.setItem(14, ItemRegistry.magnet());
+
+            inv.setItem(19, ItemRegistry.mining3x3Netherite());
+            inv.setItem(20, ItemRegistry.mining5x5Netherite());
+            inv.setItem(21, ItemRegistry.veinMinerNetherite());
+            inv.setItem(22, ItemRegistry.autoSmeltNetherite());
+            inv.setItem(23, ItemRegistry.magnetNetherite());
+        } else if (category.equals("ТоТемы")) {
+            inv.setItem(10, ItemRegistry.totemSpeed());
+            inv.setItem(11, ItemRegistry.totemShield());
+            inv.setItem(12, ItemRegistry.totemLightning());
+            inv.setItem(13, ItemRegistry.totemExplosion());
+            inv.setItem(14, ItemRegistry.totemTeleport());
+        } else if (category.equals("МЭ Сеть")) {
+            inv.setItem(10, ItemRegistry.meTerminal());
+            inv.setItem(11, ItemRegistry.meDrive());
+            inv.setItem(12, ItemRegistry.meController());
+            inv.setItem(19, ItemRegistry.meCell4k());
+            inv.setItem(20, ItemRegistry.meCell16k());
+            inv.setItem(21, ItemRegistry.meCell64k());
+        } else if (category.equals("Разное")) {
+            inv.setItem(10, ItemRegistry.guildHeart());
+            inv.setItem(11, ItemRegistry.trampoline());
+            inv.setItem(12, ItemRegistry.soulOfNanda());
         }
 
-        int maxItemsPerPage = 45;
-        int startIndex = page * maxItemsPerPage;
-        int slot = 0;
-        
-        for (int i = startIndex; i < filtered.size() && slot < maxItemsPerPage; i++) {
-            inv.setItem(slot++, filtered.get(i));
-        }
-
-        if (page > 0) inv.setItem(45, button(Material.ARROW, "&e<- Предыдущая"));
-        inv.setItem(49, button(Material.BARRIER, "&cНазад в админ-панель"));
-        if (startIndex + maxItemsPerPage < filtered.size()) inv.setItem(53, button(Material.ARROW, "&eСледующая ->"));
-        
         inv.setItem(46, button(Material.NETHERITE_SWORD, "&aОружие", "&7Клик для фильтра"));
         inv.setItem(47, button(Material.NETHERITE_CHESTPLATE, "&bБроня", "&7Клик для фильтра"));
         inv.setItem(48, button(Material.DIAMOND_PICKAXE, "&eИнструменты", "&7Клик для фильтра"));
+        inv.setItem(49, button(Material.BARRIER, "&cНазад в админ-панель"));
         inv.setItem(50, button(Material.TOTEM_OF_UNDYING, "&6ТоТемы", "&7Клик для фильтра"));
         inv.setItem(51, button(Material.LODESTONE, "&dМЭ Сеть", "&7Клик для фильтра"));
-        inv.setItem(52, button(Material.COMPASS, "&fВсе предметы", "&7Сбросить фильтр"));
+        inv.setItem(52, button(Material.NETHER_STAR, "&dРазное", "&7Клик для фильтра"));
 
         player.openInventory(inv);
     }
@@ -759,33 +799,87 @@ public final class GuiManager {
     // ВИТРИНА
     // ==========================================
 
-    public void openItems(Player player, int page) {
-        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.ITEMS, page, "", ""), 54, title("Уникальные предметы - Стр. " + (page + 1)));
+    public void openItems(Player player, String category) {
+        if (category == null || category.isEmpty()) category = "Броня";
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.ITEMS, 0, category, ""), 54, title("Предметы: " + category));
         fill(inv);
 
-        List<ItemStack> allCraftable = new ArrayList<>();
-        allCraftable.addAll(List.of(ItemRegistry.mining3x3(), ItemRegistry.mining5x5(), ItemRegistry.veinMiner(), ItemRegistry.autoSmelt(), ItemRegistry.magnet()));
-        allCraftable.addAll(List.of(ItemRegistry.mining3x3Netherite(), ItemRegistry.mining5x5Netherite(), ItemRegistry.veinMinerNetherite(), ItemRegistry.autoSmeltNetherite(), ItemRegistry.magnetNetherite()));
-        allCraftable.addAll(List.of(ItemRegistry.shadowBlade(), ItemRegistry.thunderHammer(), ItemRegistry.vampireDagger(), ItemRegistry.infernoSword(), ItemRegistry.frostAxe(), ItemRegistry.venomBow(), ItemRegistry.reaperScythe()));
-        allCraftable.addAll(List.of(ItemRegistry.mercenaryHelmet(), ItemRegistry.mercenaryChestplate(), ItemRegistry.mercenaryLeggings(), ItemRegistry.mercenaryBoots()));
-        allCraftable.addAll(List.of(ItemRegistry.berserkerHelmet(), ItemRegistry.berserkerChestplate(), ItemRegistry.berserkerLeggings(), ItemRegistry.berserkerBoots()));
-        allCraftable.addAll(List.of(ItemRegistry.inquisitorHelmet(), ItemRegistry.inquisitorChestplate(), ItemRegistry.inquisitorLeggings(), ItemRegistry.inquisitorBoots()));
-        allCraftable.addAll(List.of(ItemRegistry.juggernautHelmet(), ItemRegistry.juggernautChestplate(), ItemRegistry.juggernautLeggings(), ItemRegistry.juggernautBoots()));
-        allCraftable.addAll(List.of(ItemRegistry.minerHelmet(), ItemRegistry.minerChestplate(), ItemRegistry.minerLeggings(), ItemRegistry.minerBoots()));
-        allCraftable.addAll(List.of(ItemRegistry.bloodHunterHelmet(), ItemRegistry.bloodHunterChestplate(), ItemRegistry.bloodHunterLeggings(), ItemRegistry.bloodHunterBoots()));
-        allCraftable.addAll(List.of(ItemRegistry.totemSpeed(), ItemRegistry.totemShield(), ItemRegistry.totemLightning(), ItemRegistry.totemExplosion(), ItemRegistry.totemTeleport()));
+        if (category.equals("Броня")) {
+            inv.setItem(10, withLoreHint(ItemRegistry.mercenaryHelmet()));
+            inv.setItem(11, withLoreHint(ItemRegistry.berserkerHelmet()));
+            inv.setItem(12, withLoreHint(ItemRegistry.inquisitorHelmet()));
+            inv.setItem(13, withLoreHint(ItemRegistry.juggernautHelmet()));
+            inv.setItem(14, withLoreHint(ItemRegistry.minerHelmet()));
+            inv.setItem(15, withLoreHint(ItemRegistry.bloodHunterHelmet()));
 
-        int maxItemsPerPage = 45;
-        int startIndex = page * maxItemsPerPage;
-        int slot = 0;
-        
-        for (int i = startIndex; i < allCraftable.size() && slot < maxItemsPerPage; i++) {
-            inv.setItem(slot++, withLoreHint(allCraftable.get(i)));
+            inv.setItem(19, withLoreHint(ItemRegistry.mercenaryChestplate()));
+            inv.setItem(20, withLoreHint(ItemRegistry.berserkerChestplate()));
+            inv.setItem(21, withLoreHint(ItemRegistry.inquisitorChestplate()));
+            inv.setItem(22, withLoreHint(ItemRegistry.juggernautChestplate()));
+            inv.setItem(23, withLoreHint(ItemRegistry.minerChestplate()));
+            inv.setItem(24, withLoreHint(ItemRegistry.bloodHunterChestplate()));
+
+            inv.setItem(28, withLoreHint(ItemRegistry.mercenaryLeggings()));
+            inv.setItem(29, withLoreHint(ItemRegistry.berserkerLeggings()));
+            inv.setItem(30, withLoreHint(ItemRegistry.inquisitorLeggings()));
+            inv.setItem(31, withLoreHint(ItemRegistry.juggernautLeggings()));
+            inv.setItem(32, withLoreHint(ItemRegistry.minerLeggings()));
+            inv.setItem(33, withLoreHint(ItemRegistry.bloodHunterLeggings()));
+
+            inv.setItem(37, withLoreHint(ItemRegistry.mercenaryBoots()));
+            inv.setItem(38, withLoreHint(ItemRegistry.berserkerBoots()));
+            inv.setItem(39, withLoreHint(ItemRegistry.inquisitorBoots()));
+            inv.setItem(40, withLoreHint(ItemRegistry.juggernautBoots()));
+            inv.setItem(41, withLoreHint(ItemRegistry.minerBoots()));
+            inv.setItem(42, withLoreHint(ItemRegistry.bloodHunterBoots()));
+        } else if (category.equals("Оружие")) {
+            inv.setItem(10, withLoreHint(ItemRegistry.shadowBlade()));
+            inv.setItem(11, withLoreHint(ItemRegistry.infernoSword()));
+            inv.setItem(12, withLoreHint(ItemRegistry.vampireDagger()));
+            
+            inv.setItem(19, withLoreHint(ItemRegistry.frostAxe()));
+            inv.setItem(20, withLoreHint(ItemRegistry.thunderHammer()));
+            
+            inv.setItem(28, withLoreHint(ItemRegistry.venomBow()));
+            inv.setItem(29, withLoreHint(ItemRegistry.reaperScythe()));
+        } else if (category.equals("Инструменты")) {
+            inv.setItem(10, withLoreHint(ItemRegistry.mining3x3()));
+            inv.setItem(11, withLoreHint(ItemRegistry.mining5x5()));
+            inv.setItem(12, withLoreHint(ItemRegistry.veinMiner()));
+            inv.setItem(13, withLoreHint(ItemRegistry.autoSmelt()));
+            inv.setItem(14, withLoreHint(ItemRegistry.magnet()));
+
+            inv.setItem(19, withLoreHint(ItemRegistry.mining3x3Netherite()));
+            inv.setItem(20, withLoreHint(ItemRegistry.mining5x5Netherite()));
+            inv.setItem(21, withLoreHint(ItemRegistry.veinMinerNetherite()));
+            inv.setItem(22, withLoreHint(ItemRegistry.autoSmeltNetherite()));
+            inv.setItem(23, withLoreHint(ItemRegistry.magnetNetherite()));
+        } else if (category.equals("ТоТемы")) {
+            inv.setItem(10, withLoreHint(ItemRegistry.totemSpeed()));
+            inv.setItem(11, withLoreHint(ItemRegistry.totemShield()));
+            inv.setItem(12, withLoreHint(ItemRegistry.totemLightning()));
+            inv.setItem(13, withLoreHint(ItemRegistry.totemExplosion()));
+            inv.setItem(14, withLoreHint(ItemRegistry.totemTeleport()));
+        } else if (category.equals("МЭ Сеть")) {
+            inv.setItem(10, withLoreHint(ItemRegistry.meTerminal()));
+            inv.setItem(11, withLoreHint(ItemRegistry.meDrive()));
+            inv.setItem(12, withLoreHint(ItemRegistry.meController()));
+            inv.setItem(19, withLoreHint(ItemRegistry.meCell4k()));
+            inv.setItem(20, withLoreHint(ItemRegistry.meCell16k()));
+            inv.setItem(21, withLoreHint(ItemRegistry.meCell64k()));
+        } else if (category.equals("Разное")) {
+            inv.setItem(10, withLoreHint(ItemRegistry.guildHeart()));
+            inv.setItem(11, withLoreHint(ItemRegistry.trampoline()));
+            inv.setItem(12, withLoreHint(ItemRegistry.soulOfNanda()));
         }
 
-        if (page > 0) inv.setItem(45, button(Material.ARROW, "&e<- Пред. страница"));
+        inv.setItem(46, button(Material.NETHERITE_SWORD, "&aОружие", "&7Клик для просмотра"));
+        inv.setItem(47, button(Material.NETHERITE_CHESTPLATE, "&bБроня", "&7Клик для просмотра"));
+        inv.setItem(48, button(Material.DIAMOND_PICKAXE, "&eИнструменты", "&7Клик для просмотра"));
         inv.setItem(49, button(Material.BARRIER, "&cНазад в меню"));
-        if (startIndex + maxItemsPerPage < allCraftable.size()) inv.setItem(53, button(Material.ARROW, "&eСлед. страница ->"));
+        inv.setItem(50, button(Material.TOTEM_OF_UNDYING, "&6ТоТемы", "&7Клик для просмотра"));
+        inv.setItem(51, button(Material.LODESTONE, "&dМЭ Сеть", "&7Клик для просмотра"));
+        inv.setItem(52, button(Material.NETHER_STAR, "&dРазное", "&7Клик для просмотра"));
 
         player.openInventory(inv);
     }
@@ -811,7 +905,7 @@ public final class GuiManager {
                     case 13 -> player.performCommand("quest");
                     case 20 -> openSellResources(player);
                     case 21 -> openAuction(player, 0, "");
-                    case 22 -> openItems(player, 0);
+                    case 22 -> openItems(player, "Броня");
                     case 23 -> openStatsMenu(player);
                     case 24 -> openContracts(player);
                     case 31 -> {
@@ -849,10 +943,32 @@ public final class GuiManager {
                     }
                 }
             }
+            case ITEMS -> {
+                if (event.getSlot() == 49) {
+                    openMain(player);
+                } else if (event.getSlot() == 46) {
+                    openItems(player, "Оружие");
+                } else if (event.getSlot() == 47) {
+                    openItems(player, "Броня");
+                } else if (event.getSlot() == 48) {
+                    openItems(player, "Инструменты");
+                } else if (event.getSlot() == 50) {
+                    openItems(player, "ТоТемы");
+                } else if (event.getSlot() == 51) {
+                    openItems(player, "МЭ Сеть");
+                } else if (event.getSlot() == 52) {
+                    openItems(player, "Разное");
+                } else if (event.getSlot() < 45) {
+                    String customId = ItemRegistry.id(clicked);
+                    if (customId != null && getRecipeMatrix(customId) != null) {
+                        openRecipeView(player, clicked.clone(), customId);
+                    }
+                }
+            }
             case ADMIN -> {
                 switch (event.getSlot()) {
                     case 10 -> { player.closeInventory(); TextUtil.send(player, "&eИспользуйте: &f/admin event <тип> &7или &f/admin spawnevent <тип>"); }
-                    case 11 -> openAdminItems(player, 0, "");
+                    case 11 -> openAdminItems(player, "Броня");
                     case 12 -> { player.closeInventory(); TextUtil.send(player, "&eИспользуйте: &f/admin setcoins <игрок> <сумма>"); }
                     case 13 -> openAdminGuilds(player);
                     case 14 -> openPlayerList(player, "invsee");
@@ -866,17 +982,19 @@ public final class GuiManager {
             case ADMIN_GIVE_ITEMS -> {
                 if (event.getSlot() == 49) {
                     openAdmin(player);
-                } else if (event.getSlot() == 45 && holder.page() > 0) {
-                    openAdminItems(player, holder.page() - 1, holder.query());
-                } else if (event.getSlot() == 53) {
-                    openAdminItems(player, holder.page() + 1, holder.query());
-                } else if (event.getSlot() == 46) openAdminItems(player, 0, "Оружие");
-                else if (event.getSlot() == 47) openAdminItems(player, 0, "Броня");
-                else if (event.getSlot() == 48) openAdminItems(player, 0, "Инструменты");
-                else if (event.getSlot() == 50) openAdminItems(player, 0, "ТоТемы");
-                else if (event.getSlot() == 51) openAdminItems(player, 0, "МЭ Сеть");
-                else if (event.getSlot() == 52) openAdminItems(player, 0, "");
-                else if (event.getSlot() < 45) {
+                } else if (event.getSlot() == 46) {
+                    openAdminItems(player, "Оружие");
+                } else if (event.getSlot() == 47) {
+                    openAdminItems(player, "Броня");
+                } else if (event.getSlot() == 48) {
+                    openAdminItems(player, "Инструменты");
+                } else if (event.getSlot() == 50) {
+                    openAdminItems(player, "ТоТемы");
+                } else if (event.getSlot() == 51) {
+                    openAdminItems(player, "МЭ Сеть");
+                } else if (event.getSlot() == 52) {
+                    openAdminItems(player, "Разное");
+                } else if (event.getSlot() < 45) {
                     player.getInventory().addItem(clicked.clone());
                     TextUtil.send(player, "&a&l[!] &aВы выдали себе предмет!");
                     player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
@@ -895,30 +1013,9 @@ public final class GuiManager {
                     }
                 }
             }
-            case ITEMS -> {
-                if (event.getSlot() == 49) {
-                    openMain(player);
-                } else if (event.getSlot() == 45 && holder.page() > 0) {
-                    openItems(player, holder.page() - 1);
-                } else if (event.getSlot() == 53) {
-                    openItems(player, holder.page() + 1);
-                } else if (event.getSlot() < 45) {
-                    ItemMeta meta = clicked.getItemMeta();
-                    if (meta != null) {
-                        String id = meta.getPersistentDataContainer().get(
-                                new org.bukkit.NamespacedKey("astrasmp", "custom_id"),
-                                org.bukkit.persistence.PersistentDataType.STRING
-                        );
-                        if (id != null && getRecipeMatrix(id) != null) {
-                            openRecipeView(player, clicked.clone(), id);
-                            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
-                        }
-                    }
-                }
-            }
             case RECIPE_VIEW -> {
                 if (event.getSlot() == 40) {
-                    openItems(player, 0);
+                    openItems(player, "Броня");
                 }
             }
             case STATS, CONTRACTS -> {

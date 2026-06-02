@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 
 import java.security.SecureRandom;
 
-public final class LinkCommand implements CommandExecutor {
+public final class LinkCommand implements org.bukkit.command.TabExecutor {
     private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     private final ServiceManager services;
     private final SecureRandom random = new SecureRandom();
@@ -40,5 +40,10 @@ public final class LinkCommand implements CommandExecutor {
         for (int i = 0; i < 6; i++)
             sb.append(CHARS.charAt(random.nextInt(CHARS.length())));
         return sb.toString();
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(org.bukkit.command.CommandSender sender, org.bukkit.command.Command command, String alias, String[] args) {
+        return java.util.Collections.emptyList();
     }
 }

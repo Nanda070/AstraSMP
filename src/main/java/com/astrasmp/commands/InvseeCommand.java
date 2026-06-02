@@ -3,12 +3,11 @@ package com.astrasmp.commands;
 import com.astrasmp.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class InvseeCommand implements CommandExecutor, org.bukkit.command.TabCompleter {
+public class InvseeCommand implements org.bukkit.command.TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player admin)) return true;
@@ -37,4 +36,5 @@ public class InvseeCommand implements CommandExecutor, org.bukkit.command.TabCom
         if (args.length == 1) return null; // Bukkit will autocomplete online players
         return java.util.Collections.emptyList();
     }
+
 }

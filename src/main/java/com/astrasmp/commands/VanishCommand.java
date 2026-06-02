@@ -4,7 +4,6 @@ import com.astrasmp.AstraSMPPlugin;
 import com.astrasmp.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,7 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class VanishCommand implements CommandExecutor, Listener {
+public final class VanishCommand implements org.bukkit.command.TabExecutor, Listener {
     private final AstraSMPPlugin plugin;
     private static final Set<UUID> vanished = ConcurrentHashMap.newKeySet();
 
@@ -72,5 +71,10 @@ public final class VanishCommand implements CommandExecutor, Listener {
                 }
             }
         }
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(org.bukkit.command.CommandSender sender, org.bukkit.command.Command command, String alias, String[] args) {
+        return java.util.Collections.emptyList();
     }
 }

@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class GuildCommand implements CommandExecutor, TabCompleter {
+public class GuildCommand implements org.bukkit.command.TabExecutor {
 
     private final ServiceManager services;
 
@@ -260,4 +260,5 @@ public class GuildCommand implements CommandExecutor, TabCompleter {
 
         return completions;
     }
+
 }

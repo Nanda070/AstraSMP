@@ -3,12 +3,11 @@ package com.astrasmp.commands;
 import com.astrasmp.util.TextUtil;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public final class GmCommand implements CommandExecutor, org.bukkit.command.TabCompleter {
+public final class GmCommand implements org.bukkit.command.TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player player)) {
@@ -52,4 +51,5 @@ public final class GmCommand implements CommandExecutor, org.bukkit.command.TabC
         }
         return java.util.Collections.emptyList();
     }
+
 }

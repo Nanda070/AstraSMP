@@ -4,9 +4,7 @@ import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.bukkit.entity.ArmorStand;
@@ -20,7 +18,7 @@ import com.astrasmp.util.TextUtil;
 
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
-public final class LocationCommand implements CommandExecutor, TabCompleter {
+public final class LocationCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
 
     public LocationCommand(ServiceManager services) {
@@ -129,4 +127,5 @@ public final class LocationCommand implements CommandExecutor, TabCompleter {
             as.setMarker(true);
         });
     }
+
 }

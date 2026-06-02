@@ -60,12 +60,18 @@ public final class EconomyService {
     public void loadPrices() {
         prices.clear();
         var sec = plugin.getConfig().getConfigurationSection("economy.prices");
-        if (sec == null) return;
-        for (String key : sec.getKeys(false)) {
-            try {
-                prices.put(Material.valueOf(key.toUpperCase()), sec.getDouble(key));
-            } catch (IllegalArgumentException ignored) {}
+        if (sec != null) {
+            for (String key : sec.getKeys(false)) {
+                try {
+                    prices.put(Material.valueOf(key.toUpperCase()), sec.getDouble(key));
+                } catch (IllegalArgumentException ignored) {}
+            }
         }
+        
+        // Установка цен по умолчанию, чтобы меню /sell не было пустым
+        for (Material m : resourceItems) prices.putIfAbsent(m, 10.0);
+        for (Material m : foodItems) prices.putIfAbsent(m, 5.0);
+        for (Material m : dropItems) prices.putIfAbsent(m, 8.0);
     }
 
     public List<Material> getResourceItems() { return resourceItems; }

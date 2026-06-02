@@ -80,14 +80,14 @@ public final class NpcShopService implements Listener {
         Player p = event.getPlayer();
 
         switch (type) {
-            case "1" -> openStarterShop(p);
-            case "2" -> openDecorShop(p);
-            case "3" -> openBooksShop(p);
-            case "4" -> openFarmerShop(p);
+            case "1" -> openStarterShop(p, 0);
+            case "2" -> openDecorShop(p, 0);
+            case "3" -> openBooksShop(p, 0);
+            case "4" -> openFarmerShop(p, 0);
             case "5" -> sendGuideInfo(p);
             case "6" -> openVegasSlots(p);
             case "7" -> openVegasTables(p);
-            case "8" -> openEventShop(p);
+            case "8" -> openEventShop(p, 0);
         }
     }
 
@@ -131,119 +131,168 @@ public final class NpcShopService implements Listener {
     // ==========================================
     // ЛОГИКА СТАНДАРТНЫХ МАГАЗИНОВ
     // ==========================================
-    private void openEventShop(Player p) {
-        Inventory inv = Bukkit.createInventory(new ShopHolder(), 54, Component.text("Ивент Магазин"));
-        inv.setItem(10, buildEventItem(ItemRegistry.mining3x3(), "&bШахтер 3x3", 500));
-        inv.setItem(11, buildEventItem(ItemRegistry.mining5x5(), "&5Шахтер 5x5", 850));
-        inv.setItem(12, buildEventItem(ItemRegistry.veinMiner(), "&bЖильный шахтер", 600));
-        inv.setItem(13, buildEventItem(ItemRegistry.autoSmelt(), "&6Авто-плавка", 450));
-        inv.setItem(14, buildEventItem(ItemRegistry.magnet(), "&eМагнит", 400));
-        inv.setItem(19, buildEventItem(ItemRegistry.mining3x3Netherite(), "&dШахтер 3x3+", 1000));
-        inv.setItem(20, buildEventItem(ItemRegistry.mining5x5Netherite(), "&5Шахтер 5x5+", 1700));
-        inv.setItem(21, buildEventItem(ItemRegistry.veinMinerNetherite(), "&dЖильный шахтер+", 1200));
-        inv.setItem(22, buildEventItem(ItemRegistry.autoSmeltNetherite(), "&6Авто-плавка+", 900));
-        inv.setItem(23, buildEventItem(ItemRegistry.magnetNetherite(), "&eМагнит+", 800));
-        inv.setItem(28, buildEventItem(ItemRegistry.shadowBlade(), "&8Теневой клинок", 700));
-        inv.setItem(29, buildEventItem(ItemRegistry.thunderHammer(), "&bМолот грома", 750));
-        inv.setItem(30, buildEventItem(ItemRegistry.vampireDagger(), "&cVampire Dagger", 600));
-        inv.setItem(31, buildEventItem(ItemRegistry.infernoSword(), "&6Меч инферно", 700));
-        inv.setItem(32, buildEventItem(ItemRegistry.frostAxe(), "&9Ледяной топор", 650));
-        inv.setItem(37, buildEventItem(ItemRegistry.totemSpeed(), "&bТотем скорости", 200));
-        inv.setItem(38, buildEventItem(ItemRegistry.totemShield(), "&7Тотем щита", 250));
-        inv.setItem(39, buildEventItem(ItemRegistry.inquisitorHelmet(), "&eШлем Инквизитора", 600));
-        inv.setItem(40, buildEventItem(ItemRegistry.inquisitorChestplate(), "&eНагрудник Инквизитора", 800));
-        inv.setItem(41, buildEventItem(ItemRegistry.inquisitorLeggings(), "&eПоножи Инквизитора", 700));
-        inv.setItem(42, buildEventItem(ItemRegistry.inquisitorBoots(), "&eСапоги Инквизитора", 500));
+    private void fillBorder(Inventory inv) {
+        ItemStack glass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta meta = glass.getItemMeta();
+        meta.displayName(Component.empty());
+        glass.setItemMeta(meta);
+        for (int i = 0; i < inv.getSize(); i++) {
+            if (i < 9 || i >= inv.getSize() - 9 || i % 9 == 0 || i % 9 == 8) {
+                inv.setItem(i, glass);
+            }
+        }
+    }
+
+    private void openPaginatedShop(Player p, String type, String title, List<ItemStack> items, int page) {
+        Inventory inv = Bukkit.createInventory(new ShopHolder(type, page), 54, Component.text(title + (page > 0 ? " (" + (page + 1) + ")" : "")));
+        fillBorder(inv);
+        int[] slots = {10,11,12,13,14,15,16, 19,20,21,22,23,24,25, 28,29,30,31,32,33,34, 37,38,39,40,41,42,43};
+        int maxItems = slots.length;
+        int startIndex = page * maxItems;
+        
+        for (int i = 0; i < maxItems && startIndex + i < items.size(); i++) {
+            inv.setItem(slots[i], items.get(startIndex + i));
+        }
+
+        if (page > 0) {
+            ItemStack prev = new ItemStack(Material.ARROW);
+            ItemMeta m = prev.getItemMeta();
+            m.displayName(Component.text(TextUtil.color("&e<- Предыдущая страница")));
+            m.getPersistentDataContainer().set(new NamespacedKey(services.plugin(), "page_action"), PersistentDataType.STRING, "prev");
+            prev.setItemMeta(m);
+            inv.setItem(45, prev);
+        }
+        
+        if (startIndex + maxItems < items.size()) {
+            ItemStack next = new ItemStack(Material.ARROW);
+            ItemMeta m = next.getItemMeta();
+            m.displayName(Component.text(TextUtil.color("&eСледующая страница ->")));
+            m.getPersistentDataContainer().set(new NamespacedKey(services.plugin(), "page_action"), PersistentDataType.STRING, "next");
+            next.setItemMeta(m);
+            inv.setItem(53, next);
+        }
+        
         p.openInventory(inv);
     }
 
-    private void openStarterShop(Player p) {
-        Inventory inv = Bukkit.createInventory(new ShopHolder(), 54, Component.text("Начальный торговец"));
-        inv.setItem(10, build(Material.IRON_INGOT, 16, "&fЖелезный слиток", 400, "coins"));
-        inv.setItem(11, build(Material.GOLD_INGOT, 16, "&eЗолотой слиток", 600, "coins"));
-        inv.setItem(12, build(Material.LAPIS_LAZULI, 32, "&9Лазурит", 300, "coins"));
-        inv.setItem(13, build(Material.REDSTONE, 64, "&cРедстоун", 250, "coins"));
-        inv.setItem(14, build(Material.COAL, 64, "&8Уголь", 200, "coins"));
-        inv.setItem(19, build(Material.COOKED_BEEF, 32, "&cЖареная говядина", 250, "coins"));
-        inv.setItem(20, build(Material.COOKED_CHICKEN, 32, "&fЖареная курятина", 200, "coins"));
-        inv.setItem(21, build(Material.BREAD, 32, "&eХлеб", 150, "coins"));
-        inv.setItem(22, build(Material.GOLDEN_CARROT, 16, "&6Золотая морковь", 500, "coins"));
-        inv.setItem(28, buildShopItem(ItemRegistry.mercenaryHelmet(), 800, "coins"));
-        inv.setItem(29, buildShopItem(ItemRegistry.mercenaryChestplate(), 1200, "coins"));
-        inv.setItem(30, buildShopItem(ItemRegistry.mercenaryLeggings(), 1000, "coins"));
-        inv.setItem(31, buildShopItem(ItemRegistry.mercenaryBoots(), 800, "coins"));
-        inv.setItem(37, buildShopItem(ItemRegistry.minerHelmet(), 1000, "coins"));
-        inv.setItem(38, buildShopItem(ItemRegistry.minerChestplate(), 1500, "coins"));
-        inv.setItem(39, buildShopItem(ItemRegistry.minerLeggings(), 1300, "coins"));
-        inv.setItem(40, buildShopItem(ItemRegistry.minerBoots(), 1000, "coins"));
-        p.openInventory(inv);
+    private void openEventShop(Player p, int page) {
+        List<ItemStack> items = List.of(
+            buildEventItem(ItemRegistry.mining3x3(), "&bШахтер 3x3", 500),
+            buildEventItem(ItemRegistry.mining5x5(), "&5Шахтер 5x5", 850),
+            buildEventItem(ItemRegistry.veinMiner(), "&bЖильный шахтер", 600),
+            buildEventItem(ItemRegistry.autoSmelt(), "&6Авто-плавка", 450),
+            buildEventItem(ItemRegistry.magnet(), "&eМагнит", 400),
+            buildEventItem(ItemRegistry.mining3x3Netherite(), "&dШахтер 3x3+", 1000),
+            buildEventItem(ItemRegistry.mining5x5Netherite(), "&5Шахтер 5x5+", 1700),
+            buildEventItem(ItemRegistry.veinMinerNetherite(), "&dЖильный шахтер+", 1200),
+            buildEventItem(ItemRegistry.autoSmeltNetherite(), "&6Авто-плавка+", 900),
+            buildEventItem(ItemRegistry.magnetNetherite(), "&eМагнит+", 800),
+            buildEventItem(ItemRegistry.shadowBlade(), "&8Теневой клинок", 700),
+            buildEventItem(ItemRegistry.thunderHammer(), "&bМолот грома", 750),
+            buildEventItem(ItemRegistry.vampireDagger(), "&cVampire Dagger", 600),
+            buildEventItem(ItemRegistry.infernoSword(), "&6Меч инферно", 700),
+            buildEventItem(ItemRegistry.frostAxe(), "&9Ледяной топор", 650),
+            buildEventItem(ItemRegistry.totemSpeed(), "&bТотем скорости", 200),
+            buildEventItem(ItemRegistry.totemShield(), "&7Тотем щита", 250),
+            buildEventItem(ItemRegistry.inquisitorHelmet(), "&eШлем Инквизитора", 600),
+            buildEventItem(ItemRegistry.inquisitorChestplate(), "&eНагрудник Инквизитора", 800),
+            buildEventItem(ItemRegistry.inquisitorLeggings(), "&eПоножи Инквизитора", 700),
+            buildEventItem(ItemRegistry.inquisitorBoots(), "&eСапоги Инквизитора", 500)
+        );
+        openPaginatedShop(p, "8", "Ивент Магазин", items, page);
     }
 
-    private void openDecorShop(Player p) {
-        Inventory inv = Bukkit.createInventory(new ShopHolder(), 54, Component.text("Декоратор"));
-        inv.setItem(10, build(Material.GLASS, 64, "§fСтекло", 150, "coins"));
-        inv.setItem(11, build(Material.STONE_BRICKS, 64, "§7Каменные кирпичи", 200, "coins"));
-        inv.setItem(12, build(Material.QUARTZ_BLOCK, 64, "§fКварцевый блок", 500, "coins"));
-        inv.setItem(13, build(Material.SMOOTH_STONE, 64, "§7Гладкий камень", 200, "coins"));
-        inv.setItem(14, build(Material.DEEPSLATE_BRICKS, 64, "§8Кирпичи из глубинного сланца", 250, "coins"));
-        inv.setItem(15, build(Material.TUFF, 64, "§7Туф", 150, "coins"));
-        inv.setItem(16, build(Material.CALCITE, 64, "§fКальцит", 300, "coins"));
-        inv.setItem(19, build(Material.WHITE_CONCRETE, 64, "§fБелый бетон", 300, "coins"));
-        inv.setItem(20, build(Material.GRAY_CONCRETE, 64, "§8Серый бетон", 300, "coins"));
-        inv.setItem(21, build(Material.BLACK_CONCRETE, 64, "§0Черный бетон", 300, "coins"));
-        inv.setItem(22, build(Material.RED_CONCRETE, 64, "§cКрасный бетон", 300, "coins"));
-        inv.setItem(23, build(Material.TERRACOTTA, 64, "§6Терракота", 250, "coins"));
-        inv.setItem(24, build(Material.BROWN_TERRACOTTA, 64, "§6Коричневая терракота", 250, "coins"));
-        inv.setItem(25, build(Material.WHITE_TERRACOTTA, 64, "§fБелая терракота", 250, "coins"));
-        inv.setItem(28, build(Material.SPRUCE_LOG, 64, "§6Еловое бревно", 300, "coins"));
-        inv.setItem(29, build(Material.CHERRY_LOG, 64, "§dВишневое бревно", 400, "coins"));
-        inv.setItem(30, build(Material.MANGROVE_LOG, 64, "§cМангровое бревно", 400, "coins"));
-        inv.setItem(31, build(Material.OAK_LEAVES, 64, "§aЛиства дуба", 400, "coins"));
-        inv.setItem(32, build(Material.CHERRY_LEAVES, 64, "§dВишневая листва", 650, "coins"));
-        inv.setItem(33, build(Material.MOSS_BLOCK, 64, "§aБлок мха", 500, "coins"));
-        inv.setItem(34, build(Material.DIRT_PATH, 64, "§6Тропинка", 400, "coins"));
-        inv.setItem(37, build(Material.LANTERN, 16, "§eФонарь", 600, "coins"));
-        inv.setItem(38, build(Material.SOUL_LANTERN, 16, "§bФонарь душ", 600, "coins"));
-        inv.setItem(39, build(Material.SEA_LANTERN, 64, "§bМорской фонарь", 600, "coins"));
-        inv.setItem(40, build(Material.GLOWSTONE, 64, "§eСветокамень", 400, "coins"));
-        inv.setItem(41, build(Material.IRON_BARS, 16, "§7Железная решетка", 300, "coins"));
-        inv.setItem(42, build(Material.AMETHYST_BLOCK, 64, "§dАметистовый блок", 500, "coins"));
-        inv.setItem(43, build(Material.COPPER_BLOCK, 64, "§6Медный блок", 400, "coins"));
-        inv.setItem(44, buildShopItem(ItemRegistry.trampoline(), 50000, "coins"));
-        p.openInventory(inv);
+    private void openStarterShop(Player p, int page) {
+        List<ItemStack> items = List.of(
+            build(Material.IRON_INGOT, 16, "&fЖелезный слиток", 400, "coins"),
+            build(Material.GOLD_INGOT, 16, "&eЗолотой слиток", 600, "coins"),
+            build(Material.LAPIS_LAZULI, 32, "&9Лазурит", 300, "coins"),
+            build(Material.REDSTONE, 64, "&cРедстоун", 250, "coins"),
+            build(Material.COAL, 64, "&8Уголь", 200, "coins"),
+            build(Material.COOKED_BEEF, 32, "&cЖареная говядина", 250, "coins"),
+            build(Material.COOKED_CHICKEN, 32, "&fЖареная курятина", 200, "coins"),
+            build(Material.BREAD, 32, "&eХлеб", 150, "coins"),
+            build(Material.GOLDEN_CARROT, 16, "&6Золотая морковь", 500, "coins"),
+            buildShopItem(ItemRegistry.mercenaryHelmet(), 800, "coins"),
+            buildShopItem(ItemRegistry.mercenaryChestplate(), 1200, "coins"),
+            buildShopItem(ItemRegistry.mercenaryLeggings(), 1000, "coins"),
+            buildShopItem(ItemRegistry.mercenaryBoots(), 800, "coins"),
+            buildShopItem(ItemRegistry.minerHelmet(), 1000, "coins"),
+            buildShopItem(ItemRegistry.minerChestplate(), 1500, "coins"),
+            buildShopItem(ItemRegistry.minerLeggings(), 1300, "coins"),
+            buildShopItem(ItemRegistry.minerBoots(), 1000, "coins")
+        );
+        openPaginatedShop(p, "1", "Начальный торговец", items, page);
     }
 
-    private void openBooksShop(Player p) {
+    private void openDecorShop(Player p, int page) {
+        List<ItemStack> items = List.of(
+            build(Material.GLASS, 64, "§fСтекло", 150, "coins"),
+            build(Material.STONE_BRICKS, 64, "§7Каменные кирпичи", 200, "coins"),
+            build(Material.QUARTZ_BLOCK, 64, "§fКварцевый блок", 500, "coins"),
+            build(Material.SMOOTH_STONE, 64, "§7Гладкий камень", 200, "coins"),
+            build(Material.DEEPSLATE_BRICKS, 64, "§8Кирпичи из глубинного сланца", 250, "coins"),
+            build(Material.TUFF, 64, "§7Туф", 150, "coins"),
+            build(Material.CALCITE, 64, "§fКальцит", 300, "coins"),
+            build(Material.WHITE_CONCRETE, 64, "§fБелый бетон", 300, "coins"),
+            build(Material.GRAY_CONCRETE, 64, "§8Серый бетон", 300, "coins"),
+            build(Material.BLACK_CONCRETE, 64, "§0Черный бетон", 300, "coins"),
+            build(Material.RED_CONCRETE, 64, "§cКрасный бетон", 300, "coins"),
+            build(Material.TERRACOTTA, 64, "§6Терракота", 250, "coins"),
+            build(Material.BROWN_TERRACOTTA, 64, "§6Коричневая терракота", 250, "coins"),
+            build(Material.WHITE_TERRACOTTA, 64, "§fБелая терракота", 250, "coins"),
+            build(Material.SPRUCE_LOG, 64, "§6Еловое бревно", 300, "coins"),
+            build(Material.CHERRY_LOG, 64, "§dВишневое бревно", 400, "coins"),
+            build(Material.MANGROVE_LOG, 64, "§cМангровое бревно", 400, "coins"),
+            build(Material.OAK_LEAVES, 64, "§aЛиства дуба", 400, "coins"),
+            build(Material.CHERRY_LEAVES, 64, "§dВишневая листва", 650, "coins"),
+            build(Material.MOSS_BLOCK, 64, "§aБлок мха", 500, "coins"),
+            build(Material.DIRT_PATH, 64, "§6Тропинка", 400, "coins"),
+            build(Material.LANTERN, 16, "§eФонарь", 600, "coins"),
+            build(Material.SOUL_LANTERN, 16, "§bФонарь душ", 600, "coins"),
+            build(Material.SEA_LANTERN, 64, "§bМорской фонарь", 600, "coins"),
+            build(Material.GLOWSTONE, 64, "§eСветокамень", 400, "coins"),
+            build(Material.IRON_BARS, 16, "§7Железная решетка", 300, "coins"),
+            build(Material.AMETHYST_BLOCK, 64, "§dАметистовый блок", 500, "coins"),
+            build(Material.COPPER_BLOCK, 64, "§6Медный блок", 400, "coins"),
+            buildShopItem(ItemRegistry.trampoline(), 50000, "coins")
+        );
+        openPaginatedShop(p, "2", "Декоратор", items, page);
+    }
+
+    private void openBooksShop(Player p, int page) {
         var enchReg = io.papermc.paper.registry.RegistryAccess.registryAccess()
                 .getRegistry(io.papermc.paper.registry.RegistryKey.ENCHANTMENT);
-        Inventory inv = Bukkit.createInventory(new ShopHolder(), 45, Component.text("Библиотекарь"));
-        inv.setItem(10, buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("protection")), 2, 1500));
-        inv.setItem(11, buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("sharpness")), 3, 1900));
-        inv.setItem(12, buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("power")), 3, 1850));
-        inv.setItem(13, buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("fire_aspect")), 1, 1700));
-        inv.setItem(20, buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("efficiency")), 3, 1800));
-        inv.setItem(21, buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("unbreaking")), 2, 1600));
-        inv.setItem(22, buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("fortune")), 2, 1200));
-        inv.setItem(23, buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("silk_touch")), 1, 1500));
-        inv.setItem(30, buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("feather_falling")), 2, 1700));
-        inv.setItem(31, buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("looting")), 2, 1000));
-        p.openInventory(inv);
+        List<ItemStack> items = List.of(
+            buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("protection")), 2, 1500),
+            buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("sharpness")), 3, 1900),
+            buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("power")), 3, 1850),
+            buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("fire_aspect")), 1, 1700),
+            buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("efficiency")), 3, 1800),
+            buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("unbreaking")), 2, 1600),
+            buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("fortune")), 2, 1200),
+            buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("silk_touch")), 1, 1500),
+            buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("feather_falling")), 2, 1700),
+            buildBook(enchReg.getOrThrow(NamespacedKey.minecraft("looting")), 2, 1000)
+        );
+        openPaginatedShop(p, "3", "Библиотекарь", items, page);
     }
 
-    private void openFarmerShop(Player p) {
-        Inventory inv = Bukkit.createInventory(new ShopHolder(), 45, Component.text("Фермер"));
-        inv.setItem(10, build(Material.WHEAT_SEEDS, 16, "&aСемена пшеницы", 350, "coins"));
-        inv.setItem(11, build(Material.PUMPKIN_SEEDS, 8, "&6Семена тыквы", 550, "coins"));
-        inv.setItem(12, build(Material.MELON_SEEDS, 8, "&aСемена арбуза", 650, "coins"));
-        inv.setItem(13, build(Material.BEETROOT_SEEDS, 16, "&cСемена свеклы", 300, "coins"));
-        inv.setItem(14, build(Material.CARROT, 16, "&6Морковь", 350, "coins"));
-        inv.setItem(15, build(Material.POTATO, 16, "&eКартофель", 350, "coins"));
-        inv.setItem(28, build(Material.SUGAR_CANE, 16, "&fТростник", 250, "coins"));
-        inv.setItem(29, build(Material.BAMBOO, 32, "&aБамбук", 400, "coins"));
-        inv.setItem(30, build(Material.CACTUS, 12, "&2Кактус", 400, "coins"));
-        inv.setItem(31, build(Material.BONE_MEAL, 12, "&fКостная мука", 300, "coins"));
-        inv.setItem(32, build(Material.MUSHROOM_STEW, 1, "&6Грибной суп", 300, "coins"));
-        p.openInventory(inv);
+    private void openFarmerShop(Player p, int page) {
+        List<ItemStack> items = List.of(
+            build(Material.WHEAT_SEEDS, 16, "&aСемена пшеницы", 350, "coins"),
+            build(Material.PUMPKIN_SEEDS, 8, "&6Семена тыквы", 550, "coins"),
+            build(Material.MELON_SEEDS, 8, "&aСемена арбуза", 650, "coins"),
+            build(Material.BEETROOT_SEEDS, 16, "&cСемена свеклы", 300, "coins"),
+            build(Material.CARROT, 16, "&6Морковь", 350, "coins"),
+            build(Material.POTATO, 16, "&eКартофель", 350, "coins"),
+            build(Material.SUGAR_CANE, 16, "&fТростник", 250, "coins"),
+            build(Material.BAMBOO, 32, "&aБамбук", 400, "coins"),
+            build(Material.CACTUS, 12, "&2Кактус", 400, "coins"),
+            build(Material.BONE_MEAL, 12, "&fКостная мука", 300, "coins"),
+            build(Material.MUSHROOM_STEW, 1, "&6Грибной суп", 300, "coins")
+        );
+        openPaginatedShop(p, "4", "Фермер", items, page);
     }
 
     // ==========================================
@@ -280,6 +329,30 @@ public final class NpcShopService implements Listener {
                 } else {
                     TextUtil.send(player, "&cЭтот режим находится в разработке и будет добавлен позже!");
                     player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+                }
+            }
+            return;
+        }
+
+        // Обработка пагинации
+        if (meta.getPersistentDataContainer().has(new NamespacedKey(services.plugin(), "page_action"), PersistentDataType.STRING)) {
+            String action = meta.getPersistentDataContainer().get(new NamespacedKey(services.plugin(), "page_action"), PersistentDataType.STRING);
+            ShopHolder sh = (ShopHolder) holder;
+            if ("next".equals(action)) {
+                switch (sh.type()) {
+                    case "1" -> openStarterShop(player, sh.page() + 1);
+                    case "2" -> openDecorShop(player, sh.page() + 1);
+                    case "3" -> openBooksShop(player, sh.page() + 1);
+                    case "4" -> openFarmerShop(player, sh.page() + 1);
+                    case "8" -> openEventShop(player, sh.page() + 1);
+                }
+            } else if ("prev".equals(action)) {
+                switch (sh.type()) {
+                    case "1" -> openStarterShop(player, sh.page() - 1);
+                    case "2" -> openDecorShop(player, sh.page() - 1);
+                    case "3" -> openBooksShop(player, sh.page() - 1);
+                    case "4" -> openFarmerShop(player, sh.page() - 1);
+                    case "8" -> openEventShop(player, sh.page() - 1);
                 }
             }
             return;
@@ -405,6 +478,8 @@ public final class NpcShopService implements Listener {
     }
 
     // Холдеры
-    private static class ShopHolder implements InventoryHolder { @Override public @NotNull Inventory getInventory() { return null; } }
+    public record ShopHolder(String type, int page) implements InventoryHolder {
+        @Override public @NotNull Inventory getInventory() { return Bukkit.createInventory(this, 54); }
+    }
     private static class VegasHolder implements InventoryHolder { @Override public @NotNull Inventory getInventory() { return null; } }
 }

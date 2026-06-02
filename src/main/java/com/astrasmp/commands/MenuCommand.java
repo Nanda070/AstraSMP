@@ -4,7 +4,7 @@ import com.astrasmp.service.ServiceManager;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
-public final class MenuCommand implements CommandExecutor {
+public final class MenuCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
     public MenuCommand(ServiceManager services) { this.services = services; }
 
@@ -16,5 +16,10 @@ public final class MenuCommand implements CommandExecutor {
         }
         services.gui().openMain(player);
         return true;
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(org.bukkit.command.CommandSender sender, org.bukkit.command.Command command, String alias, String[] args) {
+        return java.util.Collections.emptyList();
     }
 }

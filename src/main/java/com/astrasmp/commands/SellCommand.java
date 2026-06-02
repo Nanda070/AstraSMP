@@ -5,7 +5,7 @@ import com.astrasmp.util.TextUtil;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
-public final class SellCommand implements CommandExecutor {
+public final class SellCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
     public SellCommand(ServiceManager services) { this.services = services; }
 
@@ -32,5 +32,15 @@ public final class SellCommand implements CommandExecutor {
             TextUtil.send(player, "&aПродано на &f" + sold + " coins");
         }
         return true;
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(org.bukkit.command.CommandSender sender, org.bukkit.command.Command command, String alias, String[] args) {
+        if (args.length == 1) {
+            return java.util.Arrays.asList("hand", "all").stream()
+                .filter(s -> s.startsWith(args[0].toLowerCase()))
+                .toList();
+        }
+        return java.util.Collections.emptyList();
     }
 }

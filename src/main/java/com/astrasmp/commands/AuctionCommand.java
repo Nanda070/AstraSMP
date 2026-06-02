@@ -3,15 +3,13 @@ package com.astrasmp.commands;
 import java.util.List;
 
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import com.astrasmp.service.ServiceManager;
 import com.astrasmp.util.TextUtil;
 
-public final class AuctionCommand implements CommandExecutor, TabCompleter {
+public final class AuctionCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
     public AuctionCommand(ServiceManager services) { this.services = services; }
 
@@ -84,4 +82,5 @@ public final class AuctionCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1) return List.of("sell", "buy", "cancel", "search").stream().filter(s -> s.startsWith(args[0])).toList();
         return List.of();
     }
+
 }

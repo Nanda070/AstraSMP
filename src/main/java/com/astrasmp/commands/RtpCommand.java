@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import java.util.Random;
 
-public final class RtpCommand implements CommandExecutor {
+public final class RtpCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
     private final Random random = new Random();
 
@@ -44,5 +44,10 @@ public final class RtpCommand implements CommandExecutor {
         // ГАЗ: Засчитываем квест №8
         services.quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.USE_RTP, "", 1);
         return true;
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(org.bukkit.command.CommandSender sender, org.bukkit.command.Command command, String alias, String[] args) {
+        return java.util.Collections.emptyList();
     }
 }

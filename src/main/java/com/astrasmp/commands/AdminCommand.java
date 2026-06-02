@@ -15,7 +15,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
-public final class AdminCommand implements CommandExecutor, TabCompleter {
+public final class AdminCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
 
     public AdminCommand(ServiceManager services) {
@@ -383,4 +383,5 @@ public final class AdminCommand implements CommandExecutor, TabCompleter {
 
         return List.of();
     }
+
 }

@@ -7,7 +7,7 @@ import org.bukkit.command.*;
 
 import java.util.List;
 
-public final class TopCommand implements CommandExecutor {
+public final class TopCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
     public TopCommand(ServiceManager services) { this.services = services; }
 
@@ -33,5 +33,10 @@ public final class TopCommand implements CommandExecutor {
             });
         }
         return true;
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(org.bukkit.command.CommandSender sender, org.bukkit.command.Command command, String alias, String[] args) {
+        return java.util.Collections.emptyList();
     }
 }

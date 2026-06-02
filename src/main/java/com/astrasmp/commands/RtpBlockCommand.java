@@ -5,12 +5,11 @@ import com.astrasmp.util.LocationKey;
 import com.astrasmp.util.TextUtil;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class RtpBlockCommand implements CommandExecutor {
+public class RtpBlockCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
 
     public RtpBlockCommand(ServiceManager services) {
@@ -33,5 +32,10 @@ public class RtpBlockCommand implements CommandExecutor {
             services.store().requestSave();
         }
         return true;
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(org.bukkit.command.CommandSender sender, org.bukkit.command.Command command, String alias, String[] args) {
+        return java.util.Collections.emptyList();
     }
 }

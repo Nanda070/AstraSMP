@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public final class MMRCommand implements CommandExecutor, TabCompleter {
+public final class MMRCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
     public MMRCommand(ServiceManager services) { this.services = services; }
 
@@ -35,4 +35,5 @@ public final class MMRCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         return args.length == 1 ? Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n -> n.startsWith(args[0])).toList() : List.of();
     }
+
 }

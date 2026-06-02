@@ -1,7 +1,6 @@
 package com.astrasmp.commands;
 
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import com.astrasmp.service.ServiceManager;
 import com.astrasmp.util.TextUtil;
 
-public final class HelpCommand implements CommandExecutor {
+public final class HelpCommand implements org.bukkit.command.TabExecutor {
     public HelpCommand(ServiceManager services) {
         // Services not used in HelpCommand currently
     }
@@ -34,5 +33,10 @@ public final class HelpCommand implements CommandExecutor {
         TextUtil.send(player, "&b&l-------------------------");
 
         return true;
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(org.bukkit.command.CommandSender sender, org.bukkit.command.Command command, String alias, String[] args) {
+        return java.util.Collections.emptyList();
     }
 }

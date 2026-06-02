@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PrefixCommand implements CommandExecutor, TabCompleter {
+public class PrefixCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
     private final List<String> colors = List.of("Red", "Green", "Blue", "Gold", "Yellow", "Aqua", "Purple", "White");
 
@@ -68,4 +68,5 @@ public class PrefixCommand implements CommandExecutor, TabCompleter {
             default -> "&7";
         };
     }
+
 }

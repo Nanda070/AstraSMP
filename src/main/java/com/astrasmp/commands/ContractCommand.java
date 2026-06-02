@@ -3,7 +3,6 @@ package com.astrasmp.commands;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -11,7 +10,7 @@ import com.astrasmp.model.ContractRecord;
 import com.astrasmp.service.ServiceManager;
 import com.astrasmp.util.TextUtil;
 
-public final class ContractCommand implements CommandExecutor, org.bukkit.command.TabCompleter {
+public final class ContractCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
     public ContractCommand(ServiceManager services) { this.services = services; }
 
@@ -79,4 +78,5 @@ public final class ContractCommand implements CommandExecutor, org.bukkit.comman
         }
         return java.util.Collections.emptyList();
     }
+
 }

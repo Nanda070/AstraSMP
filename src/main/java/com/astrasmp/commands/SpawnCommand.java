@@ -4,12 +4,11 @@ import com.astrasmp.AstraSMPPlugin;
 import com.astrasmp.service.ServiceManager;
 import com.astrasmp.util.TextUtil;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class SpawnCommand implements CommandExecutor {
+public class SpawnCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
 
     public SpawnCommand(AstraSMPPlugin plugin, ServiceManager services) {
@@ -37,5 +36,10 @@ public class SpawnCommand implements CommandExecutor {
         TextUtil.send(player, "&aВы были телепортированы на спавн!");
 
         return true;
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(org.bukkit.command.CommandSender sender, org.bukkit.command.Command command, String alias, String[] args) {
+        return java.util.Collections.emptyList();
     }
 }

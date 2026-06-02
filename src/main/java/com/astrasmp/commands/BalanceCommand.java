@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public final class BalanceCommand implements CommandExecutor, TabCompleter {
+public final class BalanceCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
 
     public BalanceCommand(ServiceManager services) {
@@ -63,4 +63,5 @@ public final class BalanceCommand implements CommandExecutor, TabCompleter {
         }
         return List.of();
     }
+
 }

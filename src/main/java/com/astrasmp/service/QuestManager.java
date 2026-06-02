@@ -85,13 +85,41 @@ public final class QuestManager {
         return new QuestData(id, name, action, target, required, rewardInfo, rewardCmds);
     }
 
+    public boolean matchesTarget(String configTarget, String currentTarget) {
+        if (configTarget == null || configTarget.isEmpty()) return true;
+        if (configTarget.equalsIgnoreCase(currentTarget)) return true;
+        
+        String upperTarget = currentTarget.toUpperCase();
+        if (configTarget.equals("LOG") && upperTarget.endsWith("_LOG")) return true;
+        if (configTarget.equals("STONE") && (upperTarget.equals("STONE") || upperTarget.equals("COBBLESTONE") || upperTarget.equals("DEEPSLATE"))) return true;
+        if (configTarget.equals("INGOT") && upperTarget.endsWith("_INGOT")) return true;
+        if (configTarget.equals("ORE") && (upperTarget.endsWith("_ORE") || upperTarget.startsWith("RAW_"))) return true;
+        
+        return upperTarget.contains(configTarget.toUpperCase());
+    }
+
+    public String generateDescription(QuestData q) {
+        return switch (q.action()) {
+            case MINE_BLOCK -> "Добыть блоки: " + q.target() + " (" + q.requiredAmount() + " шт.)";
+            case KILL_MOB -> "Убить мобов: " + (q.target().isEmpty() ? "Любых" : q.target()) + " (" + q.requiredAmount() + " шт.)";
+            case SELL_ITEM -> "Продать предметы " + q.requiredAmount() + " раз";
+            case SMELT -> "Переплавить " + q.target() + " (" + q.requiredAmount() + " шт.)";
+            case AH_SELL -> "Продать на аукционе " + q.requiredAmount() + " раз";
+            case ATTEND_EVENT -> "Посетить ивенты (" + q.requiredAmount() + " раз)";
+            case USE_RTP -> "Использовать РТП (" + q.requiredAmount() + " раз)";
+            case LINK_DISCORD -> "Привязать Discord";
+            case USE_COMMAND -> "Использовать команду: " + q.target();
+            case CUSTOM -> "Специальное задание";
+        };
+    }
+
     public void processAction(Player player, QuestAction action, String target, int amount) {
         PlayerProfile profile = services.economy().profile(player.getUniqueId(), player.getName());
         checkDailyQuestsDate(profile);
 
         int step = profile.getQuestStep();
         QuestData baseQ = baseQuests.get(step);
-        if (baseQ != null && baseQ.action() == action && (baseQ.target().isEmpty() || baseQ.target().equalsIgnoreCase(target))) {
+        if (baseQ != null && baseQ.action() == action && matchesTarget(baseQ.target(), target)) {
             profile.setQuestProgress(profile.getQuestProgress() + amount);
             int req = baseQ.requiredAmount();
             
@@ -108,7 +136,7 @@ public final class QuestManager {
             int progress = entry.getValue();
             QuestData dailyQ = dailyQuestsPool.get(qId);
 
-            if (dailyQ != null && dailyQ.action() == action && (dailyQ.target().isEmpty() || dailyQ.target().equalsIgnoreCase(target))) {
+            if (dailyQ != null && dailyQ.action() == action && matchesTarget(dailyQ.target(), target)) {
                 if (progress < dailyQ.requiredAmount()) {
                     int newProgress = progress + amount;
                     profile.getDailyQuests().put(qId, newProgress);

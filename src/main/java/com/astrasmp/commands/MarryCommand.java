@@ -7,15 +7,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public final class MarryCommand implements CommandExecutor, TabCompleter {
+public final class MarryCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
     // Карта для хранения активных предложений: Кому пришло -> Кто отправил
     private final Map<UUID, UUID> pendingRequests = new HashMap<>();
@@ -165,4 +163,5 @@ public final class MarryCommand implements CommandExecutor, TabCompleter {
         }
         return null;
     }
+
 }
