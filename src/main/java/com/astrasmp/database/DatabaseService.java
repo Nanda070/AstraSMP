@@ -96,7 +96,14 @@ public class DatabaseService {
                     "quest_step INT, " +
                     "quest_progress INT, " +
                     "prefix VARCHAR(64), " +
-                    "prefix_color VARCHAR(16))");
+                    "prefix_color VARCHAR(16), " +
+                    "daily_quests TEXT, " +
+                    "daily_quest_date VARCHAR(16))");
+
+            try {
+                s.execute("ALTER TABLE profiles ADD COLUMN daily_quests TEXT");
+                s.execute("ALTER TABLE profiles ADD COLUMN daily_quest_date VARCHAR(16)");
+            } catch (SQLException ignored) {}
 
             s.execute("CREATE TABLE IF NOT EXISTS auction_lots (" +
                     "id BIGINT PRIMARY KEY, " +
@@ -168,6 +175,22 @@ public class DatabaseService {
                 p.setQuestProgress(rs.getInt("quest_progress"));
                 p.setCustomPrefix(rs.getString("prefix"));
                 p.setPrefixColor(rs.getString("prefix_color"));
+                
+                String dailyQuestsJson = rs.getString("daily_quests");
+                if (dailyQuestsJson != null && !dailyQuestsJson.isEmpty()) {
+                    try {
+                        Type mapType = new TypeToken<Map<String, Integer>>(){}.getType();
+                        Map<String, Integer> dQuests = gson.fromJson(dailyQuestsJson, mapType);
+                        if (dQuests != null) {
+                            p.getDailyQuests().putAll(dQuests);
+                        }
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("Ошибка парсинга ежедневных квестов для " + p.getName());
+                    }
+                }
+                String dDate = rs.getString("daily_quest_date");
+                if (dDate != null) p.setDailyQuestDate(dDate);
+
                 loaded.add(p);
             }
         } catch (SQLException e) {
@@ -177,7 +200,7 @@ public class DatabaseService {
     }
 
     public void saveProfile(PlayerProfile p) {
-        String sql = "INSERT OR REPLACE INTO profiles (uuid, name, coins, mmr, kills, deaths, sold_value, event_points, faction, base_level, quest_step, quest_progress, prefix, prefix_color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT OR REPLACE INTO profiles (uuid, name, coins, mmr, kills, deaths, sold_value, event_points, faction, base_level, quest_step, quest_progress, prefix, prefix_color, daily_quests, daily_quest_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, p.getUuid());
             ps.setString(2, p.getName());
@@ -193,6 +216,8 @@ public class DatabaseService {
             ps.setInt(12, p.getQuestProgress());
             ps.setString(13, p.getCustomPrefix());
             ps.setString(14, p.getPrefixColor());
+            ps.setString(15, gson.toJson(p.getDailyQuests()));
+            ps.setString(16, p.getDailyQuestDate());
             ps.executeUpdate();
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения профиля игрока в БД", e);

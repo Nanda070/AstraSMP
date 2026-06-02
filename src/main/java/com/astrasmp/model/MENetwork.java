@@ -53,7 +53,7 @@ public class MENetwork {
     }
 
     public void insertItem(String itemHash, long amount) {
-        storage.merge(itemHash, amount, Long::sum);
+        storage.merge(itemHash, amount, (a, b) -> a + b);
     }
 
     public long extractItem(String itemHash, long requestedAmount) {

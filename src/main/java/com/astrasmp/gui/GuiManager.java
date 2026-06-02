@@ -34,8 +34,8 @@ import java.util.*;
 public final class GuiManager {
 
     public enum MenuType {
-        MAIN, AUCTION, ITEMS, RECIPE_VIEW, STATS, CONTRACTS, ADMIN, SELL_RESOURCES, SELL_FOOD,
-        ADMIN_PLAYERS, GUILD_UPGRADE, ADMIN_GUILDS, ADMIN_GIVE_ITEMS, GUILD, GUILD_MEMBERS, GUILD_RANKS_LIST, GUILD_RANK_SETTINGS, GUILD_RANK_PERMISSIONS, GUILD_TREASURY
+        MAIN, AUCTION, ITEMS, RECIPE_VIEW, STATS, CONTRACTS, ADMIN, SELL_RESOURCES, SELL_FOOD, SELL_DROPS,
+        ADMIN_PLAYERS, GUILD_UPGRADE, ADMIN_GUILDS, ADMIN_GIVE_ITEMS, GUILD, GUILD_MEMBERS, GUILD_RANKS_LIST, GUILD_RANK_SETTINGS, GUILD_RANK_PERMISSIONS, GUILD_TREASURY, QUESTS
     }
 
     public record MenuHolder(MenuType type, int page, String query, String metadata) implements InventoryHolder {
@@ -147,7 +147,22 @@ public final class GuiManager {
             if (price <= 0 || slot >= 27) continue;
             inv.setItem(slot++, createSellIcon(mat, price));
         }
+        inv.setItem(35, button(Material.ARROW, "&eСледующая страница: Дроп"));
         inv.setItem(27, button(Material.ARROW, "&eНазад: Ресурсы"));
+        inv.setItem(31, button(Material.BARRIER, "&cНазад в меню"));
+        player.openInventory(inv);
+    }
+
+    public void openSellDrops(Player player) {
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.SELL_DROPS, 2, "", ""), 36, title("Скупщик: Дроп"));
+        fill(inv);
+        int slot = 0;
+        for (Material mat : services.economy().getDropItems()) {
+            double price = services.economy().getPrice(mat);
+            if (price <= 0 || slot >= 27) continue;
+            inv.setItem(slot++, createSellIcon(mat, price));
+        }
+        inv.setItem(27, button(Material.ARROW, "&eНазад: Еда"));
         inv.setItem(31, button(Material.BARRIER, "&cНазад в меню"));
         player.openInventory(inv);
     }
@@ -168,6 +183,50 @@ public final class GuiManager {
         ));
         inv.setItem(22, button(Material.ARROW, "&7Назад в меню"));
         viewer.openInventory(inv);
+    }
+
+    public void openQuests(Player player) {
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.QUESTS, 0, "", ""), 36, title("Квесты и Ежедневки"));
+        fill(inv);
+
+        PlayerProfile profile = services.economy().profile(player.getUniqueId(), player.getName());
+
+        int step = profile.getQuestStep();
+        com.astrasmp.service.QuestManager.QuestData baseQ = services.quests().getBaseQuests().get(step);
+        if (baseQ != null) {
+            int current = profile.getQuestProgress();
+            int max = baseQ.requiredAmount();
+            inv.setItem(11, button(Material.WRITABLE_BOOK, "&b&lНачальный Квест", 
+                "&7Шаг: &f" + step,
+                "&7Цель: &e" + baseQ.name(),
+                "&7Прогресс: &a" + current + "&7/&a" + max,
+                "",
+                "&7Награда: &a" + baseQ.rewardInfo()
+            ));
+        } else {
+            inv.setItem(11, button(Material.WRITTEN_BOOK, "&b&lНачальные Квесты", "&aВсе начальные задания выполнены!"));
+        }
+
+        int slot = 14;
+        for (Map.Entry<String, Integer> entry : profile.getDailyQuests().entrySet()) {
+            String qId = entry.getKey();
+            int progress = entry.getValue();
+            com.astrasmp.service.QuestManager.QuestData dailyQ = services.quests().getDailyQuestsPool().get(qId);
+            if (dailyQ != null) {
+                int max = dailyQ.requiredAmount();
+                Material mat = progress >= max ? Material.EMERALD_BLOCK : Material.PAPER;
+                String status = progress >= max ? "&a✔ Выполнено" : "&eВ процессе: &a" + progress + "&7/&a" + max;
+                inv.setItem(slot++, button(mat, "&e&lЕжедневка", 
+                    "&7Цель: &f" + dailyQ.name(),
+                    status,
+                    "",
+                    "&7Награда: &a" + dailyQ.rewardInfo()
+                ));
+            }
+        }
+
+        inv.setItem(31, button(Material.ARROW, "&cНазад в меню"));
+        player.openInventory(inv);
     }
 
     public void openAdmin(Player player) {
@@ -767,10 +826,15 @@ public final class GuiManager {
                     case 43 -> { player.closeInventory(); services.afk().teleportToLocation(player, "afk"); }
                 }
             }
-            case SELL_RESOURCES, SELL_FOOD -> {
+            case SELL_RESOURCES, SELL_FOOD, SELL_DROPS -> {
                 if (clicked.getType() == Material.ARROW) {
-                    if (holder.type() == MenuType.SELL_RESOURCES) openSellFood(player);
-                    else openSellResources(player);
+                    if (event.getSlot() == 35) {
+                        if (holder.type() == MenuType.SELL_RESOURCES) openSellFood(player);
+                        else if (holder.type() == MenuType.SELL_FOOD) openSellDrops(player);
+                    } else if (event.getSlot() == 27) {
+                        if (holder.type() == MenuType.SELL_FOOD) openSellResources(player);
+                        else if (holder.type() == MenuType.SELL_DROPS) openSellFood(player);
+                    }
                 } else if (clicked.getType() == Material.BARRIER) {
                     openMain(player);
                 } else {
@@ -779,7 +843,7 @@ public final class GuiManager {
                         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
                         TextUtil.send(player, "&aПродано за &f" + income + " монет!");
                         player.updateInventory();
-                        services.quests().checkProgress(player, 3, 1);
+                        services.quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.SELL_ITEM, "", 1);
                     } else {
                         TextUtil.send(player, "&cУ вас нет этого предмета!");
                     }

@@ -15,9 +15,17 @@ public final class SellCommand implements CommandExecutor {
             TextUtil.send(sender, "&cPlayer only.");
             return true;
         }
+        
+        if (args.length == 0) {
+            // Открываем меню скупщика по умолчанию
+            services.gui().openSellResources(player);
+            return true;
+        }
+        
         long sold = 0L;
-        if (args.length > 0 && args[0].equalsIgnoreCase("hand")) sold = services.economy().sellHand(player);
+        if (args[0].equalsIgnoreCase("hand")) sold = services.economy().sellHand(player);
         else sold = services.economy().sellInventory(player);
+        
         if (sold <= 0) {
             TextUtil.send(player, "&cНечего продавать.");
         } else {

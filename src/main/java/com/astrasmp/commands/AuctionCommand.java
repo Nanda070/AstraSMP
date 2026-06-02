@@ -55,7 +55,7 @@ public final class AuctionCommand implements CommandExecutor, TabCompleter {
                     TextUtil.send(player, "&cНе удалось выставить лот.");
                 } else {
                     // --- КВЕСТ №5: Выставить предмет на аукцион ---
-                    services.quests().checkProgress(player, 5, 1);
+                    services.quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.AH_SELL, "", 1);
                     // ----------------------------------------------
 
                     TextUtil.send(player, "&aЛот #" + lot.getId() + " создан.");

@@ -270,6 +270,13 @@ public final class MenuListener implements Listener {
             return;
         }
 
+        if (holder.type() == GuiManager.MenuType.QUESTS) {
+            if (event.getSlot() == 31) {
+                services.gui().openMain(player);
+            }
+            return;
+        }
+
         services.gui().handleClick(player, event);
     }
 

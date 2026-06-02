@@ -13,7 +13,9 @@ public final class LinkCommand implements CommandExecutor {
     private final ServiceManager services;
     private final SecureRandom random = new SecureRandom();
 
-    public LinkCommand(ServiceManager services) { this.services = services; }
+    public LinkCommand(ServiceManager services) {
+        this.services = services;
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -26,7 +28,7 @@ public final class LinkCommand implements CommandExecutor {
         record.setCode(code);
         record.setVerified(false);
         services.store().requestSave();
-        services.quests().checkProgress(player, 10, 1);
+        services.quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.LINK_DISCORD, "", 1);
         TextUtil.send(player, "&aКод привязки: &f" + code);
         TextUtil.send(player, "&7Отправь в Discord: &f" + services.discordPrefix() + " link " + code);
         services.discord().sendLog("Link requested for " + player.getName() + " code=" + code);
@@ -35,7 +37,8 @@ public final class LinkCommand implements CommandExecutor {
 
     private String generate() {
         StringBuilder sb = new StringBuilder(6);
-        for (int i = 0; i < 6; i++) sb.append(CHARS.charAt(random.nextInt(CHARS.length())));
+        for (int i = 0; i < 6; i++)
+            sb.append(CHARS.charAt(random.nextInt(CHARS.length())));
         return sb.toString();
     }
 }

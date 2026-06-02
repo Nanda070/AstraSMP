@@ -135,6 +135,7 @@ public final class AstraSMPPlugin extends JavaPlugin {
         bind("ah", new AuctionCommand(services));
         bind("link", new LinkCommand(services));
         bind("admin", new AdminCommand(services));
+        getCommand("tutorial").setExecutor(new com.astrasmp.commands.TutorialCommand(services));
         bind("mmr", new MMRCommand(services));
         bind("top", new TopCommand(services));
         bind("stats", new StatsCommand(services));

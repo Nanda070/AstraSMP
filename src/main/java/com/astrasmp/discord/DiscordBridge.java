@@ -44,7 +44,9 @@ public final class DiscordBridge {
     private JDA jda;
     private static final String LEADER_ROLE_ID = "1508625935409086644";
 
-    public DiscordBridge(AstraSMPPlugin plugin, EconomyService economy, MMRService mmr, ContractService contracts, EventService events, LeaderboardService leaderboard) {
+    public DiscordBridge(AstraSMPPlugin plugin, EconomyService economy, MMRService mmr, ContractService contracts,
+            
+            EventService events, LeaderboardService leaderboard) {
         this.plugin = plugin;
         this.events = events;
     }
@@ -54,16 +56,16 @@ public final class DiscordBridge {
                 && !plugin.getConfig().getString("discord.token", "").isBlank();
     }
 
-    public void connect() {
-        if (!isEnabled()) return;
+    public void connect()
+            {
+        if (!isEnabled())
+            return;
         String token = plugin.getConfig().getString("discord.token", "");
         EnumSet<GatewayIntent> intents = EnumSet.of(
                 GatewayIntent.GUILD_MESSAGES,
-                GatewayIntent.MESSAGE_CONTENT,
-                GatewayIntent.GUILD_MEMBERS,
-                GatewayIntent.DIRECT_MESSAGES
-        );
-        jda = JDABuilder.createDefault(token, java.util.List.copyOf(intents))
+                GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS,
+                GatewayIntent.DIRECT_MESSAGES);
+        jda = JDABuilder.createDefault(token, Objects.requireNonNull(intents))
                 .addEventListeners(new BridgeListener())
                 .build();
         plugin.getLogger().info("Discord bridge initialization started.");
@@ -91,22 +93,28 @@ public final class DiscordBridge {
     }
 
     public void sendEventEmbed(String eventName) {
-        if (jda == null) return;
+        if (jda == null)
+            return;
+            
         String channelId = Objects.requireNonNullElse(plugin.getConfig().getString("discord.chat-channel-id", ""), "");
-        if (channelId.isBlank()) return;
+        if (channelId.isBlank())
+            return;
+            
 
         TextChannel channel = jda.getTextChannelById(channelId);
-        if (channel == null) return;
+        if (channel == null)
+            return;
 
         String roleId = plugin.getConfig().getString("discord.event-role-id", "");
         String timeMSK = ZonedDateTime.now(ZoneId.of("Europe/Moscow")).format(DateTimeFormatter.ofPattern("HH:mm"));
 
         EmbedBuilder embed = new EmbedBuilder();
         embed.setTitle("✨ Глобальное Событие: " + eventName + " ✨");
-        embed.setDescription("🔥 **Внимание всем игрокам!** 🔥\nНа сервере только что стартовало событие: **" + eventName + "**!\n\n⚔️ Не упустите шанс принять участие и сразиться за уникальные награды.");
+        embed.setDescription("🔥 **Внимание всем игрокам!** 🔥\nНа сервере только что стартовало событие: **"
+                + eventName + "**!\n\n⚔️ Не упустите шанс принять участие и сразиться за уникальные награды.");
         embed.setColor(new Color(0xFF4500)); // OrangeRed
         embed.addField("🕒 Время (МСК)", "`" + timeMSK + "`", true);
-        embed.addField("🎮 Как зайти?", "`IP: play.chetcraft.ru`", true);
+        embed.addField("🎮 Как зайти?", "`IP: chetcraft.org`", true);
         embed.setFooter("ChetCraft Network • Участвуй и побеждай!");
 
         String mention = roleId.isBlank() ? "" : "<@&" + roleId + ">";
@@ -116,17 +124,22 @@ public final class DiscordBridge {
     public void sendLog(String message) {
         sendToChannel("discord.log-channel-id", message);
     }
+            
 
     private void sendToChannel(String key, String message) {
-        if (jda == null) return;
+        if (jda == null)
+            return;
         String channelId = Objects.requireNonNullElse(plugin.getConfig().getString(key, ""), "");
-        if (channelId.isBlank()) return;
+        if (channelId.isBlank())
+            return;
         TextChannel channel = jda.getTextChannelById(channelId);
-        if (channel != null) channel.sendMessage(message).queue();
+        if (channel != null && message != null)
+            channel.sendMessage(message).queue();
     }
 
     public void createGuildThread(Guild guild) {
-        if (jda == null) return;
+        if (jda == null)
+            return;
 
         ForumChannel forum = jda.getForumChannelById("1508625325985108170");
         if (forum == null) {
@@ -138,55 +151,75 @@ public final class DiscordBridge {
                 .setContent(buildGuildThreadContent(guild))
                 .build();
 
-        forum.createForumPost(Objects.requireNonNullElse(guild.getName(), "unknown"), message).queue(post -> {
+        String postName = guild.getName() != null ? guild.getName() : "unknown";
+        forum.createForumPost(Objects.requireNonNull(postName), message).queue(post -> {
             guild.setForumThreadId(post.getThreadChannel().getId());
             plugin.getServices().store().requestSave();
             plugin.getLogger().info("Форумный тред для гильдии " + guild.getName() + " успешно создан.");
 
+                
             LinkRecord link = plugin.getServices().store().link(guild.getLeader().toString());
             if (link == null || !link.isVerified() || link.getDiscordId().isEmpty()) {
                 return;
             }
-
-            net.dv8tion.jda.api.entities.Guild discordGuild = forum.getGuild();
+            
+            String guildId = plugin.getConfig().getString("discord.guild-id", "");
+            if (guildId == null || guildId.isBlank()) return;
+            net.dv8tion.jda.api.entities.Guild discordGuild = jda.getGuildById(guildId);
+            if (discordGuild == null) return;
             Role leaderRole = discordGuild.getRoleById(LEADER_ROLE_ID);
 
-            if (leaderRole == null) return;
+            if (leaderRole == null)
+                return;
 
             String discordId = Objects.requireNonNullElse(link.getDiscordId(), "");
-            if (discordId.isEmpty()) return;
+            if (discordId.isEmpty())
+                return;
             discordGuild.retrieveMemberById(discordId).queue(
-                member -> discordGuild.addRoleToMember(Objects.requireNonNull(member), leaderRole).queue(),
-                error -> {}
-            );
+                    member -> discordGuild.addRoleToMember(Objects.requireNonNull(member), leaderRole).queue(),
+                    error -> {
+                    });
         });
     }
+                
 
     public void updateGuildRoster(Guild guild) {
-        if (jda == null || guild.getForumThreadId() == null || guild.getForumThreadId().isEmpty()) return;
+        String threadId = guild.getForumThreadId();
+        if (jda == null || threadId == null || threadId.isEmpty())
+            return;
 
-        ThreadChannel thread = jda.getThreadChannelById(guild.getForumThreadId());
-        if (thread == null) return;
+        ThreadChannel thread = jda.getThreadChannelById(threadId);
+            
+        if (thread == null)
+            return;
 
+            
         thread.retrieveStartMessage().queue(msg -> {
-            msg.editMessage(Objects.requireNonNullElse(buildGuildThreadContent(guild), "")).setEmbeds().queue();
+            String content = buildGuildThreadContent(guild);
+            if (content == null)
+                content = "";
+            msg.editMessage(content).setEmbeds().queue();
         });
     }
 
     public void archiveGuildThread(Guild guild) {
-        if (jda == null || guild.getForumThreadId() == null || guild.getForumThreadId().isEmpty()) return;
+        String threadId = guild.getForumThreadId();
+        if (jda == null || threadId == null || threadId.isEmpty())
+            return;
 
-        ThreadChannel thread = jda.getThreadChannelById(guild.getForumThreadId());
-        if (thread == null) return;
+        ThreadChannel thread = jda.getThreadChannelById(threadId);
+        if (thread == null)
+            return;
 
         String archiveMsg = "## ❌ Фракция распущена\n> Данная гильдия была официально распущена в игре. Тред закрыт и перенесен в архив.";
 
         thread.sendMessage(archiveMsg).queue(msg -> {
             thread.getManager().setArchived(true).setLocked(true).queue(
-                success -> plugin.getLogger().info("Форумный тред гильдии " + guild.getName() + " заархивирован."),
-                error -> plugin.getLogger().warning("Не удалось заархивировать тред гильдии: " + error.getMessage())
-            );
+                    success -> plugin.getLogger().info("Форумный тред гильдии " + guild.getName() + " заархивирован."),
+                    error -> plugin.getLogger()
+                            .warning("Не удалось заархивировать тред гильдии: " + error.getMessage()));
         });
+                
     }
 
     private String buildGuildThreadContent(Guild guild) {
@@ -202,7 +235,8 @@ public final class DiscordBridge {
             ping += " <@" + link.getDiscordId() + ">";
         }
         sb.append(ping).append("\n\n");
-        sb.append("> Фракция официально внесена в реестр сервера. Данный тред является основной информационной панелью и визитной карточкой.\n\n");
+        sb.append(
+                "> Фракция официально внесена в реестр сервера. Данный тред является основной информационной панелью и визитной карточкой.\n\n");
         sb.append("## 📝 Требуется заполнение\n");
         sb.append("Владельцу необходимо отправить в этот тред следующую информацию:\n");
         sb.append("- **Базирование:** Примерные координаты или название региона.\n");
@@ -220,8 +254,10 @@ public final class DiscordBridge {
             PlayerProfile p = plugin.getServices().store().profiles().get(entry.getKey().toString());
             String name = (p != null) ? p.getName() : "Unknown";
 
-            Guild.Rank rank = guild.getRanks().get(entry.getValue());
-            String rankName = (rank != null) ? rank.getName() : "Без ранга";
+            Guild.Rank rank
+            = guild.getRanks().get(entry.getValue());
+            String rankName =
+            (rank != null) ? rank.getName() : "Без ранга";
             String rankIndicator = switch (entry.getValue()) {
                 case "leader" -> "👑";
                 case "officer" -> "⚔️";
@@ -237,8 +273,8 @@ public final class DiscordBridge {
     }
 
     private boolean isAdmin(Member member) {
-        if (member == null) return false;
-        if (member.isOwner()) return true;
+        if (member == null)
+            return false;
         String roleId = plugin.getConfig().getString("discord.admin-role-id", "");
         return !roleId.isBlank() && member.getRoles().stream().anyMatch(role -> role.getId().equals(roleId));
     }
@@ -255,11 +291,12 @@ public final class DiscordBridge {
                             .addOption(OptionType.STRING, "type", "Тип ивента", true),
                     Commands.slash("online", "Посмотреть список игроков на сервере"),
                     Commands.slash("player", "Посмотреть статистику игрока")
-                            .addOption(OptionType.STRING, "name", "Ник игрока", true)
-            ).queue(
-                    cmds -> plugin.getLogger().info("[Discord] Слэш-команды зарегистрированы (" + cmds.size() + " шт.)"),
-                    error -> plugin.getLogger().severe("[Discord] Ошибка регистрации слэш-команд: " + error.getMessage())
-            );
+                            .addOption(OptionType.STRING, "name", "Ник игрока", true))
+                    .queue(
+                            cmds -> plugin.getLogger()
+                                    .info("[Discord] Слэш-команды зарегистрированы (" + cmds.size() + " шт.)"),
+                            error -> plugin.getLogger()
+                                    .severe("[Discord] Ошибка регистрации слэш-команд: " + error.getMessage()));
         }
 
         private EmbedBuilder baseEmbed() {
@@ -268,15 +305,18 @@ public final class DiscordBridge {
 
         @Override
         public void onSlashCommandInteraction(@javax.annotation.Nonnull SlashCommandInteractionEvent event) {
-            if (event.getUser().isBot()) return;
+            if (event.getUser().isBot())
+                return;
 
             switch (event.getName()) {
                 case "link" -> {
+                            
                     var codeOption = event.getOption("code");
                     if (codeOption == null) {
                         event.reply("❌ Укажи код привязки.").setEphemeral(true).queue();
                         return;
                     }
+                            
                     String code = codeOption.getAsString();
 
                     var match = plugin.getServices().store().links().values().stream()
@@ -288,16 +328,18 @@ public final class DiscordBridge {
                         return;
                     }
 
+                                    
                     match.setVerified(true);
-                    match.setDiscordId(event.getUser().getId());
-                    plugin.getServices().store().requestSave();
 
-                    String linkedRoleId = Objects.requireNonNullElse(plugin.getConfig().getString("discord.linked-role-id", ""), "");
-                    if (!linkedRoleId.isBlank() && event.getGuild() != null && event.getMember() != null) {
-                        net.dv8tion.jda.api.entities.Guild g = event.getGuild();
-                        Member m = event.getMember();
+                    String linkedRoleId = Objects
+                            .requireNonNullElse(plugin.getConfig().getString("discord.linked-role-id", ""), "");
+                    net.dv8tion.jda.api.entities.Guild g = event.getGuild();
+                    Member m = event.getMember();
+                    if (!linkedRoleId.isBlank() && g != null && m != null) {
                         Role role = g.getRoleById(linkedRoleId);
-                        if (role != null) g.addRoleToMember(Objects.requireNonNull(m), role).queue();
+                        if (role != null)
+                                
+                            g.addRoleToMember(m, role).queue();
                     }
 
                     UUID playerUuid = UUID.fromString(match.getUuid());
@@ -307,25 +349,31 @@ public final class DiscordBridge {
 
                     if (player != null) {
                         Bukkit.getScheduler().runTask(plugin, () -> {
-                            plugin.getServices().quests().checkProgress(player, 10, 1);
-                            TextUtil.send(player, "&a&lChetCraft &8» &fАккаунт привязан! Роль в Discord и награда выданы.");
+                            plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.LINK_DISCORD, "", 1);
+                            TextUtil.send(player,
+                                    "&a&lChetCraft &8» &fАккаунт привязан! Роль в Discord и награда выданы.");
                         });
                     }
-                    
-                    EmbedBuilder embed = baseEmbed().setColor(new Color(0x55FF55)).setDescription("✅ Успешно! Аккаунт **" + pName + "** привязан.");
+
+                    EmbedBuilder embed = baseEmbed().setColor(new Color(0x55FF55))
+                            .setDescription("✅ Успешно! Аккаунт **" + pName + "** привязан.");
                     event.replyEmbeds(embed.build()).setEphemeral(true).queue();
                 }
 
                 case "online" -> {
+                            
                     int count = Bukkit.getOnlinePlayers().size();
                     if (count == 0) {
-                        event.replyEmbeds(baseEmbed().setColor(new Color(0xFF5555)).setDescription("На сервере сейчас никого нет :(").build()).queue();
+                        event.replyEmbeds(baseEmbed().setColor(new Color(0xFF5555))
+                                .setDescription("На сервере сейчас никого нет :(").build()).queue();
                         return;
                     }
                     StringBuilder sb = new StringBuilder();
                     for (Player p : Bukkit.getOnlinePlayers()) {
                         sb.append("`").append(p.getName()).append("` ");
                     }
+                            
+                            
                     EmbedBuilder embed = baseEmbed();
                     embed.setTitle("🌐 Игроки онлайн: " + count);
                     embed.setDescription(sb.toString());
@@ -340,8 +388,10 @@ public final class DiscordBridge {
                         return;
                     }
                     String name = nameOption.getAsString();
+                                
                     OfflinePlayer target = Bukkit.getOfflinePlayer(name);
-                    PlayerProfile profile = plugin.getServices().store().profile(target.getUniqueId().toString(), target.getName());
+                    PlayerProfile profile = plugin.getServices().store().profile(target.getUniqueId().toString(),
+                            target.getName());
 
                     EmbedBuilder embed = baseEmbed();
                     embed.setTitle("📊 Статистика: " + name);
@@ -351,12 +401,15 @@ public final class DiscordBridge {
                     embed.addField("🏆 MMR", "`" + profile.getMmr() + "`", true);
                     embed.addField("✨ Event Points", "`" + profile.getEventPoints() + "`", true);
 
-                    Guild g = plugin.getServices().guilds() != null ? plugin.getServices().guilds().getPlayerGuild(target.getUniqueId()) : null;
+                    Guild g = plugin.getServices().guilds() != null
+                            ? plugin.getServices().guilds().getPlayerGuild(target.getUniqueId())
+                            : null;
                     embed.addField("🛡️ Гильдия", g != null ? "`" + g.getName() + "`" : "`Нет`", false);
 
                     event.replyEmbeds(embed.build()).queue();
                 }
 
+                                    
                 case "reload" -> {
                     if (!isAdmin(event.getMember())) {
                         event.reply("❌ Недостаточно прав.").setEphemeral(true).queue();
@@ -365,7 +418,8 @@ public final class DiscordBridge {
                     event.deferReply(true).queue();
                     Bukkit.getScheduler().runTask(plugin, () -> {
                         plugin.reloadConfig();
-                        EmbedBuilder embed = baseEmbed().setColor(new Color(0x55FF55)).setDescription("✅ Конфиг успешно перезагружен.");
+                        EmbedBuilder embed = baseEmbed().setColor(new Color(0x55FF55))
+                                .setDescription("✅ Конфиг успешно перезагружен.");
                         event.getHook().sendMessageEmbeds(embed.build()).queue();
                     });
                 }
@@ -381,11 +435,11 @@ public final class DiscordBridge {
                         return;
                     }
                     String type = typeOption.getAsString().toUpperCase(Locale.ROOT);
-                    event.deferReply(false).queue();
-                    Bukkit.getScheduler().runTask(plugin, () -> {
-                        try {
+                    event.deferReply(false).queue(); 
+                    Bukkit.getScheduler().runTask(plugin, () -> {        try {
                             events.start(EventService.EventType.valueOf(type), null);
-                            EmbedBuilder embed = baseEmbed().setColor(new Color(0x55FF55)).setDescription("🚀 Запущен ивент: **" + type + "**");
+                            EmbedBuilder embed = baseEmbed().setColor(new Color(0x55FF55))
+                                    .setDescription("🚀 Запущен ивент: **" + type + "**");
                             event.getHook().sendMessageEmbeds(embed.build()).queue();
                         } catch (IllegalArgumentException ex) {
                             String types = java.util.Arrays.stream(EventService.EventType.values())
@@ -401,7 +455,8 @@ public final class DiscordBridge {
 
         @Override
         public void onMessageReceived(@javax.annotation.Nonnull MessageReceivedEvent event) {
-            if (event.getAuthor().isBot()) return;
+            if (event.getAuthor().isBot())
+                return;
 
             String chatChannelId = plugin.getConfig().getString("discord.chat-channel-id", "");
 
@@ -411,9 +466,8 @@ public final class DiscordBridge {
                 String authorName = event.getAuthor().getGlobalName() != null
                         ? event.getAuthor().getGlobalName()
                         : event.getAuthor().getName();
-                Bukkit.getScheduler().runTask(plugin, () ->
-                        Bukkit.broadcast(Component.text(TextUtil.color("&9[Discord] &f" + authorName + "&7: &f" + content)))
-                );
+                Bukkit.getScheduler().runTask(plugin, () -> Bukkit
+                        .broadcast(Component.text(TextUtil.color("&9[Discord] &f" + authorName + "&7: &f" + content))));
             }
         }
     }

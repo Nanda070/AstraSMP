@@ -1,0 +1,115 @@
+base:
+  "1":
+    name: "Срубить дерево"
+    action: MINE_BLOCK
+    target: "LOG"
+    required: 32
+    rewardInfo: "100 ❂, +5 MMR"
+    rewardCommands:
+      - "admin setcoins %player% +100"
+      - "admin setmmr %player% +5"
+  "2":
+    name: "Добыть камень"
+    action: MINE_BLOCK
+    target: "STONE" # Будет срабатывать на COBBLESTONE, STONE, DEEPSLATE
+    required: 64
+    rewardInfo: "150 ❂, +5 MMR"
+    rewardCommands:
+      - "admin setcoins %player% +150"
+      - "admin setmmr %player% +5"
+  "3":
+    name: "Первая прибыль"
+    action: SELL_ITEM
+    target: ""
+    required: 1
+    rewardInfo: "200 ❂, +10 MMR"
+    rewardCommands:
+      - "admin setcoins %player% +200"
+      - "admin setmmr %player% +10"
+  "4":
+    name: "Плавка металла"
+    action: SMELT
+    target: "INGOT"
+    required: 16
+    rewardInfo: "300 ❂, 32 Стейка"
+    rewardCommands:
+      - "admin setcoins %player% +300"
+      - "give %player% cooked_beef 32"
+  "5":
+    name: "Торговец"
+    action: AH_SELL
+    target: ""
+    required: 1
+    rewardInfo: "500 ❂, +15 MMR"
+    rewardCommands:
+      - "admin setcoins %player% +500"
+      - "admin setmmr %player% +15"
+  "6":
+    name: "Охотник"
+    action: KILL_MOB
+    target: ""
+    required: 20
+    rewardInfo: "500 ❂, +15 MMR"
+    rewardCommands:
+      - "admin setcoins %player% +500"
+      - "admin setmmr %player% +15"
+  "7":
+    name: "Активный участник"
+    action: ATTEND_EVENT
+    target: ""
+    required: 1
+    rewardInfo: "500 ❂, +15 MMR"
+    rewardCommands:
+      - "admin setcoins %player% +500"
+      - "admin setmmr %player% +15"
+  "8":
+    name: "Исследователь"
+    action: USE_RTP
+    target: ""
+    required: 1
+    rewardInfo: "500 ❂, +15 MMR"
+    rewardCommands:
+      - "admin setcoins %player% +500"
+      - "admin setmmr %player% +15"
+  "9":
+    name: "Блестящая находка"
+    action: MINE_BLOCK
+    target: "DIAMOND_ORE"
+    required: 5
+    rewardInfo: "1000 ❂, +25 MMR"
+    rewardCommands:
+      - "admin setcoins %player% +1000"
+      - "admin setmmr %player% +25"
+  "10":
+    name: "Связь с обществом"
+    action: LINK_DISCORD
+    target: ""
+    required: 1
+    rewardInfo: "1000 ❂, 16 Дуба"
+    rewardCommands:
+      - "admin setcoins %player% +1000"
+      - "give %player% oak_log 16"
+  "11":
+    name: "Путь воина (Классы)"
+    action: USE_COMMAND
+    target: "/tutorial classes"
+    required: 1
+    rewardInfo: "Знания о Классах"
+    rewardCommands:
+      - "admin setcoins %player% +500"
+  "12":
+    name: "Автоматизация (Карьеры)"
+    action: USE_COMMAND
+    target: "/tutorial quarry"
+    required: 1
+    rewardInfo: "Знания о Карьерах"
+    rewardCommands:
+      - "admin setcoins %player% +500"
+  "13":
+    name: "Цифровая память (МЭ)"
+    action: USE_COMMAND
+    target: "/tutorial me"
+    required: 1
+    rewardInfo: "Знания об МЭ"
+    rewardCommands:
+      - "admin setcoins %player% +500"

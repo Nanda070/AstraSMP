@@ -5,6 +5,7 @@ import com.astrasmp.model.PlayerProfile;
 import com.astrasmp.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
@@ -23,6 +24,7 @@ public class AfkService {
         this.services = services;
         loadLocation();
         startAfkTask();
+        startParticleTask();
     }
 
     private void loadLocation() {
@@ -66,7 +68,7 @@ public class AfkService {
             if (afkLocation == null) return;
 
             for (Player p : Bukkit.getOnlinePlayers()) {
-                // ПРОВЕРКА РАДИУСА: Игрок должен быть в том же мире и в радиусе 5 блоков
+                // ПРОВЕРКА РАДИУСА: Игрок должен быть в том же мире и в радиусе 5 блоков -> исправили на 15
                 if (p.getWorld().equals(afkLocation.getWorld()) && p.getLocation().distance(afkLocation) <= 15.0) {
                     PlayerProfile profile = services.economy().profile(p.getUniqueId(), p.getName());
                     profile.setCoins(profile.getCoins() + 5);
@@ -76,5 +78,22 @@ public class AfkService {
                 }
             }
         }, 1200L, 1200L);
+    }
+
+    private void startParticleTask() {
+        // Запускается каждые 10 тиков (0.5 сек) для отрисовки границ
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            if (afkLocation == null) return;
+            double radius = 15.0;
+            // Рисуем круг из частиц
+            for (double t = 0; t <= 2 * Math.PI; t += Math.PI / 16) {
+                double x = radius * Math.cos(t);
+                double z = radius * Math.sin(t);
+                Location particleLoc = afkLocation.clone().add(x, 0.5, z);
+                if (particleLoc.getWorld() != null) {
+                    particleLoc.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, particleLoc, 1, 0, 0, 0, 0);
+                }
+            }
+        }, 20L, 10L);
     }
 }

@@ -49,6 +49,9 @@ commands:
     description: Телепорт в Казино
   eventshop:
     description: Телепорт в Ивент Шоп
+  tutorial:
+    description: Показать туториал по механикам
+    usage: /tutorial <topic>
   guild:
     description: Главная команда управления гильдиями
     aliases: [ g, клан, гильдия ]

@@ -272,7 +272,7 @@ public final class PlayerListener implements Listener {
 
     @EventHandler
     public void onEntityDeath(EntityDeathEvent event) {
-        if (event.getEntity().getKiller() != null) services.quests().checkProgress(event.getEntity().getKiller(), 6, 1);
+        if (event.getEntity().getKiller() != null) services.quests().processAction(event.getEntity().getKiller(), com.astrasmp.service.QuestManager.QuestAction.KILL_MOB, event.getEntity().getType().name(), 1);
     }
 
     @EventHandler
@@ -293,7 +293,7 @@ public final class PlayerListener implements Listener {
         if (isRestricted(player)) return;
         Material type = event.getItemType();
         if (type.name().endsWith("_INGOT") || type == Material.COPPER_INGOT) {
-            services.quests().checkProgress(player, 4, event.getItemAmount());
+            services.quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.SMELT, type.name(), event.getItemAmount());
         }
     }
 
@@ -356,16 +356,17 @@ public final class PlayerListener implements Listener {
         }
 
         Material mat = block.getType();
-        if (mat.name().contains("LOG")) services.quests().checkProgress(player, 1, 1);
-        else if (mat == Material.COBBLESTONE || mat == Material.STONE || mat == Material.DEEPSLATE) services.quests().checkProgress(player, 2, 1);
-        else if (mat == Material.DIAMOND_ORE || mat == Material.DEEPSLATE_DIAMOND_ORE) {
-            if (!event.getBlock().getDrops(player.getInventory().getItemInMainHand()).isEmpty()) services.quests().checkProgress(player, 9, 1);
+        if (!block.hasMetadata("placed_by_player")) {
+            services.quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.MINE_BLOCK, mat.name(), 1);
         }
     }
 
+    @SuppressWarnings("deprecation")
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         if (isRestricted(event.getPlayer())) { event.setCancelled(true); return; }
+        event.getBlockPlaced().setMetadata("placed_by_player", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
+        
         ItemStack item = event.getItemInHand();
         if (item.hasItemMeta() && item.getItemMeta().getPersistentDataContainer().has(new NamespacedKey(plugin, "award_amount"), PersistentDataType.LONG)) {
             long amount = item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey(plugin, "award_amount"), PersistentDataType.LONG);
@@ -408,6 +409,11 @@ public final class PlayerListener implements Listener {
         } else if (customId.equals("frostAxe")) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 60, 2));
             victim.getWorld().spawnParticle(Particle.SNOWFLAKE, victim.getLocation().add(0, 1, 0), 15, 0.5, 0.5, 0.5, 0.05);
+        } else if (customId.equals("soulOfNanda")) {
+            if (victim instanceof Player victimPlayer) {
+                event.setCancelled(true);
+                victimPlayer.kick(net.kyori.adventure.text.Component.text(TextUtil.color("&cВы были изгнаны Душой Нанды!")));
+            }
         }
     }
 

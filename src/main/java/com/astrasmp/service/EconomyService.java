@@ -13,6 +13,7 @@ public final class EconomyService {
     private final AstraSMPPlugin plugin;
     private final DataStore store;
     private final Map<Material, Double> prices = new EnumMap<>(Material.class);
+    private final Map<Material, Integer> marketDemand = new EnumMap<>(Material.class);
 
     private final List<Material> resourceItems = Arrays.asList(
             Material.COBBLESTONE, Material.COAL, Material.RAW_IRON, Material.IRON_INGOT,
@@ -29,10 +30,31 @@ public final class EconomyService {
             Material.COD, Material.SALMON, Material.TROPICAL_FISH, Material.PUFFERFISH
     );
 
+    private final List<Material> dropItems = Arrays.asList(
+            Material.ROTTEN_FLESH, Material.BONE, Material.SPIDER_EYE, Material.STRING,
+            Material.GUNPOWDER, Material.ENDER_PEARL, Material.SLIME_BALL, Material.MAGMA_CREAM,
+            Material.BLAZE_ROD, Material.GHAST_TEAR, Material.PHANTOM_MEMBRANE, Material.SHULKER_SHELL
+    );
+
     public EconomyService(AstraSMPPlugin plugin, DataStore store) {
         this.plugin = plugin;
         this.store = store;
         loadPrices();
+        startDemandRecoveryTask();
+    }
+
+    private void startDemandRecoveryTask() {
+        // Каждые 5 минут спрос немного восстанавливается (уменьшаем количество "проданных" товаров на 50)
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            for (Material mat : prices.keySet()) {
+                int currentDemand = marketDemand.getOrDefault(mat, 0);
+                // Стремимся к отрицательному значению (высокому спросу), если никто не продает
+                // Минимальное значение спроса (очень нужный товар): -2000
+                if (currentDemand > -2000) {
+                    marketDemand.put(mat, currentDemand - 50);
+                }
+            }
+        }, 6000L, 6000L); // 5 минут = 6000 тиков
     }
 
     public void loadPrices() {
@@ -48,7 +70,27 @@ public final class EconomyService {
 
     public List<Material> getResourceItems() { return resourceItems; }
     public List<Material> getFoodItems() { return foodItems; }
-    public double getPrice(Material material) { return prices.getOrDefault(material, 0.0); }
+    public List<Material> getDropItems() { return dropItems; }
+    
+    public double getPrice(Material material) {
+        double basePrice = prices.getOrDefault(material, 0.0);
+        if (basePrice <= 0) return 0.0;
+
+        int demand = marketDemand.getOrDefault(material, 0);
+        // Формула: если demand > 0 (переизбыток), цена падает вплоть до 0 при 5000 проданных.
+        // Если demand < 0 (дефицит), цена растет вплоть до 200% при -2000.
+        double maxSupply = 5000.0;
+        double multiplier = 1.0 - (demand / maxSupply);
+        
+        // Ограничиваем цену от 0 до 3.0x базовой
+        multiplier = Math.max(0.0, Math.min(3.0, multiplier));
+        
+        return Math.round(basePrice * multiplier * 100.0) / 100.0; // Округляем до 2 знаков
+    }
+
+    public void recordSale(Material material, int amount) {
+        marketDemand.put(material, marketDemand.getOrDefault(material, 0) + amount);
+    }
 
     public PlayerProfile profile(UUID uuid, String name) { return store.profile(uuid.toString(), name); }
     public PlayerProfile getProfile(UUID uuid, String name) { return profile(uuid, name); }
@@ -97,13 +139,14 @@ public final class EconomyService {
         long finalIncome = income - tax;
 
         addBalance(player.getUniqueId(), player.getName(), finalIncome);
+        recordSale(item.getType(), item.getAmount());
         player.getInventory().setItemInMainHand(null);
 
         if (tax > 0) {
             TextUtil.send(player, "&7Налог гильдии: &c-" + tax + " ❂ &7(отправлено в казну)");
         }
 
-        plugin.getServices().quests().checkProgress(player, 3, 1);
+        plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.SELL_ITEM, "", 1);
         return finalIncome;
     }
 
@@ -132,13 +175,14 @@ public final class EconomyService {
 
             PlayerProfile profile = profile(player.getUniqueId(), player.getName());
             profile.setCoins(profile.getCoins() + finalIncome);
+            recordSale(material, totalAmount);
 
             if (tax > 0) {
                 TextUtil.send(player, "&7Налог гильдии: &c-" + tax + " ❂");
             }
 
             store.requestSave();
-            plugin.getServices().quests().checkProgress(player, 3, 1);
+            plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.SELL_ITEM, "", 1);
 
             return finalIncome;
         }
@@ -158,6 +202,7 @@ public final class EconomyService {
             if (price <= 0) continue;
 
             totalIncome += Math.round(price * item.getAmount());
+            recordSale(item.getType(), item.getAmount());
             item.setAmount(0);
             soldAnything = true;
         }
@@ -173,7 +218,7 @@ public final class EconomyService {
                 TextUtil.send(player, "&7Общий налог гильдии: &c-" + tax + " ❂");
             }
 
-            plugin.getServices().quests().checkProgress(player, 3, 1);
+            plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.SELL_ITEM, "", 1);
             return finalIncome;
         }
 

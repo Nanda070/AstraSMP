@@ -332,7 +332,7 @@ public final class EventService {
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.getWorld().equals(ev.location().getWorld())) {
                 if (player.getLocation().distance(ev.location()) <= 30.0) {
-                    plugin.getServices().quests().checkProgress(player, 7, 1);
+                    plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.ATTEND_EVENT, "", 1);
                 }
             }
         }
@@ -475,7 +475,7 @@ public final class EventService {
                 TextUtil.send(player, "&a+200 ❂ и 10 очков ивента за участие!");
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
 
-                plugin.getServices().quests().checkProgress(player, 7, 1);
+                plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.ATTEND_EVENT, "", 1);
             }
         }
     }

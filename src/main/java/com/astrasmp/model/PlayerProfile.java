@@ -1,5 +1,8 @@
 package com.astrasmp.model;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Модель профиля игрока AstraSMP.
  * Хранит всю статистику, экономические данные и кастомизацию.
@@ -19,6 +22,10 @@ public final class PlayerProfile {
 
     private int questStep = 1;      // Текущий номер квеста
     private int questProgress = 0;  // Прогресс (например, сколько блоков сломано)
+
+    // Поля для ежедневных квестов
+    private Map<String, Integer> dailyQuests = new ConcurrentHashMap<>();
+    private String dailyQuestDate = "";
 
     // Поля для кастомных префиксов
     private String customPrefix = "";
@@ -63,6 +70,12 @@ public final class PlayerProfile {
 
     public int getQuestProgress() { return questProgress; }
     public void setQuestProgress(int questProgress) { this.questProgress = questProgress; }
+
+    public Map<String, Integer> getDailyQuests() { return dailyQuests; }
+    public void setDailyQuests(Map<String, Integer> dailyQuests) { this.dailyQuests = dailyQuests; }
+
+    public String getDailyQuestDate() { return dailyQuestDate; }
+    public void setDailyQuestDate(String dailyQuestDate) { this.dailyQuestDate = dailyQuestDate; }
 
     // --- ОСТАЛЬНЫЕ ГЕТТЕРЫ И СЕТТЕРЫ ---
 

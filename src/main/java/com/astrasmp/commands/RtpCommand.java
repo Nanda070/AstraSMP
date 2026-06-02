@@ -42,7 +42,7 @@ public final class RtpCommand implements CommandExecutor {
         TextUtil.send(player, "&bВы успешно телепортированы!");
 
         // ГАЗ: Засчитываем квест №8
-        services.quests().checkProgress(player, 8, 1);
+        services.quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.USE_RTP, "", 1);
         return true;
     }
 }

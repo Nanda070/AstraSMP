@@ -255,6 +255,13 @@ public final class ItemRegistry {
         ), 9001, true);
     }
 
+    public static ItemStack soulOfNanda() {
+        return build("soulOfNanda", Material.NETHER_STAR, "§cДуша Нанды", List.of(
+                "§7Ударьте игрока этим предметом,",
+                "§7чтобы изгнать его с сервера!"
+        ), 9002, true);
+    }
+
     public static List<ItemStack> showcase() {
         return List.of(
                 mining3x3(), mining5x5(), veinMiner(), autoSmelt(), magnet(),
@@ -274,7 +281,7 @@ public final class ItemRegistry {
                 juggernautHelmet(), juggernautChestplate(), juggernautLeggings(), juggernautBoots(),
                 minerHelmet(), minerChestplate(), minerLeggings(), minerBoots(),
                 bloodHunterHelmet(), bloodHunterChestplate(), bloodHunterLeggings(), bloodHunterBoots(),
-                trampoline()
+                trampoline(), soulOfNanda()
         ));
         return items;
     }
