@@ -117,7 +117,8 @@ public final class DiscordBridge {
         embed.addField("🎮 Как зайти?", "`IP: chetcraft.org`", true);
         embed.setFooter("ChetCraft Network • Участвуй и побеждай!");
 
-        String mention = roleId.isBlank() ? "" : "<@&" + roleId + ">";
+        String mention = roleId.isBlank() ? "" : "<@&" + roleId + "> ";
+        mention += "<@&1493417811765235732>";
         channel.sendMessage(mention).setEmbeds(embed.build()).queue();
     }
 
