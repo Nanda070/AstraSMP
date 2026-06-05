@@ -85,7 +85,19 @@ commands:
     permission: astrasmp.admin
   gm:
     description: Изменить игровой режим
-    usage: /gm <0|1|2|3>
+    usage: /gm <0|1|2|3> [игрок]
+    permission: astrasmp.admin
+  god:
+    description: Включить/выключить режим бога
+    usage: /god [игрок]
+    permission: astrasmp.admin
+  heal:
+    description: Восстановить здоровье и сытость
+    usage: /heal [игрок]
+    permission: astrasmp.admin
+  feed:
+    description: Восстановить сытость
+    usage: /feed [игрок]
     permission: astrasmp.admin
   vanish:
     description: Стать невидимым

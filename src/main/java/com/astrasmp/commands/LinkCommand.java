@@ -28,7 +28,7 @@ public final class LinkCommand implements org.bukkit.command.TabExecutor {
         record.setCode(code);
         record.setVerified(false);
         services.store().requestSave();
-        services.quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.LINK_DISCORD, "", 1);
+        // Квест LINK_DISCORD засчитывается в DiscordBridge после реальной верификации
         TextUtil.send(player, "&aКод привязки: &f" + code);
         TextUtil.send(player, "&7Отправь в Discord: &f" + services.discordPrefix() + " link " + code);
         services.discord().sendLog("Link requested for " + player.getName() + " code=" + code);

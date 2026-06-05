@@ -32,6 +32,8 @@ public class DatabaseService {
     private final AstraSMPPlugin plugin;
     private HikariDataSource dataSource;
     private final Gson gson;
+    // Диалект SQL: "sqlite" или "mysql"
+    private String dialect = "sqlite";
 
     public DatabaseService(AstraSMPPlugin plugin) {
         this.plugin = plugin;
@@ -39,19 +41,42 @@ public class DatabaseService {
     }
 
     public void connect() {
-        File dataFolder = plugin.getDataFolder();
-        if (!dataFolder.exists()) dataFolder.mkdirs();
-
-        File dbFile = new File(dataFolder, "astrasmp.db");
-
+        String mode = plugin.getConfig().getString("storage.mode", "sqlite").toLowerCase();
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:sqlite:" + dbFile.getAbsolutePath());
-        config.setDriverClassName("org.sqlite.JDBC");
-        config.addDataSourceProperty("journal_mode", "WAL");
-        config.addDataSourceProperty("synchronous", "NORMAL");
-        config.setMaximumPoolSize(10);
-        config.setMinimumIdle(2);
-        config.setConnectionTimeout(10000);
+
+        if (mode.equals("mysql")) {
+            dialect = "mysql";
+            String host     = plugin.getConfig().getString("storage.mysql.host", "localhost");
+            int    port     = plugin.getConfig().getInt("storage.mysql.port", 3306);
+            String database = plugin.getConfig().getString("storage.mysql.database", "astrasmp");
+            String user     = plugin.getConfig().getString("storage.mysql.username", "root");
+            String pass     = plugin.getConfig().getString("storage.mysql.password", "");
+            int    poolSize = plugin.getConfig().getInt("storage.mysql.pool-size", 8);
+
+            config.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database
+                    + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=utf8");
+            config.setUsername(user);
+            config.setPassword(pass);
+            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+            config.setMaximumPoolSize(poolSize);
+            config.setMinimumIdle(2);
+            config.setConnectionTimeout(10000);
+            config.setConnectionTestQuery("SELECT 1");
+            plugin.getLogger().info("[DB] Режим хранилища: MySQL (" + host + ":" + port + "/" + database + ")");
+        } else {
+            dialect = "sqlite";
+            File dataFolder = plugin.getDataFolder();
+            if (!dataFolder.exists()) dataFolder.mkdirs();
+            File dbFile = new File(dataFolder, "astrasmp.db");
+            config.setJdbcUrl("jdbc:sqlite:" + dbFile.getAbsolutePath());
+            config.setDriverClassName("org.sqlite.JDBC");
+            config.addDataSourceProperty("journal_mode", "WAL");
+            config.addDataSourceProperty("synchronous", "NORMAL");
+            config.setMaximumPoolSize(10);
+            config.setMinimumIdle(2);
+            config.setConnectionTimeout(10000);
+            plugin.getLogger().info("[DB] Режим хранилища: SQLite");
+        }
 
         dataSource = new HikariDataSource(config);
 
@@ -62,20 +87,29 @@ public class DatabaseService {
         }
     }
 
+    /** Возвращает SQL-выражение "INSERT OR REPLACE" для SQLite или "REPLACE INTO" для MySQL */
+    private String upsert(String table, String columns, String placeholders) {
+        if (dialect.equals("mysql")) {
+            return "REPLACE INTO " + table + " (" + columns + ") VALUES (" + placeholders + ")";
+        }
+        return "INSERT OR REPLACE INTO " + table + " (" + columns + ") VALUES (" + placeholders + ")";
+    }
+
     private void createTables() throws SQLException {
         try (Connection conn = dataSource.getConnection();
              Statement s = conn.createStatement()) {
-            
+
+            // Общий синтаксис совместим и с MySQL, и с SQLite
             s.execute("CREATE TABLE IF NOT EXISTS guilds (" +
                     "id VARCHAR(36) PRIMARY KEY, " +
-                    "name VARCHAR(32), " +
+                    "name VARCHAR(64), " +
                     "leader VARCHAR(36), " +
                     "balance BIGINT, " +
                     "level INT, " +
                     "xp BIGINT, " +
-                    "home_location VARCHAR(255), " +
+                    "home_location VARCHAR(512), " +
                     "permissions TEXT, " +
-                    "forum_thread_id VARCHAR(32))");
+                    "forum_thread_id VARCHAR(64))");
 
             s.execute("CREATE TABLE IF NOT EXISTS guild_members (" +
                     "player_uuid VARCHAR(36) PRIMARY KEY, " +
@@ -84,7 +118,7 @@ public class DatabaseService {
 
             s.execute("CREATE TABLE IF NOT EXISTS profiles (" +
                     "uuid VARCHAR(36) PRIMARY KEY, " +
-                    "name VARCHAR(32), " +
+                    "name VARCHAR(64), " +
                     "coins BIGINT, " +
                     "mmr INT, " +
                     "kills INT, " +
@@ -100,10 +134,11 @@ public class DatabaseService {
                     "daily_quests TEXT, " +
                     "daily_quest_date VARCHAR(16))");
 
-            try {
-                s.execute("ALTER TABLE profiles ADD COLUMN daily_quests TEXT");
-                s.execute("ALTER TABLE profiles ADD COLUMN daily_quest_date VARCHAR(16)");
-            } catch (SQLException ignored) {}
+            // Добавляем колонки для старых SQLite баз (MySQL игнорирует ошибку иначе)
+            if (dialect.equals("sqlite")) {
+                try { s.execute("ALTER TABLE profiles ADD COLUMN daily_quests TEXT"); } catch (SQLException ignored) {}
+                try { s.execute("ALTER TABLE profiles ADD COLUMN daily_quest_date VARCHAR(16)"); } catch (SQLException ignored) {}
+            }
 
             s.execute("CREATE TABLE IF NOT EXISTS auction_lots (" +
                     "id BIGINT PRIMARY KEY, " +
@@ -123,12 +158,12 @@ public class DatabaseService {
                     "note TEXT, " +
                     "active BOOLEAN, " +
                     "created_at BIGINT)");
-            
+
             s.execute("CREATE TABLE IF NOT EXISTS me_networks (" +
                     "id VARCHAR(36) PRIMARY KEY, " +
                     "owner VARCHAR(36), " +
                     "capacity BIGINT)");
-            
+
             s.execute("CREATE TABLE IF NOT EXISTS me_nodes (" +
                     "network_id VARCHAR(36), " +
                     "world VARCHAR(64), " +
@@ -136,20 +171,20 @@ public class DatabaseService {
                     "y INT, " +
                     "z INT, " +
                     "type VARCHAR(32))");
-            
+
             s.execute("CREATE TABLE IF NOT EXISTS me_items (" +
                     "network_id VARCHAR(36), " +
-                    "item_hash TEXT, " +
+                    "item_hash TEXT(512), " +
                     "amount BIGINT, " +
-                    "PRIMARY KEY (network_id, item_hash))");
-            
+                    "PRIMARY KEY (network_id, item_hash(255)))");
+
             s.execute("CREATE TABLE IF NOT EXISTS me_drives (" +
                     "network_id VARCHAR(36), " +
                     "world VARCHAR(64), " +
                     "x INT, " +
                     "y INT, " +
                     "z INT, " +
-                    "inventory_base64 TEXT)");
+                    "inventory_base64 MEDIUMTEXT)");
         }
     }
 
@@ -200,7 +235,9 @@ public class DatabaseService {
     }
 
     public void saveProfile(PlayerProfile p) {
-        String sql = "INSERT OR REPLACE INTO profiles (uuid, name, coins, mmr, kills, deaths, sold_value, event_points, faction, base_level, quest_step, quest_progress, prefix, prefix_color, daily_quests, daily_quest_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = upsert("profiles",
+                "uuid, name, coins, mmr, kills, deaths, sold_value, event_points, faction, base_level, quest_step, quest_progress, prefix, prefix_color, daily_quests, daily_quest_date",
+                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?");
         try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, p.getUuid());
             ps.setString(2, p.getName());
@@ -248,7 +285,7 @@ public class DatabaseService {
     }
 
     public void saveLot(AuctionLot lot) {
-        String sql = "INSERT OR REPLACE INTO auction_lots (id, seller_uuid, item, price, created_at, expires_at, sold) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = upsert("auction_lots", "id, seller_uuid, item, price, created_at, expires_at, sold", "?, ?, ?, ?, ?, ?, ?");
         try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, lot.getId());
             ps.setString(2, lot.getSellerUuid());
@@ -288,7 +325,7 @@ public class DatabaseService {
     }
 
     public void saveContract(ContractRecord c) {
-        String sql = "INSERT OR REPLACE INTO contracts (id, creator_uuid, target_uuid, reward, type, note, active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = upsert("contracts", "id, creator_uuid, target_uuid, reward, type, note, active, created_at", "?, ?, ?, ?, ?, ?, ?, ?");
         try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, c.getId());
             ps.setString(2, c.getCreatorUuid());
@@ -348,28 +385,31 @@ public class DatabaseService {
     }
 
     public void saveGuild(Guild guild) {
-        String sql = "INSERT OR REPLACE INTO guilds (id, name, leader, balance, level, xp, home_location, permissions, forum_thread_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = upsert("guilds",
+                "id, name, leader, balance, level, xp, home_location, permissions, forum_thread_id",
+                "?, ?, ?, ?, ?, ?, ?, ?, ?");
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
-            
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, guild.getId().toString());
-                ps.setString(2, guild.getName());
-                ps.setString(3, guild.getLeader().toString());
-                ps.setLong(4, guild.getBalance());
-                ps.setInt(5, guild.getLevel());
-                ps.setLong(6, guild.getXp());
-                ps.setString(7, guild.getHomeLocation());
-
-                // Сериализация кастомных рангов в JSON
-                String ranksJson = gson.toJson(guild.getRanks());
-                ps.setString(8, ranksJson);
-                
-                ps.setString(9, guild.getForumThreadId());
-                ps.executeUpdate();
+            try {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, guild.getId().toString());
+                    ps.setString(2, guild.getName());
+                    ps.setString(3, guild.getLeader().toString());
+                    ps.setLong(4, guild.getBalance());
+                    ps.setInt(5, guild.getLevel());
+                    ps.setLong(6, guild.getXp());
+                    ps.setString(7, guild.getHomeLocation());
+                    String ranksJson = gson.toJson(guild.getRanks());
+                    ps.setString(8, ranksJson);
+                    ps.setString(9, guild.getForumThreadId());
+                    ps.executeUpdate();
+                }
                 saveMembers(conn, guild);
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
             }
-            conn.commit();
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения гильдии в БД", e);
         }
@@ -397,7 +437,12 @@ public class DatabaseService {
     }
 
     private void saveMembers(Connection conn, Guild guild) throws SQLException {
-        String sql = "INSERT OR REPLACE INTO guild_members (player_uuid, guild_id, rank) VALUES (?, ?, ?)";
+        // Сначала удаляем всех участников, чтобы синхронизировать состав (убирает вышедших)
+        try (PreparedStatement del = conn.prepareStatement("DELETE FROM guild_members WHERE guild_id = ?")) {
+            del.setString(1, guild.getId().toString());
+            del.executeUpdate();
+        }
+        String sql = upsert("guild_members", "player_uuid, guild_id, rank", "?, ?, ?");
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             for (var entry : guild.getMembers().entrySet()) {
                 ps.setString(1, entry.getKey().toString());
@@ -412,16 +457,20 @@ public class DatabaseService {
     public void deleteGuild(UUID guildId) {
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
-            
-            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guilds WHERE id = ?")) {
-                ps.setString(1, guildId.toString());
-                ps.executeUpdate();
+            try {
+                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guilds WHERE id = ?")) {
+                    ps.setString(1, guildId.toString());
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_members WHERE guild_id = ?")) {
+                    ps.setString(1, guildId.toString());
+                    ps.executeUpdate();
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
             }
-            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guild_members WHERE guild_id = ?")) {
-                ps.setString(1, guildId.toString());
-                ps.executeUpdate();
-            }
-            conn.commit();
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "Ошибка удаления гильдии из БД", e);
         }
@@ -483,8 +532,8 @@ public class DatabaseService {
         
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
-            
-            try (PreparedStatement ps = conn.prepareStatement("INSERT OR REPLACE INTO me_networks (id, owner, capacity) VALUES (?, ?, ?)")) {
+            try {
+            try (PreparedStatement ps = conn.prepareStatement(upsert("me_networks", "id, owner, capacity", "?, ?, ?"))) {
                 ps.setString(1, netIdStr);
                 ps.setString(2, net.getOwner().toString());
                 ps.setLong(3, net.getMaxCapacity());
@@ -532,6 +581,10 @@ public class DatabaseService {
             }
             
             conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения ME-сети: " + netIdStr, e);
         }

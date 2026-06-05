@@ -39,13 +39,20 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public final class PlayerListener implements Listener {
     private final AstraSMPPlugin plugin;
     private final ServiceManager services;
+
+    // Статичные константы для NamespacedKey (не создаём объект на каждый тик)
+    private static final NamespacedKey KEY_CUSTOM_ID  = new NamespacedKey("astrasmp", "custom_id");
+    private static NamespacedKey KEY_MENU_COMPASS = null;   // Инициализируется в конструкторе
+    private static NamespacedKey KEY_AWARD_AMOUNT = null;
 
     // Хранилище кулдаунов для активных тотемов (КД 15 секунд)
     private final Map<UUID, Long> totemCooldowns = new HashMap<>();
@@ -53,6 +60,8 @@ public final class PlayerListener implements Listener {
     public PlayerListener(AstraSMPPlugin plugin, ServiceManager services) {
         this.plugin = plugin;
         this.services = services;
+        KEY_MENU_COMPASS = new NamespacedKey(plugin, "menu_compass");
+        KEY_AWARD_AMOUNT = new NamespacedKey(plugin, "award_amount");
     }
 
     // ==========================================
@@ -120,7 +129,7 @@ public final class PlayerListener implements Listener {
         var meta = compass.getItemMeta();
         meta.displayName(Component.text(TextUtil.color("&b&lМеню ChetCraft")));
         meta.lore(java.util.List.of(Component.text(TextUtil.color("&7Нажмите ПКМ, чтобы открыть"))));
-        meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "menu_compass"), PersistentDataType.BYTE, (byte) 1);
+        meta.getPersistentDataContainer().set(KEY_MENU_COMPASS, PersistentDataType.BYTE, (byte) 1);
         compass.setItemMeta(meta);
         p.getInventory().setItem(8, compass);
     }
@@ -128,7 +137,7 @@ public final class PlayerListener implements Listener {
     private boolean isMenuCompass(ItemStack item) {
         if (item == null || item.getType() == Material.AIR) return false;
         if (!item.hasItemMeta()) return false;
-        return item.getItemMeta().getPersistentDataContainer().has(new NamespacedKey(plugin, "menu_compass"), PersistentDataType.BYTE);
+        return item.getItemMeta().getPersistentDataContainer().has(KEY_MENU_COMPASS, PersistentDataType.BYTE);
     }
 
     @EventHandler
@@ -351,7 +360,7 @@ public final class PlayerListener implements Listener {
             }
 
             if (customId.equals("veinMiner") && isOre(block.getType())) {
-                processVein(block, block.getType(), 0, tool);
+                processVein(block, block.getType(), new HashSet<>(), tool);
             }
         }
 
@@ -366,10 +375,10 @@ public final class PlayerListener implements Listener {
     public void onBlockPlace(BlockPlaceEvent event) {
         if (isRestricted(event.getPlayer())) { event.setCancelled(true); return; }
         event.getBlockPlaced().setMetadata("placed_by_player", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
-        
+
         ItemStack item = event.getItemInHand();
-        if (item.hasItemMeta() && item.getItemMeta().getPersistentDataContainer().has(new NamespacedKey(plugin, "award_amount"), PersistentDataType.LONG)) {
-            long amount = item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey(plugin, "award_amount"), PersistentDataType.LONG);
+        if (item.hasItemMeta() && item.getItemMeta().getPersistentDataContainer().has(KEY_AWARD_AMOUNT, PersistentDataType.LONG)) {
+            long amount = item.getItemMeta().getPersistentDataContainer().get(KEY_AWARD_AMOUNT, PersistentDataType.LONG);
             services.store().addAwardBlock(event.getBlockPlaced().getLocation(), amount);
             TextUtil.send(event.getPlayer(), "&aБлок-награда успешно установлен и активен!");
         }
@@ -378,7 +387,17 @@ public final class PlayerListener implements Listener {
     // ==========================================
     // БОЙ И ОРУЖИЕ
     // ==========================================
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
+    public void onEntityDamage(org.bukkit.event.entity.EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            NamespacedKey godKey = new NamespacedKey(plugin, "god_mode");
+            if (player.getPersistentDataContainer().getOrDefault(godKey, PersistentDataType.BYTE, (byte) 0) == 1) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
     public void onHit(EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof Player attacker)) return;
         if (isRestricted(attacker)) { event.setCancelled(true); return; }
@@ -494,17 +513,31 @@ public final class PlayerListener implements Listener {
         return profile != null && profile.isFrozen();
     }
 
-    private void processVein(Block block, Material target, int count, ItemStack tool) {
-        if (count > 64 || block.getType() != target) return;
-        block.breakNaturally(tool);
+    /**
+     * Безопасный veinMiner: не использует breakNaturally (= не запускает BlockBreakEvent),
+     * вместо этого ручно удаляет блок и дропает лут. Сет visited предотвращает
+     * повторный обход тех же блоков и ограничивает цепочку до 64 блоков.
+     */
+    private void processVein(Block block, Material target, Set<org.bukkit.Location> visited, ItemStack tool) {
+        if (visited.size() >= 64) return;
+        if (block.getType() != target) return;
+        if (!visited.add(block.getLocation())) return; // уже обработан
+
+        // Дропаем лут без запуска BlockBreakEvent
+        Collection<ItemStack> drops = block.getDrops(tool);
+        block.setType(Material.AIR, false);
+        for (ItemStack drop : drops) {
+            block.getWorld().dropItemNaturally(block.getLocation(), drop);
+        }
+
         for (BlockFace face : List.of(BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST)) {
-            processVein(block.getRelative(face), target, count + 1, tool);
+            processVein(block.getRelative(face), target, visited, tool);
         }
     }
 
     private String getCustomId(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return null;
-        return item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey("astrasmp", "custom_id"), PersistentDataType.STRING);
+        return item.getItemMeta().getPersistentDataContainer().get(KEY_CUSTOM_ID, PersistentDataType.STRING);
     }
 
     private Material getSmeltedResult(Material raw) {

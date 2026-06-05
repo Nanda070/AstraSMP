@@ -42,7 +42,6 @@ public final class DiscordBridge {
     private final EventService events;
 
     private JDA jda;
-    private static final String LEADER_ROLE_ID = "1508625935409086644";
 
     public DiscordBridge(AstraSMPPlugin plugin, EconomyService economy, MMRService mmr, ContractService contracts,
             
@@ -106,6 +105,7 @@ public final class DiscordBridge {
             return;
 
         String roleId = plugin.getConfig().getString("discord.event-role-id", "");
+        String pingId = plugin.getConfig().getString("discord.event-ping-id", "");
         String timeMSK = ZonedDateTime.now(ZoneId.of("Europe/Moscow")).format(DateTimeFormatter.ofPattern("HH:mm"));
 
         EmbedBuilder embed = new EmbedBuilder();
@@ -118,8 +118,13 @@ public final class DiscordBridge {
         embed.setFooter("ChetCraft Network • Участвуй и побеждай!");
 
         String mention = roleId.isBlank() ? "" : "<@&" + roleId + "> ";
-        mention += "<@&1493417811765235732>";
-        channel.sendMessage(mention).setEmbeds(embed.build()).queue();
+        if (!pingId.isBlank()) mention += "<@&" + pingId + ">";
+        String finalMention = mention.trim();
+        if (finalMention.isEmpty()) {
+            channel.sendMessageEmbeds(embed.build()).queue();
+        } else {
+            channel.sendMessage(Objects.requireNonNull(finalMention)).setEmbeds(embed.build()).queue();
+        }
     }
 
     public void sendLog(String message) {
@@ -139,10 +144,14 @@ public final class DiscordBridge {
     }
 
     public void createGuildThread(Guild guild) {
-        if (jda == null)
-            return;
+        if (jda == null) return;
 
-        ForumChannel forum = jda.getForumChannelById("1508625325985108170");
+        String forumChannelId = plugin.getConfig().getString("discord.forum-channel-id", "");
+        if (forumChannelId.isBlank()) {
+            plugin.getLogger().warning("discord.forum-channel-id не настроен в config.yml!");
+            return;
+        }
+        ForumChannel forum = jda.getForumChannelById(forumChannelId);
         if (forum == null) {
             plugin.getLogger().warning("Форумный канал гильдий не найден в Discord!");
             return;
@@ -168,10 +177,11 @@ public final class DiscordBridge {
             if (guildId == null || guildId.isBlank()) return;
             net.dv8tion.jda.api.entities.Guild discordGuild = jda.getGuildById(guildId);
             if (discordGuild == null) return;
-            Role leaderRole = discordGuild.getRoleById(LEADER_ROLE_ID);
+            String leaderRoleId = plugin.getConfig().getString("discord.leader-role-id", "");
+            if (leaderRoleId.isBlank()) return;
+            Role leaderRole = discordGuild.getRoleById(leaderRoleId);
 
-            if (leaderRole == null)
-                return;
+            if (leaderRole == null) return;
 
             String discordId = Objects.requireNonNullElse(link.getDiscordId(), "");
             if (discordId.isEmpty())
@@ -311,13 +321,12 @@ public final class DiscordBridge {
 
             switch (event.getName()) {
                 case "link" -> {
-                            
                     var codeOption = event.getOption("code");
                     if (codeOption == null) {
                         event.reply("❌ Укажи код привязки.").setEphemeral(true).queue();
                         return;
                     }
-                            
+
                     String code = codeOption.getAsString();
 
                     var match = plugin.getServices().store().links().values().stream()
@@ -329,7 +338,8 @@ public final class DiscordBridge {
                         return;
                     }
 
-                                    
+                    // Сохраняем Discord ID пользователя
+                    match.setDiscordId(event.getUser().getId());
                     match.setVerified(true);
 
                     String linkedRoleId = Objects

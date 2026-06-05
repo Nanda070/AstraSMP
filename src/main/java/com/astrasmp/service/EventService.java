@@ -273,6 +273,7 @@ public final class EventService {
             int itemsCount = 3 + random.nextInt(3);
             for (int i = 0; i < itemsCount; i++) {
                 int slot = getEmptySlot(inv);
+                if (slot == -1) break; // инвентарь полный, прекращаем
                 inv.setItem(slot, generateBasicLoot());
             }
 
@@ -280,17 +281,16 @@ public final class EventService {
             double customChance = getCustomChanceByEvent(type);
             if (random.nextDouble() <= customChance) {
                 int slot = getEmptySlot(inv);
-                inv.setItem(slot, generateCustomLoot());
+                if (slot != -1) inv.setItem(slot, generateCustomLoot());
             }
         }
     }
 
     private int getEmptySlot(Inventory inv) {
-        int slot;
-        do {
-            slot = random.nextInt(inv.getSize());
-        } while (inv.getItem(slot) != null);
-        return slot;
+        for (int i = 0; i < inv.getSize(); i++) {
+            if (inv.getItem(i) == null) return i;
+        }
+        return -1; // инвентарь полный
     }
 
     private double getCustomChanceByEvent(EventType type) {
@@ -329,10 +329,14 @@ public final class EventService {
         ActiveEvent ev = active.get();
         if (ev == null) return;
 
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.getWorld().equals(ev.location().getWorld())) {
-                if (player.getLocation().distance(ev.location()) <= 30.0) {
-                    plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.ATTEND_EVENT, "", 1);
+        // Прогресс присутствия у ивента: засчитываем раз в 60 секунд, а не каждый тик
+        long now = System.currentTimeMillis();
+        if ((now / 60000L) % 1 == 0) { // раз в 60 секунд
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                if (player.getWorld().equals(ev.location().getWorld())) {
+                    if (player.getLocation().distance(ev.location()) <= 30.0) {
+                        plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.ATTEND_EVENT, "", 1);
+                    }
                 }
             }
         }

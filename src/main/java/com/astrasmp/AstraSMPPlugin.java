@@ -106,6 +106,8 @@ public final class AstraSMPPlugin extends JavaPlugin {
         return database;
     }
 
+    private static final NamespacedKey KEY_CUSTOM_ID = new NamespacedKey("astrasmp", "custom_id");
+
     private void startPassiveEffectsTask() {
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (Player p : Bukkit.getOnlinePlayers()) {
@@ -113,7 +115,7 @@ public final class AstraSMPPlugin extends JavaPlugin {
                 if (offHand == null || !offHand.hasItemMeta()) continue;
 
                 String id = offHand.getItemMeta().getPersistentDataContainer()
-                        .get(new NamespacedKey("astrasmp", "custom_id"), PersistentDataType.STRING);
+                        .get(KEY_CUSTOM_ID, PersistentDataType.STRING);
 
                 if (id == null) continue;
 
@@ -162,6 +164,9 @@ public final class AstraSMPPlugin extends JavaPlugin {
         bind("help", new HelpCommand(services));
 
         bind("gm", new GmCommand());
+        bind("god", new GodCommand(this));
+        bind("heal", new HealCommand());
+        bind("feed", new FeedCommand());
         bind("dm", new DmCommand());
         VanishCommand vanishCmd = new VanishCommand(this);
         bind("vanish", vanishCmd);

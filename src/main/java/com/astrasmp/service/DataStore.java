@@ -41,8 +41,8 @@ public final class DataStore {
 
     private final AtomicBoolean saveQueued = new AtomicBoolean(false);
 
-    private long nextLotId = 1L;
-    private long nextContractId = 1L;
+    private final java.util.concurrent.atomic.AtomicLong nextLotIdCounter = new java.util.concurrent.atomic.AtomicLong(1L);
+    private final java.util.concurrent.atomic.AtomicLong nextContractIdCounter = new java.util.concurrent.atomic.AtomicLong(1L);
 
     public DataStore(AstraSMPPlugin plugin) {
         this.plugin = plugin;
@@ -64,12 +64,12 @@ public final class DataStore {
         
         plugin.getDatabase().loadAllLots().forEach(l -> {
             lots.put(l.getId(), l);
-            if (l.getId() >= nextLotId) nextLotId = l.getId() + 1;
+            if (l.getId() >= nextLotIdCounter.get()) nextLotIdCounter.set(l.getId() + 1);
         });
 
         plugin.getDatabase().loadAllContracts().forEach(c -> {
             contracts.put(c.getId(), c);
-            if (c.getId() >= nextContractId) nextContractId = c.getId() + 1;
+            if (c.getId() >= nextContractIdCounter.get()) nextContractIdCounter.set(c.getId() + 1);
         });
 
         plugin.getDatabase().loadAllMENetworks().forEach(net -> meNetworks.put(net.getNetworkId(), net));
@@ -127,8 +127,10 @@ public final class DataStore {
     }
 
     private void saveAll() {
-        saveAllNow();
+        // Сбрасываем флаг ДО сохранения, чтобы новые requestSave() во время
+        // сохранения снова поставили задачу в очередь и данные не потерялись
         saveQueued.set(false);
+        saveAllNow();
     }
 
     private void loadLinks() {
@@ -274,8 +276,8 @@ public final class DataStore {
         return links.computeIfAbsent(uuid, k -> new LinkRecord(uuid, "", "", false)); 
     }
     
-    public long nextLotId() { return nextLotId++; }
-    public long nextContractId() { return nextContractId++; }
+    public long nextLotId() { return nextLotIdCounter.getAndIncrement(); }
+    public long nextContractId() { return nextContractIdCounter.getAndIncrement(); }
 
     public void addAwardBlock(Location loc, long amount) {
         LocationKey key = LocationKey.fromLocation(loc);
