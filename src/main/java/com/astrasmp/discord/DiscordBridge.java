@@ -23,10 +23,19 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.components.buttons.Button;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.textinput.TextInput;
+import net.dv8tion.jda.api.components.textinput.TextInputStyle;
+import net.dv8tion.jda.api.modals.Modal;
+import net.dv8tion.jda.api.components.label.Label;
 
 import java.awt.Color;
 import java.time.ZoneId;
@@ -36,6 +45,14 @@ import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.awt.Font;
+import java.awt.RenderingHints;
+import java.awt.BasicStroke;
+import javax.imageio.ImageIO;
+import java.io.ByteArrayOutputStream;
+import java.net.URL;
 
 public final class DiscordBridge {
     private final AstraSMPPlugin plugin;
@@ -65,6 +82,7 @@ public final class DiscordBridge {
                 GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS,
                 GatewayIntent.DIRECT_MESSAGES);
         jda = JDABuilder.createDefault(token, Objects.requireNonNull(intents))
+                .setActivity(net.dv8tion.jda.api.entities.Activity.watching("chetcraft.org ✨"))
                 .addEventListeners(new BridgeListener())
                 .build();
         plugin.getLogger().info("Discord bridge initialization started.");
@@ -89,6 +107,27 @@ public final class DiscordBridge {
 
     public void sendDeathMessage(String player, String reason) {
         sendToChannel("discord.chat-channel-id", "☠️ **" + player + "** " + reason);
+    }
+
+    public void sendBountyAnnouncement(String targetName, long reward, boolean isCompleted, String killerName) {
+        if (!isEnabled() || jda == null) return;
+        String announceChannelId = plugin.getConfig().getString("discord.announce-channel-id", plugin.getConfig().getString("discord.chat-channel-id", ""));
+        if (announceChannelId == null || announceChannelId.isBlank()) return;
+        
+        net.dv8tion.jda.api.entities.channel.concrete.TextChannel channel = jda.getTextChannelById(announceChannelId);
+        if (channel != null) {
+            net.dv8tion.jda.api.EmbedBuilder embed = new net.dv8tion.jda.api.EmbedBuilder();
+            if (isCompleted) {
+                embed.setColor(new java.awt.Color(0x55FF55))
+                     .setTitle("🎯 Заказ Выполнен!")
+                     .setDescription("Игрок **" + killerName + "** успешно устранил цель **" + targetName + "** и получил награду **" + reward + " ❂**!");
+            } else {
+                embed.setColor(new java.awt.Color(0xFF5555))
+                     .setTitle("☠ Объявлена Охота!")
+                     .setDescription("На игрока **" + targetName + "** назначен заказ!\nУбейте цель, чтобы получить **" + reward + " ❂**!");
+            }
+            channel.sendMessageEmbeds(embed.build()).queue();
+        }
     }
 
     public void sendEventEmbed(String eventName) {
@@ -302,7 +341,10 @@ public final class DiscordBridge {
                             .addOption(OptionType.STRING, "type", "Тип ивента", true),
                     Commands.slash("online", "Посмотреть список игроков на сервере"),
                     Commands.slash("player", "Посмотреть статистику игрока")
-                            .addOption(OptionType.STRING, "name", "Ник игрока", true))
+                            .addOption(OptionType.STRING, "name", "Ник игрока", true),
+                    Commands.slash("setup_link_button", "Создать кнопку привязки (только для администраторов)"),
+                    Commands.slash("profile", "Сгенерировать карточку профиля (свою или чужую)")
+                            .addOption(OptionType.USER, "user", "Пользователь", false))
                     .queue(
                             cmds -> plugin.getLogger()
                                     .info("[Discord] Слэш-команды зарегистрированы (" + cmds.size() + " шт.)"),
@@ -312,6 +354,71 @@ public final class DiscordBridge {
 
         private EmbedBuilder baseEmbed() {
             return new EmbedBuilder().setFooter("ChetCraft Network", null).setTimestamp(java.time.Instant.now());
+        }
+
+        private byte[] generateProfileImage(PlayerProfile profile, String discordName, String pName) {
+            try {
+                int width = 600;
+                int height = 300;
+                BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2d = image.createGraphics();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+                // Background
+                g2d.setColor(new Color(30, 33, 36));
+                g2d.fillRoundRect(0, 0, width, height, 30, 30);
+                
+                // Accent border
+                g2d.setColor(new Color(88, 101, 242));
+                g2d.setStroke(new BasicStroke(4));
+                g2d.drawRoundRect(2, 2, width - 4, height - 4, 30, 30);
+
+                // Fetch avatar from mc-heads.net
+                try {
+                    URL avatarUrl = java.net.URI.create("https://mc-heads.net/avatar/" + pName + "/120.png").toURL();
+                    BufferedImage avatar = ImageIO.read(avatarUrl);
+                    if (avatar != null) {
+                        g2d.drawImage(avatar, 40, 40, null);
+                    }
+                } catch (Exception e) {
+                    g2d.setColor(Color.GRAY);
+                    g2d.fillRect(40, 40, 120, 120);
+                }
+
+                g2d.setFont(new Font("SansSerif", Font.BOLD, 32));
+                g2d.setColor(Color.WHITE);
+                g2d.drawString(pName, 180, 70);
+
+                g2d.setFont(new Font("SansSerif", Font.PLAIN, 18));
+                g2d.setColor(new Color(153, 170, 181));
+                g2d.drawString("Discord: " + discordName, 180, 100);
+
+                // Stats background
+                g2d.setColor(new Color(43, 45, 49));
+                g2d.fillRoundRect(40, 180, 520, 90, 20, 20);
+
+                g2d.setFont(new Font("SansSerif", Font.BOLD, 20));
+                g2d.setColor(new Color(255, 215, 0)); // Gold for coins
+                g2d.drawString("Баланс: " + profile.getCoins() + " ❂", 60, 215);
+
+                g2d.setColor(new Color(0, 255, 255)); // Cyan for MMR
+                g2d.drawString("MMR: " + profile.getMmr(), 60, 250);
+
+                g2d.setColor(new Color(255, 105, 180)); // Pink for EP
+                g2d.drawString("Event Pts: " + profile.getEventPoints(), 300, 215);
+
+                g2d.setColor(new Color(255, 100, 100)); // Red for Kills
+                g2d.drawString("Убийства: " + profile.getKills(), 300, 250);
+
+                g2d.dispose();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(image, "png", baos);
+                return baos.toByteArray();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         @Override
@@ -461,6 +568,56 @@ public final class DiscordBridge {
                         }
                     });
                 }
+                
+                case "profile" -> {
+                    event.deferReply(false).queue(); // Generating image takes time
+                    var userOpt = event.getOption("user");
+                    net.dv8tion.jda.api.entities.User targetUser = userOpt != null ? userOpt.getAsUser() : event.getUser();
+                    
+                    String discordId = targetUser.getId();
+                    var match = plugin.getServices().store().links().values().stream()
+                            .filter(link -> discordId.equals(link.getDiscordId()))
+                            .findFirst().orElse(null);
+                    
+                    if (match == null) {
+                        event.getHook().sendMessage("❌ Аккаунт Discord **" + targetUser.getEffectiveName() + "** не привязан к серверу.").queue();
+                        return;
+                    }
+
+                    UUID playerUuid = UUID.fromString(match.getUuid());
+                    OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerUuid);
+                    String pName = offlinePlayer.getName() != null ? offlinePlayer.getName() : "Unknown";
+                    
+                    PlayerProfile profile = plugin.getServices().store().profile(playerUuid.toString(), pName);
+                    
+                    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                        byte[] imageBytes = generateProfileImage(profile, targetUser.getEffectiveName(), pName);
+                        if (imageBytes != null) {
+                            event.getHook().sendFiles(FileUpload.fromData(imageBytes, "profile.png")).queue();
+                        } else {
+                            event.getHook().sendMessage("❌ Ошибка при генерации профиля.").queue();
+                        }
+                    });
+                }
+                
+                case "setup_link_button" -> {
+                    if (!isAdmin(event.getMember())) {
+                        event.reply("❌ Недостаточно прав.").setEphemeral(true).queue();
+                        return;
+                    }
+                    EmbedBuilder embed = baseEmbed()
+                        .setTitle("🔗 Привязка Аккаунта")
+                        .setDescription("Нажмите на кнопку ниже, чтобы привязать свой Minecraft аккаунт к Discord.\nВам понадобится код, который можно получить в игре командой `/link`.")
+                        .setColor(new Color(0x5865F2));
+                        
+                    MessageCreateData msgData = new MessageCreateBuilder()
+                        .setEmbeds(embed.build())
+                        .addComponents(ActionRow.of(Button.primary("btn_link_account", "Привязать аккаунт")))
+                        .build();
+                    event.getChannel().sendMessage(msgData).queue();
+                        
+                    event.reply("✅ Кнопка успешно создана!").setEphemeral(true).queue();
+                }
             }
         }
 
@@ -479,6 +636,74 @@ public final class DiscordBridge {
                         : event.getAuthor().getName();
                 Bukkit.getScheduler().runTask(plugin, () -> Bukkit
                         .broadcast(Component.text(TextUtil.color("&9[Discord] &f" + authorName + "&7: &f" + content))));
+            }
+        }
+
+        @Override
+        public void onButtonInteraction(@javax.annotation.Nonnull ButtonInteractionEvent event) {
+            if (event.getComponentId().equals("btn_link_account")) {
+                TextInput codeInput = TextInput.create("link_code", TextInputStyle.SHORT)
+                    .setPlaceholder("Например: XyZ123")
+                    .setMinLength(1)
+                    .setMaxLength(16)
+                    .setRequired(true)
+                    .build();
+
+                Modal modal = Modal.create("modal_link_account", "Привязка Аккаунта")
+                    .addComponents(Label.of("Секретный код из игры", codeInput))
+                    .build();
+
+                event.replyModal(modal).queue();
+            }
+        }
+
+        @Override
+        public void onModalInteraction(@javax.annotation.Nonnull ModalInteractionEvent event) {
+            if (event.getModalId().equals("modal_link_account")) {
+                var codeMapping = event.getValue("link_code");
+                if (codeMapping == null) {
+                    event.reply("❌ Произошла ошибка: код привязки не получен.").setEphemeral(true).queue();
+                    return;
+                }
+                String code = codeMapping.getAsString();
+                
+                var match = plugin.getServices().store().links().values().stream()
+                        .filter(link -> code.equalsIgnoreCase(link.getCode()))
+                        .findFirst().orElse(null);
+
+                if (match == null) {
+                    event.reply("❌ Неверный или уже использованный код. Сгенерируйте новый командой `/link` в игре.").setEphemeral(true).queue();
+                    return;
+                }
+
+                match.setDiscordId(event.getUser().getId());
+                match.setVerified(true);
+                plugin.getServices().store().requestSave();
+
+                String linkedRoleId = plugin.getConfig().getString("discord.linked-role-id", "");
+                net.dv8tion.jda.api.entities.Guild g = event.getGuild();
+                Member m = event.getMember();
+                if (linkedRoleId != null && !linkedRoleId.isBlank() && g != null && m != null) {
+                    Role role = g.getRoleById(linkedRoleId);
+                    if (role != null)
+                        g.addRoleToMember(m, role).queue();
+                }
+
+                UUID playerUuid = UUID.fromString(match.getUuid());
+                Player player = Bukkit.getPlayer(playerUuid);
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerUuid);
+                String pName = offlinePlayer.getName() != null ? offlinePlayer.getName() : "игрока";
+
+                if (player != null) {
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.LINK_DISCORD, "", 1);
+                        TextUtil.send(player, "&a&lChetCraft &8» &fАккаунт успешно привязан к Discord через кнопку!");
+                    });
+                }
+
+                EmbedBuilder embed = baseEmbed().setColor(new Color(0x55FF55))
+                        .setDescription("✅ Успешно! Вы привязали Minecraft аккаунт **" + pName + "** к своему Discord профилю.");
+                event.replyEmbeds(embed.build()).setEphemeral(true).queue();
             }
         }
     }

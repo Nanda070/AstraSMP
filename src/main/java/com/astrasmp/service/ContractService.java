@@ -5,8 +5,12 @@ import com.astrasmp.model.ContractRecord;
 import com.astrasmp.model.PlayerProfile;
 import org.bukkit.entity.Player;
 
+import com.astrasmp.model.Guild;
+import com.astrasmp.util.TextUtil;
+
 import java.util.Collection;
 import java.util.UUID;
+
 
 public final class ContractService {
     private final AstraSMPPlugin plugin;
@@ -60,14 +64,42 @@ public final class ContractService {
 
     public long handleKillReward(Player killer, Player victim) {
         long paid = 0L;
+        boolean announced = false;
+
+        Guild killerGuild = plugin.getServices().guilds().getPlayerGuild(killer.getUniqueId());
+        Guild victimGuild = plugin.getServices().guilds().getPlayerGuild(victim.getUniqueId());
+
         for (ContractRecord contract : store.contracts().values()) {
             if (!contract.isActive()) continue;
             if (!"BOUNTY".equalsIgnoreCase(contract.getType())) continue;
             if (contract.getTargetUuid().equals(victim.getUniqueId().toString())) {
+                
+                // Anti-Abuse: Prevent claiming your own created bounty
+                if (contract.getCreatorUuid().equals(killer.getUniqueId().toString())) {
+                    continue; // Skip, they can't claim their own bounty
+                }
+
+                // Anti-Abuse: Prevent guild mates from claiming each other's bounties
+                if (killerGuild != null && killerGuild.equals(victimGuild)) {
+                    killer.sendMessage(TextUtil.color("&cВы не можете получить награду за согильдейца!"));
+                    continue; // Skip
+                }
+
                 PlayerProfile profile = store.profile(killer.getUniqueId().toString(), killer.getName());
                 profile.setCoins(profile.getCoins() + contract.getReward());
                 contract.setActive(false);
                 paid += contract.getReward();
+                
+                if (!announced) {
+                    announced = true;
+                    String msg = "&8[&a✔&8] &aИгрок &f" + killer.getName() + " &aвыполнил заказ и получил &e" + contract.getReward() + " ❂ &aза голову &c" + victim.getName() + "&a!";
+                    for (Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
+                        TextUtil.send(p, msg);
+                    }
+                    if (plugin.getDiscord().isEnabled()) {
+                        plugin.getDiscord().sendBountyAnnouncement(victim.getName(), contract.getReward(), true, killer.getName());
+                    }
+                }
             }
         }
         if (paid > 0) store.requestSave();

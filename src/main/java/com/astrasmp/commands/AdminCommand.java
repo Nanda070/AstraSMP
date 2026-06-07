@@ -342,11 +342,11 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
 
         if (args.length == 2) {
             if (args[0].equalsIgnoreCase("event")) {
-                return List.of("meteor", "airdrop", "boss", "chaos", "treasure", "stop", "bloodnight").stream()
+                return List.of("meteor", "airdrop", "boss", "merchant", "treasure", "galleon", "loot", "stop", "bloodnight").stream()
                         .filter(s -> s.startsWith(args[1].toLowerCase())).toList();
             }
             if (args[0].equalsIgnoreCase("spawnevent")) {
-                return List.of("meteor", "airdrop", "boss", "chaos", "treasure").stream()
+                return List.of("meteor", "airdrop", "boss", "merchant", "treasure", "galleon", "loot").stream()
                         .filter(s -> s.startsWith(args[1].toLowerCase())).toList();
             }
             if (args[0].equalsIgnoreCase("npc")) {

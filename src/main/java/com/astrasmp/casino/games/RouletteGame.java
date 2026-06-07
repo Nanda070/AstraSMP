@@ -152,7 +152,10 @@ public class RouletteGame implements CasinoGame, Listener, InventoryHolder {
                 }
 
                 if (tick >= maxTicks) {
-                    finishSpin(player, session, inv, wheelSequence.get(13)); // Индекс 13 - это слот 13 (центральный под поинтером)
+                    // Последний отрисованный тик был tick - 1 (то есть maxTicks - 1)
+                    // Центральный слот имеет индекс 4 (9 + 4 = 13)
+                    BetColor winningColor = wheelSequence.get((maxTicks - 1 + 4) % wheelSequence.size());
+                    finishSpin(player, session, inv, winningColor);
                     this.cancel();
                     return;
                 }

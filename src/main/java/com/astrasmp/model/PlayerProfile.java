@@ -27,6 +27,12 @@ public final class PlayerProfile {
     private Map<String, Integer> dailyQuests = new ConcurrentHashMap<>();
     private String dailyQuestDate = "";
 
+    // Поля для календаря наград и талантов
+    private int loginStreak = 0;
+    private String lastLoginDate = "";
+    private int dailyRewardDay = 1;
+    private Map<String, Integer> talents = new ConcurrentHashMap<>();
+
     // Поля для кастомных префиксов
     private String customPrefix = "";
     private String prefixColor = "&7";
@@ -76,6 +82,21 @@ public final class PlayerProfile {
 
     public String getDailyQuestDate() { return dailyQuestDate; }
     public void setDailyQuestDate(String dailyQuestDate) { this.dailyQuestDate = dailyQuestDate; }
+
+    // --- ГЕТТЕРЫ И СЕТТЕРЫ НАГРАД И ТАЛАНТОВ ---
+    public int getLoginStreak() { return loginStreak; }
+    public void setLoginStreak(int loginStreak) { this.loginStreak = loginStreak; }
+
+    public String getLastLoginDate() { return lastLoginDate; }
+    public void setLastLoginDate(String lastLoginDate) { this.lastLoginDate = lastLoginDate; }
+
+    public int getDailyRewardDay() { return dailyRewardDay; }
+    public void setDailyRewardDay(int dailyRewardDay) { this.dailyRewardDay = dailyRewardDay; }
+
+    public Map<String, Integer> getTalents() { return talents; }
+    public void setTalents(Map<String, Integer> talents) { this.talents = talents; }
+    public int getTalentLevel(String talentId) { return talents.getOrDefault(talentId, 0); }
+    public void setTalentLevel(String talentId, int level) { talents.put(talentId, level); }
 
     // --- ОСТАЛЬНЫЕ ГЕТТЕРЫ И СЕТТЕРЫ ---
 

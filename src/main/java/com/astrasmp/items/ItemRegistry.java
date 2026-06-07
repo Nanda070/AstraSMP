@@ -262,6 +262,13 @@ public final class ItemRegistry {
         ), 9002, true);
     }
 
+    public static ItemStack eventCompass() {
+        return build("eventCompass", Material.COMPASS, "§bМагический Компас", List.of(
+                "§7Указывает направление на активный ивент.",
+                "§7Нажмите §aПКМ§7, чтобы узнать дистанцию."
+        ), 9003, true);
+    }
+
     public static List<ItemStack> showcase() {
         return List.of(
                 mining3x3(), mining5x5(), veinMiner(), autoSmelt(), magnet(),
@@ -281,7 +288,7 @@ public final class ItemRegistry {
                 juggernautHelmet(), juggernautChestplate(), juggernautLeggings(), juggernautBoots(),
                 minerHelmet(), minerChestplate(), minerLeggings(), minerBoots(),
                 bloodHunterHelmet(), bloodHunterChestplate(), bloodHunterLeggings(), bloodHunterBoots(),
-                trampoline(), soulOfNanda()
+                trampoline(), soulOfNanda(), eventCompass()
         ));
         return items;
     }

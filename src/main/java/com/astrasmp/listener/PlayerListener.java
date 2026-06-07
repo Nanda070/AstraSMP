@@ -71,7 +71,36 @@ public final class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
         Player p = event.getPlayer();
-        services.economy().profile(p.getUniqueId(), p.getName());
+        PlayerProfile profile = services.economy().profile(p.getUniqueId(), p.getName());
+        
+        // --- Дерево Талантов: Гладиатор ---
+        int gladiator = profile.getTalentLevel("gladiator");
+        if (p.getAttribute(Attribute.MAX_HEALTH) != null) {
+            p.getAttribute(Attribute.MAX_HEALTH).setBaseValue(20.0 + (gladiator * 2.0));
+        }
+
+        // --- Ежедневные Награды: Логика Стрика ---
+        java.time.LocalDate today = java.time.LocalDate.now();
+        String todayStr = today.toString();
+        String lastLogin = profile.getLastLoginDate();
+        
+        if (lastLogin == null || lastLogin.isEmpty()) {
+            profile.setLoginStreak(1);
+            profile.setLastLoginDate(todayStr);
+        } else if (!lastLogin.equals(todayStr)) {
+            try {
+                java.time.LocalDate lastDate = java.time.LocalDate.parse(lastLogin);
+                if (lastDate.plusDays(1).equals(today)) {
+                    profile.setLoginStreak(profile.getLoginStreak() + 1);
+                } else {
+                    profile.setLoginStreak(1);
+                }
+            } catch (Exception e) {
+                profile.setLoginStreak(1);
+            }
+            profile.setLastLoginDate(todayStr);
+        }
+
         services.events().addPlayerToBossBar(p);
         event.setJoinMessage(TextUtil.color("&8[&a+&8] &f" + p.getName()));
 
@@ -454,6 +483,31 @@ public final class PlayerListener implements Listener {
                 return;
             }
 
+            if (customId != null && customId.equals("eventCompass")) {
+                event.setCancelled(true);
+                var activeEvent = services.events().active();
+                if (activeEvent == null) {
+                    player.sendActionBar(net.kyori.adventure.text.Component.text(TextUtil.color("&cВ данный момент нет активных ивентов.")));
+                } else if (!player.getWorld().equals(activeEvent.location().getWorld())) {
+                    player.sendActionBar(net.kyori.adventure.text.Component.text(TextUtil.color("&cИвент проходит в другом измерении.")));
+                } else {
+                    double distance = player.getLocation().distance(activeEvent.location());
+                    org.bukkit.util.Vector toEvent = activeEvent.location().toVector().subtract(player.getLocation().toVector()).normalize();
+                    org.bukkit.util.Vector direction = player.getLocation().getDirection().normalize();
+                    double dot = direction.dot(toEvent);
+
+                    if (dot > 0.85) {
+                        player.sendActionBar(net.kyori.adventure.text.Component.text(TextUtil.color("&aВы смотрите прямо на ивент! Дистанция: &e" + (int) distance + " м.")));
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 2f);
+                    } else if (dot > 0.0) {
+                        player.sendActionBar(net.kyori.adventure.text.Component.text(TextUtil.color("&eВы смотрите в общую сторону ивента.")));
+                    } else {
+                        player.sendActionBar(net.kyori.adventure.text.Component.text(TextUtil.color("&cИвент находится позади вас.")));
+                    }
+                }
+                return;
+            }
+
             // АКТИВНЫЕ ТОТЕМЫ С КУЛДАУНОМ (15 СЕК)
             if (customId != null && (customId.equals("totemTeleport") || customId.equals("totemExplosion") || customId.equals("totemLightning"))) {
                 event.setCancelled(true); // Запрещаем ванильное поведение тотема (если есть)
@@ -550,5 +604,93 @@ public final class PlayerListener implements Listener {
 
     private boolean isOre(Material mat) {
         return mat.name().endsWith("_ORE") || mat.name().startsWith("RAW_");
+    }
+
+    // ==========================================
+    // ТАЛАНТЫ (ПАССИВНЫЕ НАВЫКИ)
+    // ==========================================
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onEntityDamageByEntityTalents(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player player) {
+            PlayerProfile profile = services.store().profile(player.getUniqueId().toString(), player.getName());
+            if (profile != null) {
+                // Ассасин
+                int assassin = profile.getTalentLevel("assassin");
+                if (assassin > 0) {
+                    event.setDamage(event.getDamage() * (1.0 + (0.05 * assassin)));
+                }
+
+                // Вампиризм
+                int vampirism = profile.getTalentLevel("vampirism");
+                if (vampirism > 0) {
+                    if (Math.random() < (0.05 * vampirism)) {
+                        double newHp = Math.min(player.getHealth() + 2.0, player.getAttribute(Attribute.MAX_HEALTH).getValue());
+                        player.setHealth(newHp);
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onEntityDamageTalents(org.bukkit.event.entity.EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            PlayerProfile profile = services.store().profile(player.getUniqueId().toString(), player.getName());
+            if (profile != null) {
+                // Непробиваемый (Танк)
+                int tank = profile.getTalentLevel("tank");
+                if (tank > 0 && Math.random() < (0.05 * tank)) {
+                    event.setDamage(0);
+                    player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
+                }
+
+                // Акробат
+                if (event.getCause() == org.bukkit.event.entity.EntityDamageEvent.DamageCause.FALL) {
+                    int acrobat = profile.getTalentLevel("acrobat");
+                    if (acrobat > 0) {
+                        event.setDamage(event.getDamage() * (1.0 - (0.10 * acrobat)));
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onEntityDeathTalents(EntityDeathEvent event) {
+        if (event.getEntity().getKiller() != null && !(event.getEntity() instanceof Player)) {
+            Player killer = event.getEntity().getKiller();
+            PlayerProfile profile = services.store().profile(killer.getUniqueId().toString(), killer.getName());
+            int scavenger = profile.getTalentLevel("scavenger");
+            if (scavenger > 0) {
+                profile.setCoins(profile.getCoins() + (scavenger * 2L));
+            }
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @EventHandler
+    public void onBowShootTalents(org.bukkit.event.entity.EntityShootBowEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            PlayerProfile profile = services.store().profile(player.getUniqueId().toString(), player.getName());
+            int lucky = profile.getTalentLevel("lucky_shot");
+            if (lucky > 0 && Math.random() < (0.10 * lucky)) {
+                event.setConsumeItem(false);
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onBlockBreakTalents(BlockBreakEvent event) {
+        if (event.isCancelled()) return;
+        Player player = event.getPlayer();
+        PlayerProfile profile = services.store().profile(player.getUniqueId().toString(), player.getName());
+        int miner = profile.getTalentLevel("miner");
+        if (miner > 0 && isOre(event.getBlock().getType())) {
+            if (Math.random() < (0.05 * miner)) {
+                for (ItemStack drop : event.getBlock().getDrops(player.getInventory().getItemInMainHand())) {
+                    event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), drop);
+                }
+            }
+        }
     }
 }

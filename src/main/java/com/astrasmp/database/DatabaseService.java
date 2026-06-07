@@ -138,6 +138,10 @@ public class DatabaseService {
             if (dialect.equals("sqlite")) {
                 try { s.execute("ALTER TABLE profiles ADD COLUMN daily_quests TEXT"); } catch (SQLException ignored) {}
                 try { s.execute("ALTER TABLE profiles ADD COLUMN daily_quest_date VARCHAR(16)"); } catch (SQLException ignored) {}
+                try { s.execute("ALTER TABLE profiles ADD COLUMN login_streak INT DEFAULT 0"); } catch (SQLException ignored) {}
+                try { s.execute("ALTER TABLE profiles ADD COLUMN last_login_date VARCHAR(16)"); } catch (SQLException ignored) {}
+                try { s.execute("ALTER TABLE profiles ADD COLUMN daily_reward_day INT DEFAULT 1"); } catch (SQLException ignored) {}
+                try { s.execute("ALTER TABLE profiles ADD COLUMN talents TEXT"); } catch (SQLException ignored) {}
             }
 
             s.execute("CREATE TABLE IF NOT EXISTS auction_lots (" +
@@ -226,6 +230,26 @@ public class DatabaseService {
                 String dDate = rs.getString("daily_quest_date");
                 if (dDate != null) p.setDailyQuestDate(dDate);
 
+                p.setLoginStreak(rs.getInt("login_streak"));
+                String lastLogin = rs.getString("last_login_date");
+                if (lastLogin != null) p.setLastLoginDate(lastLogin);
+                
+                int rewardDay = rs.getInt("daily_reward_day");
+                if (rewardDay > 0) p.setDailyRewardDay(rewardDay);
+
+                String talentsJson = rs.getString("talents");
+                if (talentsJson != null && !talentsJson.isEmpty()) {
+                    try {
+                        Type mapType = new TypeToken<Map<String, Integer>>(){}.getType();
+                        Map<String, Integer> tMap = gson.fromJson(talentsJson, mapType);
+                        if (tMap != null) {
+                            p.getTalents().putAll(tMap);
+                        }
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("Ошибка парсинга талантов для " + p.getName());
+                    }
+                }
+
                 loaded.add(p);
             }
         } catch (SQLException e) {
@@ -236,8 +260,8 @@ public class DatabaseService {
 
     public void saveProfile(PlayerProfile p) {
         String sql = upsert("profiles",
-                "uuid, name, coins, mmr, kills, deaths, sold_value, event_points, faction, base_level, quest_step, quest_progress, prefix, prefix_color, daily_quests, daily_quest_date",
-                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?");
+                "uuid, name, coins, mmr, kills, deaths, sold_value, event_points, faction, base_level, quest_step, quest_progress, prefix, prefix_color, daily_quests, daily_quest_date, login_streak, last_login_date, daily_reward_day, talents",
+                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?");
         try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, p.getUuid());
             ps.setString(2, p.getName());
@@ -255,6 +279,10 @@ public class DatabaseService {
             ps.setString(14, p.getPrefixColor());
             ps.setString(15, gson.toJson(p.getDailyQuests()));
             ps.setString(16, p.getDailyQuestDate());
+            ps.setInt(17, p.getLoginStreak());
+            ps.setString(18, p.getLastLoginDate());
+            ps.setInt(19, p.getDailyRewardDay());
+            ps.setString(20, gson.toJson(p.getTalents()));
             ps.executeUpdate();
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения профиля игрока в БД", e);

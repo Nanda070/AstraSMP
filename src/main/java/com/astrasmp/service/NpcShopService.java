@@ -46,9 +46,13 @@ public final class NpcShopService implements Listener {
         this.vegasActionKey = new NamespacedKey(plugin, "vegas_action");
     }
 
-    @SuppressWarnings("deprecation")
     public void spawnNpc(Player player, String type) {
-        Villager npc = (Villager) player.getWorld().spawnEntity(player.getLocation(), EntityType.VILLAGER);
+        spawnNpcAt(player.getLocation(), type);
+        TextUtil.send(player, "&aNPC успешно заспавнен!");
+    }
+
+    public Villager spawnNpcAt(org.bukkit.Location loc, String type) {
+        Villager npc = (Villager) loc.getWorld().spawnEntity(loc, EntityType.VILLAGER);
         npc.setAI(false);
         npc.setInvulnerable(true);
         npc.setCollidable(false);
@@ -63,11 +67,12 @@ public final class NpcShopService implements Listener {
             case "6" -> "§cКазино (Рулетка и Слоты)";
             case "7" -> "§4Казино (Карты и Настолки)";
             case "8" -> "§5Ивент Магазин";
+            case "9" -> "§d💎 Черный Рынок";
             default -> "§7Торговец";
         };
-        npc.setCustomName(name);
+        npc.customName(net.kyori.adventure.text.Component.text(TextUtil.color(name)));
         npc.setCustomNameVisible(true);
-        TextUtil.send(player, "&aNPC " + name + " &aуспешно заспавнен!");
+        return npc;
     }
 
     @EventHandler
@@ -88,6 +93,7 @@ public final class NpcShopService implements Listener {
             case "6" -> openVegasSlots(p);
             case "7" -> openVegasTables(p);
             case "8" -> openEventShop(p, 0);
+            case "9" -> openBlackMarketShop(p, 0);
         }
     }
 
@@ -120,9 +126,10 @@ public final class NpcShopService implements Listener {
         TextUtil.send(p, "");
         TextUtil.send(p, "&e&lПолезные команды:");
         TextUtil.send(p, " &8• &a/menu &7- Открыть главное меню");
-        TextUtil.send(p, " &8• &a/spawn &7- Вернуться на спавн");
-        TextUtil.send(p, " &8• &a/ip &7- Бесконечный Паркур");
+        TextUtil.send(p, " &8• &a/rewards &7- Ежедневные награды");
+        TextUtil.send(p, " &8• &a/talents &7- Дерево Талантов");
         TextUtil.send(p, " &8• &a/quests &7- Твои задания");
+        TextUtil.send(p, " &8• &a/spawn &7- Вернуться на спавн");
         TextUtil.send(p, "");
         TextUtil.send(p, "&9&lНаш Discord: &nhttps://discord.gg/cheterin");
         TextUtil.send(p, "");
@@ -200,6 +207,16 @@ public final class NpcShopService implements Listener {
             buildEventItem(ItemRegistry.inquisitorBoots(), "&eСапоги Инквизитора", 500)
         );
         openPaginatedShop(p, "8", "Ивент Магазин", items, page);
+    }
+
+    private void openBlackMarketShop(Player p, int page) {
+        List<ItemStack> items = List.of(
+            buildShopItem(ItemRegistry.relic("time_core", Material.CLOCK, "§dЯдро времени", "Замедляет время вокруг владельца."), 10000, "coins"),
+            buildShopItem(ItemRegistry.artifact("heart_of_world", Material.HEART_OF_THE_SEA, "§bСердце мира", "Пассивная защита для носителя."), 15000, "coins"),
+            buildShopItem(ItemRegistry.trampoline(), 8000, "coins"),
+            build(Material.ENCHANTED_GOLDEN_APPLE, 1, "§6Зачарованное яблоко", 5000, "coins")
+        );
+        openPaginatedShop(p, "9", "Черный Рынок", items, page);
     }
 
     private void openStarterShop(Player p, int page) {
@@ -345,6 +362,7 @@ public final class NpcShopService implements Listener {
                     case "3" -> openBooksShop(player, sh.page() + 1);
                     case "4" -> openFarmerShop(player, sh.page() + 1);
                     case "8" -> openEventShop(player, sh.page() + 1);
+                    case "9" -> openBlackMarketShop(player, sh.page() + 1);
                 }
             } else if ("prev".equals(action)) {
                 switch (sh.type()) {
@@ -353,6 +371,7 @@ public final class NpcShopService implements Listener {
                     case "3" -> openBooksShop(player, sh.page() - 1);
                     case "4" -> openFarmerShop(player, sh.page() - 1);
                     case "8" -> openEventShop(player, sh.page() - 1);
+                    case "9" -> openBlackMarketShop(player, sh.page() - 1);
                 }
             }
             return;

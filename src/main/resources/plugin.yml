@@ -31,6 +31,9 @@ commands:
     description: Подробная статистика игрока
   contract:
     description: Управление контрактами на убийство
+  bounty:
+    description: Меню и управление заказами на убийство
+    aliases: [bounties, охота]
   items:
     description: Просмотр уникальных артефактов
   marry:
@@ -60,6 +63,12 @@ commands:
   duel:
     description: Вызвать игрока на дуэль
     usage: /duel <ник>
+  rewards:
+    description: Ежедневные награды
+    aliases: [reward, daily, календарь]
+  talents:
+    description: Пассивные таланты и навыки
+    aliases: [talent, skills, навыки]
   admin:
     description: Панель управления сервером
     usage: /admin <give|npc|event|setcoins|awardblock|setspawn|reload>

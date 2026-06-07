@@ -107,7 +107,9 @@ public final class GuiManager {
         Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.MAIN, 0, "", ""), 45, title("ChetCraft Меню"));
         fill(inv);
 
+        inv.setItem(12, button(Material.MINECART, "&aЕжедневные Награды", "&7Забирай призы каждый день!"));
         inv.setItem(13, services.quests().createQuestItem(player));
+        inv.setItem(14, button(Material.ENCHANTED_BOOK, "&eДерево Талантов", "&7Прокачивай пассивные навыки!"));
         inv.setItem(20, button(Material.GOLD_INGOT, "&aСкупщик", "&7Продать ресурсы и еду", "&eНажми, чтобы открыть"));
         inv.setItem(21, button(Material.ANVIL, "&dАукцион", "&7Рынок предметов"));
         inv.setItem(22, button(Material.NETHERITE_SWORD, "&cПредметы", "&7Список всех уникальных вещей"));
@@ -902,12 +904,14 @@ public final class GuiManager {
         switch (holder.type()) {
             case MAIN -> {
                 switch (event.getSlot()) {
-                    case 13 -> player.performCommand("quest");
+                    case 12 -> { player.closeInventory(); player.performCommand("rewards"); }
+                    case 13 -> { player.closeInventory(); player.performCommand("quest"); }
+                    case 14 -> { player.closeInventory(); player.performCommand("talents"); }
                     case 20 -> openSellResources(player);
                     case 21 -> openAuction(player, 0, "");
                     case 22 -> openItems(player, "Броня");
                     case 23 -> openStatsMenu(player);
-                    case 24 -> openContracts(player);
+                    case 24 -> { player.closeInventory(); player.performCommand("bounty"); }
                     case 31 -> {
                         Guild guild = services.guilds().getPlayerGuild(player.getUniqueId());
                         if (guild != null) openGuildMain(player, guild);

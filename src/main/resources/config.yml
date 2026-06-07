@@ -25,7 +25,7 @@ discord:
   guild-id: "1324239354154975252"
   chat-channel-id: "1493114039163818127"
   log-channel-id: "1493114225747558522"
-  control-channel-id: "1493114039163818127"
+  control-channel-id: "1493114039163818127" 
   linked-role-id: "1493411583743885523"
   admin-role-id: "1493411595089346612"
   leader-role-id: "1508625935409086644"
@@ -88,12 +88,23 @@ events:
   boss:
     interval-minutes: 120
     duration-minutes: 15
-  chaos:
+  merchant:
     interval-minutes: 300
-    duration-minutes: 25
+    duration-minutes: 10
   treasure:
     interval-minutes: 110
     duration-minutes: 12
+  galleon:
+    interval-minutes: 240
+    duration-minutes: 20
+  loot:
+    basic:
+      - "IRON_INGOT"
+      - "GOLD_INGOT"
+      - "DIAMOND"
+      - "EMERALD"
+      - "EXPERIENCE_BOTTLE"
+      - "GOLDEN_APPLE"
 
 mmr:
   start: 50
@@ -128,3 +139,18 @@ locations:
   eventshop: "world;32.69;68.00;509.75"
   duel_pos1: "world;35;76;385"
   duel_pos2: "world;17;76;385"
+
+rewards:
+  base-coins: 500
+  base-items:
+    - "IRON_INGOT:2"
+  weekly-coins: 10000
+  weekly-ep: 100
+  weekly-items:
+    - "DIAMOND:3"
+    - "GOLD_INGOT:10"
+  monthly-coins: 50000
+  monthly-ep: 1000
+  monthly-items:
+    - "NETHERITE_INGOT:1"
+    - "ENCHANTED_GOLDEN_APPLE:2"
