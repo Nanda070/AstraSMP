@@ -132,17 +132,19 @@ public class DatabaseService {
                     "prefix VARCHAR(64), " +
                     "prefix_color VARCHAR(16), " +
                     "daily_quests TEXT, " +
-                    "daily_quest_date VARCHAR(16))");
+                    "daily_quest_date VARCHAR(16), " +
+                    "login_streak INT DEFAULT 0, " +
+                    "last_login_date VARCHAR(16), " +
+                    "daily_reward_day INT DEFAULT 1, " +
+                    "talents TEXT)");
 
-            // Добавляем колонки для старых SQLite баз (MySQL игнорирует ошибку иначе)
-            if (dialect.equals("sqlite")) {
-                try { s.execute("ALTER TABLE profiles ADD COLUMN daily_quests TEXT"); } catch (SQLException ignored) {}
-                try { s.execute("ALTER TABLE profiles ADD COLUMN daily_quest_date VARCHAR(16)"); } catch (SQLException ignored) {}
-                try { s.execute("ALTER TABLE profiles ADD COLUMN login_streak INT DEFAULT 0"); } catch (SQLException ignored) {}
-                try { s.execute("ALTER TABLE profiles ADD COLUMN last_login_date VARCHAR(16)"); } catch (SQLException ignored) {}
-                try { s.execute("ALTER TABLE profiles ADD COLUMN daily_reward_day INT DEFAULT 1"); } catch (SQLException ignored) {}
-                try { s.execute("ALTER TABLE profiles ADD COLUMN talents TEXT"); } catch (SQLException ignored) {}
-            }
+            // Добавляем колонки для старых баз (ошибки тихо игнорируются, если колонки уже есть)
+            try { s.execute("ALTER TABLE profiles ADD COLUMN daily_quests TEXT"); } catch (SQLException ignored) {}
+            try { s.execute("ALTER TABLE profiles ADD COLUMN daily_quest_date VARCHAR(16)"); } catch (SQLException ignored) {}
+            try { s.execute("ALTER TABLE profiles ADD COLUMN login_streak INT DEFAULT 0"); } catch (SQLException ignored) {}
+            try { s.execute("ALTER TABLE profiles ADD COLUMN last_login_date VARCHAR(16)"); } catch (SQLException ignored) {}
+            try { s.execute("ALTER TABLE profiles ADD COLUMN daily_reward_day INT DEFAULT 1"); } catch (SQLException ignored) {}
+            try { s.execute("ALTER TABLE profiles ADD COLUMN talents TEXT"); } catch (SQLException ignored) {}
 
             s.execute("CREATE TABLE IF NOT EXISTS auction_lots (" +
                     "id BIGINT PRIMARY KEY, " +

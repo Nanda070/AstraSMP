@@ -15,8 +15,8 @@ storage:
     host: 185.207.164.19
     port: 1025
     database: s16125_astrasmp
-    username: u16125_64r7ZtIblK
-    password: "PEn7Z0yE+@Mo6U=yRkAYdtNp"
+    username: u16125_SCLUUPENEU
+    password: "+rGV80M.dB63FuuYLVX.ytw5"
     pool-size: 8
 
 discord:
@@ -25,7 +25,7 @@ discord:
   guild-id: "1324239354154975252"
   chat-channel-id: "1493114039163818127"
   log-channel-id: "1493114225747558522"
-  control-channel-id: "1493114039163818127" 
+  control-channel-id: "1493114039163818127"
   linked-role-id: "1493411583743885523"
   admin-role-id: "1493411595089346612"
   leader-role-id: "1508625935409086644"

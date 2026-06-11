@@ -4,6 +4,7 @@ import com.astrasmp.AstraSMPPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 
 public final class CustomRecipes {
@@ -12,115 +13,165 @@ public final class CustomRecipes {
 
     public static void register(AstraSMPPlugin plugin) {
         // Броня
-        registerBerserker(plugin);
-        registerJuggernaut(plugin);
-
+        registerArmor(plugin);
         // Инструменты и Оружие
         registerTools(plugin);
         registerWeapons(plugin);
     }
 
-    private static void registerTools(AstraSMPPlugin plugin) {
-        // --- КРУШИТЕЛЬ 3x3 ---
-        ShapedRecipe mining3x3 = new ShapedRecipe(new NamespacedKey(plugin, "recipe_mining3x3"), ItemRegistry.mining3x3());
-        mining3x3.shape("DDD", "TST", " S ");
-        mining3x3.setIngredient('D', Material.DIAMOND_BLOCK);
-        mining3x3.setIngredient('T', Material.TNT);
-        mining3x3.setIngredient('S', Material.STICK);
-        Bukkit.addRecipe(mining3x3);
+    private static void add(AstraSMPPlugin plugin, String key, ItemStack result, String[] shape, Object... ingredients) {
+        NamespacedKey nsKey = new NamespacedKey(plugin, key);
+        try {
+            Bukkit.removeRecipe(nsKey); // Удаляем старый рецепт перед добавлением
+        } catch (Exception ignored) {}
 
-        // --- МАГНИТ ---
-        ShapedRecipe magnet = new ShapedRecipe(new NamespacedKey(plugin, "recipe_magnet"), ItemRegistry.magnet());
-        magnet.shape("RIR", "IPI", "RIR");
-        magnet.setIngredient('R', Material.REDSTONE_BLOCK);
-        magnet.setIngredient('I', Material.IRON_BLOCK);
-        magnet.setIngredient('P', Material.DIAMOND_PICKAXE);
-        Bukkit.addRecipe(magnet);
+        ShapedRecipe recipe = new ShapedRecipe(nsKey, result);
+        recipe.shape(shape);
+        for (int i = 0; i < ingredients.length; i += 2) {
+            Character c = (Character) ingredients[i];
+            Material m = (Material) ingredients[i + 1];
+            if (m != null && m != Material.AIR) {
+                recipe.setIngredient(c, m);
+            }
+        }
+        Bukkit.addRecipe(recipe);
+    }
+
+    private static void registerTools(AstraSMPPlugin plugin) {
+        add(plugin, "recipe_mining3x3", ItemRegistry.mining3x3(),
+                new String[]{"DDD", "TST", " S "},
+                'D', Material.DIAMOND_BLOCK, 'T', Material.TNT, 'S', Material.STICK);
+
+        add(plugin, "recipe_mining5x5", ItemRegistry.mining5x5(),
+                new String[]{"NIN", "IPI", "NIN"},
+                'N', Material.NETHERITE_BLOCK, 'I', Material.NETHERITE_INGOT, 'P', Material.NETHERITE_PICKAXE);
+
+        add(plugin, "recipe_vein_miner", ItemRegistry.veinMiner(),
+                new String[]{"AAA", "APA", "AAA"},
+                'A', Material.AMETHYST_CLUSTER, 'P', Material.NETHERITE_PICKAXE);
+
+        add(plugin, "recipe_auto_smelt", ItemRegistry.autoSmelt(),
+                new String[]{"MMM", "MPM", "MMM"},
+                'M', Material.MAGMA_BLOCK, 'P', Material.NETHERITE_PICKAXE);
+
+        add(plugin, "recipe_magnet", ItemRegistry.magnet(),
+                new String[]{"GIG", "ICI", "GIG"},
+                'G', Material.GOLD_INGOT, 'I', Material.IRON_INGOT, 'C', Material.COMPASS);
     }
 
     private static void registerWeapons(AstraSMPPlugin plugin) {
-        // --- ЛЕДЯНОЙ ТОПОР ---
-        ShapedRecipe frostAxe = new ShapedRecipe(new NamespacedKey(plugin, "recipe_frost_axe"), ItemRegistry.frostAxe());
-        frostAxe.shape("BBB", "BAB", "BBB");
-        frostAxe.setIngredient('B', Material.BLUE_ICE);
-        frostAxe.setIngredient('A', Material.DIAMOND_AXE);
-        Bukkit.addRecipe(frostAxe);
+        add(plugin, "recipe_shadow_blade", ItemRegistry.shadowBlade(),
+                new String[]{"ECE", "ESE", "ECE"},
+                'E', Material.ECHO_SHARD, 'C', Material.COAL_BLOCK, 'S', Material.NETHERITE_SWORD);
 
-        // --- ВАМПИРСКИЙ КИНЖАЛ ---
-        ShapedRecipe vampireDagger = new ShapedRecipe(new NamespacedKey(plugin, "recipe_vampire_dagger"), ItemRegistry.vampireDagger());
-        vampireDagger.shape(" R ", "GSG", " R ");
-        vampireDagger.setIngredient('R', Material.REDSTONE_BLOCK);
-        vampireDagger.setIngredient('G', Material.GHAST_TEAR);
-        vampireDagger.setIngredient('S', Material.DIAMOND_SWORD);
-        Bukkit.addRecipe(vampireDagger);
+        add(plugin, "recipe_thunder_hammer", ItemRegistry.thunderHammer(),
+                new String[]{"CLC", "CAC", "CCC"},
+                'C', Material.COPPER_BLOCK, 'L', Material.LIGHTNING_ROD, 'A', Material.NETHERITE_AXE);
 
-        // --- МЕЧ ИНФЕРНО ---
-        ShapedRecipe infernoSword = new ShapedRecipe(new NamespacedKey(plugin, "recipe_inferno_sword"), ItemRegistry.infernoSword());
-        infernoSword.shape("MBM", "BSB", "MBM");
-        infernoSword.setIngredient('M', Material.MAGMA_BLOCK);
-        infernoSword.setIngredient('B', Material.BLAZE_ROD);
-        infernoSword.setIngredient('S', Material.NETHERITE_SWORD);
-        Bukkit.addRecipe(infernoSword);
+        add(plugin, "recipe_vampire_dagger", ItemRegistry.vampireDagger(),
+                new String[]{" R ", "GSG", " R "},
+                'R', Material.REDSTONE_BLOCK, 'G', Material.GHAST_TEAR, 'S', Material.DIAMOND_SWORD);
+
+        add(plugin, "recipe_inferno_sword", ItemRegistry.infernoSword(),
+                new String[]{"BMB", "BSB", "BMB"},
+                'B', Material.BLAZE_ROD, 'M', Material.MAGMA_CREAM, 'S', Material.NETHERITE_SWORD);
+
+        add(plugin, "recipe_frost_axe", ItemRegistry.frostAxe(),
+                new String[]{"PPP", "PAP", "PPP"},
+                'P', Material.PACKED_ICE, 'A', Material.DIAMOND_AXE);
+
+        add(plugin, "recipe_venom_bow", ItemRegistry.venomBow(),
+                new String[]{" S ", "SBS", " S "},
+                'S', Material.SPIDER_EYE, 'B', Material.BOW);
+
+        add(plugin, "recipe_reaper_scythe", ItemRegistry.reaperScythe(),
+                new String[]{"NNN", " H ", " N "},
+                'N', Material.NETHERITE_BLOCK, 'H', Material.NETHERITE_HOE);
     }
 
-    private static void registerBerserker(AstraSMPPlugin plugin) {
-        // --- ШЛЕМ БЕРСЕРКА ---
-        ShapedRecipe helmet = new ShapedRecipe(new NamespacedKey(plugin, "berserker_helmet"), ItemRegistry.berserkerHelmet());
-        helmet.shape("III", "R R");
-        helmet.setIngredient('I', Material.IRON_BLOCK);
-        helmet.setIngredient('R', Material.REDSTONE_BLOCK);
-        Bukkit.addRecipe(helmet);
+    private static void registerArmor(AstraSMPPlugin plugin) {
+        // --- MERCENARY ---
+        add(plugin, "mercenary_helmet", ItemRegistry.mercenaryHelmet(),
+                new String[]{"CLC", "C C"},
+                'C', Material.COAL_BLOCK, 'L', Material.LEATHER);
+        add(plugin, "mercenary_chestplate", ItemRegistry.mercenaryChestplate(),
+                new String[]{"C C", "CLC", "CCC"},
+                'C', Material.COAL_BLOCK, 'L', Material.LEATHER);
+        add(plugin, "mercenary_leggings", ItemRegistry.mercenaryLeggings(),
+                new String[]{"CCC", "L L", "C C"},
+                'C', Material.COAL_BLOCK, 'L', Material.LEATHER);
+        add(plugin, "mercenary_boots", ItemRegistry.mercenaryBoots(),
+                new String[]{"C C", "L L"},
+                'C', Material.COAL_BLOCK, 'L', Material.LEATHER);
 
-        // --- НАГРУДНИК БЕРСЕРКА ---
-        ShapedRecipe chestplate = new ShapedRecipe(new NamespacedKey(plugin, "berserker_chestplate"), ItemRegistry.berserkerChestplate());
-        chestplate.shape("I I", "IRI", "III");
-        chestplate.setIngredient('I', Material.IRON_BLOCK);
-        chestplate.setIngredient('R', Material.REDSTONE_BLOCK);
-        Bukkit.addRecipe(chestplate);
+        // --- BERSERKER ---
+        add(plugin, "berserker_helmet", ItemRegistry.berserkerHelmet(),
+                new String[]{"III", "R R"},
+                'I', Material.IRON_BLOCK, 'R', Material.REDSTONE_BLOCK);
+        add(plugin, "berserker_chestplate", ItemRegistry.berserkerChestplate(),
+                new String[]{"I I", "IRI", "III"},
+                'I', Material.IRON_BLOCK, 'R', Material.REDSTONE_BLOCK);
+        add(plugin, "berserker_leggings", ItemRegistry.berserkerLeggings(),
+                new String[]{"III", "R R", "I I"},
+                'I', Material.IRON_BLOCK, 'R', Material.REDSTONE_BLOCK);
+        add(plugin, "berserker_boots", ItemRegistry.berserkerBoots(),
+                new String[]{"R R", "I I"},
+                'I', Material.IRON_BLOCK, 'R', Material.REDSTONE_BLOCK);
 
-        // --- ПОНОЖИ БЕРСЕРКА ---
-        ShapedRecipe leggings = new ShapedRecipe(new NamespacedKey(plugin, "berserker_leggings"), ItemRegistry.berserkerLeggings());
-        leggings.shape("III", "R R", "I I");
-        leggings.setIngredient('I', Material.IRON_BLOCK);
-        leggings.setIngredient('R', Material.REDSTONE_BLOCK);
-        Bukkit.addRecipe(leggings);
+        // --- INQUISITOR ---
+        add(plugin, "inquisitor_helmet", ItemRegistry.inquisitorHelmet(),
+                new String[]{"GGG", "I I"},
+                'G', Material.GOLD_BLOCK, 'I', Material.IRON_BLOCK);
+        add(plugin, "inquisitor_chestplate", ItemRegistry.inquisitorChestplate(),
+                new String[]{"G G", "GIG", "GGG"},
+                'G', Material.GOLD_BLOCK, 'I', Material.IRON_BLOCK);
+        add(plugin, "inquisitor_leggings", ItemRegistry.inquisitorLeggings(),
+                new String[]{"GGG", "I I", "G G"},
+                'G', Material.GOLD_BLOCK, 'I', Material.IRON_BLOCK);
+        add(plugin, "inquisitor_boots", ItemRegistry.inquisitorBoots(),
+                new String[]{"I I", "G G"},
+                'G', Material.GOLD_BLOCK, 'I', Material.IRON_BLOCK);
 
-        // --- БОТИНКИ БЕРСЕРКА ---
-        ShapedRecipe boots = new ShapedRecipe(new NamespacedKey(plugin, "berserker_boots"), ItemRegistry.berserkerBoots());
-        boots.shape("R R", "I I");
-        boots.setIngredient('I', Material.IRON_BLOCK);
-        boots.setIngredient('R', Material.REDSTONE_BLOCK);
-        Bukkit.addRecipe(boots);
-    }
+        // --- JUGGERNAUT ---
+        add(plugin, "juggernaut_helmet", ItemRegistry.juggernautHelmet(),
+                new String[]{"OOO", "N N"},
+                'O', Material.OBSIDIAN, 'N', Material.NETHERITE_INGOT);
+        add(plugin, "juggernaut_chestplate", ItemRegistry.juggernautChestplate(),
+                new String[]{"O O", "ONO", "OOO"},
+                'O', Material.OBSIDIAN, 'N', Material.NETHERITE_INGOT);
+        add(plugin, "juggernaut_leggings", ItemRegistry.juggernautLeggings(),
+                new String[]{"OOO", "N N", "O O"},
+                'O', Material.OBSIDIAN, 'N', Material.NETHERITE_INGOT);
+        add(plugin, "juggernaut_boots", ItemRegistry.juggernautBoots(),
+                new String[]{"N N", "O O"},
+                'O', Material.OBSIDIAN, 'N', Material.NETHERITE_INGOT);
 
-    private static void registerJuggernaut(AstraSMPPlugin plugin) {
-        // --- ШЛЕМ ДЖАГГЕРНАУТА ---
-        ShapedRecipe helmet = new ShapedRecipe(new NamespacedKey(plugin, "juggernaut_helmet"), ItemRegistry.juggernautHelmet());
-        helmet.shape("OOO", "N N");
-        helmet.setIngredient('O', Material.OBSIDIAN);
-        helmet.setIngredient('N', Material.NETHERITE_INGOT);
-        Bukkit.addRecipe(helmet);
+        // --- MINER ---
+        add(plugin, "miner_helmet", ItemRegistry.minerHelmet(),
+                new String[]{"DDD", "E E"},
+                'D', Material.DIAMOND_BLOCK, 'E', Material.EMERALD);
+        add(plugin, "miner_chestplate", ItemRegistry.minerChestplate(),
+                new String[]{"D D", "DED", "DDD"},
+                'D', Material.DIAMOND_BLOCK, 'E', Material.EMERALD);
+        add(plugin, "miner_leggings", ItemRegistry.minerLeggings(),
+                new String[]{"DDD", "E E", "D D"},
+                'D', Material.DIAMOND_BLOCK, 'E', Material.EMERALD);
+        add(plugin, "miner_boots", ItemRegistry.minerBoots(),
+                new String[]{"E E", "D D"},
+                'D', Material.DIAMOND_BLOCK, 'E', Material.EMERALD);
 
-        // --- НАГРУДНИК ДЖАГГЕРНАУТА ---
-        ShapedRecipe chestplate = new ShapedRecipe(new NamespacedKey(plugin, "juggernaut_chestplate"), ItemRegistry.juggernautChestplate());
-        chestplate.shape("O O", "OAO", "OOO");
-        chestplate.setIngredient('O', Material.OBSIDIAN);
-        // Убрали строку с 'N', так как Незеритового слитка в нагруднике больше нет
-        chestplate.setIngredient('A', Material.GOLDEN_APPLE);
-        Bukkit.addRecipe(chestplate);
-
-        // --- ПОНОЖИ ДЖАГГЕРНАУТА ---
-        ShapedRecipe leggings = new ShapedRecipe(new NamespacedKey(plugin, "juggernaut_leggings"), ItemRegistry.juggernautLeggings());
-        leggings.shape("OOO", "N N", "O O");
-        leggings.setIngredient('O', Material.OBSIDIAN);
-        leggings.setIngredient('N', Material.NETHERITE_INGOT);
-        Bukkit.addRecipe(leggings);
-
-        // --- БОТИНКИ ДЖАГГЕРНАУТА ---
-        ShapedRecipe boots = new ShapedRecipe(new NamespacedKey(plugin, "juggernaut_boots"), ItemRegistry.juggernautBoots());
-        boots.shape("N N", "O O");
-        boots.setIngredient('O', Material.OBSIDIAN);
-        boots.setIngredient('N', Material.NETHERITE_INGOT);
-        Bukkit.addRecipe(boots);
+        // --- BLOODHUNTER ---
+        add(plugin, "bloodhunter_helmet", ItemRegistry.bloodHunterHelmet(),
+                new String[]{"RRR", "D D"},
+                'R', Material.REDSTONE_BLOCK, 'D', Material.DIAMOND_BLOCK);
+        add(plugin, "bloodhunter_chestplate", ItemRegistry.bloodHunterChestplate(),
+                new String[]{"R R", "RDR", "RRR"},
+                'R', Material.REDSTONE_BLOCK, 'D', Material.DIAMOND_BLOCK);
+        add(plugin, "bloodhunter_leggings", ItemRegistry.bloodHunterLeggings(),
+                new String[]{"RRR", "D D", "R R"},
+                'R', Material.REDSTONE_BLOCK, 'D', Material.DIAMOND_BLOCK);
+        add(plugin, "bloodhunter_boots", ItemRegistry.bloodHunterBoots(),
+                new String[]{"D D", "R R"},
+                'R', Material.REDSTONE_BLOCK, 'D', Material.DIAMOND_BLOCK);
     }
 }

@@ -367,6 +367,12 @@ public final class GuiManager {
             inv.setItem(10, ItemRegistry.guildHeart());
             inv.setItem(11, ItemRegistry.trampoline());
             inv.setItem(12, ItemRegistry.soulOfNanda());
+            
+            inv.setItem(19, ItemRegistry.trophy("common", org.bukkit.Material.PAPER, "§fОбычный трофей", "Обычный"));
+            inv.setItem(20, ItemRegistry.trophy("legendary", org.bukkit.Material.NETHER_STAR, "§6Легендарный трофей", "Легендарный"));
+            inv.setItem(28, ItemRegistry.relic("time_core", org.bukkit.Material.CLOCK, "§dЯдро времени", "Замедляет время вокруг владельца."));
+            inv.setItem(29, ItemRegistry.relic("void_fragment", org.bukkit.Material.AMETHYST_SHARD, "§5Фрагмент пустоты", "Рывок через пустоту."));
+            inv.setItem(30, ItemRegistry.artifact("heart_of_world", org.bukkit.Material.HEART_OF_THE_SEA, "§bСердце мира", "Пассивная защита для носителя."));
         }
 
         inv.setItem(46, button(Material.NETHERITE_SWORD, "&aОружие", "&7Клик для фильтра"));
@@ -873,6 +879,12 @@ public final class GuiManager {
             inv.setItem(10, withLoreHint(ItemRegistry.guildHeart()));
             inv.setItem(11, withLoreHint(ItemRegistry.trampoline()));
             inv.setItem(12, withLoreHint(ItemRegistry.soulOfNanda()));
+            
+            inv.setItem(19, withLoreHint(ItemRegistry.trophy("common", org.bukkit.Material.PAPER, "§fОбычный трофей", "Обычный")));
+            inv.setItem(20, withLoreHint(ItemRegistry.trophy("legendary", org.bukkit.Material.NETHER_STAR, "§6Легендарный трофей", "Легендарный")));
+            inv.setItem(28, withLoreHint(ItemRegistry.relic("time_core", org.bukkit.Material.CLOCK, "§dЯдро времени", "Замедляет время вокруг владельца.")));
+            inv.setItem(29, withLoreHint(ItemRegistry.relic("void_fragment", org.bukkit.Material.AMETHYST_SHARD, "§5Фрагмент пустоты", "Рывок через пустоту.")));
+            inv.setItem(30, withLoreHint(ItemRegistry.artifact("heart_of_world", org.bukkit.Material.HEART_OF_THE_SEA, "§bСердце мира", "Пассивная защита для носителя.")));
         }
 
         inv.setItem(46, button(Material.NETHERITE_SWORD, "&aОружие", "&7Клик для просмотра"));
