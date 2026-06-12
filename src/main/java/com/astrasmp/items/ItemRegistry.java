@@ -23,11 +23,13 @@ import java.util.stream.Collectors;
 
 public final class ItemRegistry {
     private static NamespacedKey ITEM_ID;
+    private static NamespacedKey ITEM_UPGRADE;
 
     private ItemRegistry() {}
 
     public static void init(AstraSMPPlugin plugin) {
         ITEM_ID = new NamespacedKey("astrasmp", "custom_id");
+        ITEM_UPGRADE = new NamespacedKey("astrasmp", "upgrade_level");
     }
 
     public static String id(ItemStack stack) {
@@ -39,6 +41,49 @@ public final class ItemRegistry {
     public static boolean is(ItemStack stack, String expected) {
         String id = id(stack);
         return expected != null && expected.equalsIgnoreCase(id);
+    }
+
+    public static int getUpgradeLevel(ItemStack stack) {
+        if (stack == null || stack.getType().isAir() || !stack.hasItemMeta()) return 0;
+        if (ITEM_UPGRADE == null) ITEM_UPGRADE = new NamespacedKey("astrasmp", "upgrade_level");
+        Integer level = stack.getItemMeta().getPersistentDataContainer().get(ITEM_UPGRADE, PersistentDataType.INTEGER);
+        return level == null ? 0 : level;
+    }
+
+    public static void setUpgradeLevel(ItemStack stack, int level) {
+        if (stack == null || stack.getType().isAir() || !stack.hasItemMeta()) return;
+        if (ITEM_UPGRADE == null) ITEM_UPGRADE = new NamespacedKey("astrasmp", "upgrade_level");
+        ItemMeta meta = stack.getItemMeta();
+        meta.getPersistentDataContainer().set(ITEM_UPGRADE, PersistentDataType.INTEGER, level);
+        
+        // Update display name
+        String id = id(stack);
+        if (id != null) {
+            // Read base name from somewhere or just prepend [+X]. 
+            // Wait, legacy displayName could already have [+X]. So let's strip it first.
+            String baseName = getBaseName(id);
+            if (baseName != null) {
+                if (level > 0) {
+                    meta.displayName(LegacyComponentSerializer.legacySection().deserialize("§a[+" + level + "] §r" + baseName));
+                } else {
+                    meta.displayName(LegacyComponentSerializer.legacySection().deserialize(baseName));
+                }
+            }
+        }
+        stack.setItemMeta(meta);
+    }
+
+    private static String getBaseName(String id) {
+        return switch (id) {
+            case "shadowBlade" -> "§8Теневой клинок";
+            case "thunderHammer" -> "§bМолот грома";
+            case "vampireDagger" -> "§cVampire Dagger";
+            case "infernoSword" -> "§6Меч инферно";
+            case "frostAxe" -> "§9Ледяной топор";
+            case "venomBow" -> "§2Ядовитый Лук";
+            case "reaperScythe" -> "§5Коса Жнеца";
+            default -> null; // We only support upgrading these weapons for now
+        };
     }
 
     @SuppressWarnings("deprecation")

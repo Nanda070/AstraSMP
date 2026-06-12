@@ -54,7 +54,7 @@ public final class LeaderboardService {
     public void startUpdateTask() {
         org.bukkit.Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             // Логика обновления топа
-            System.out.println("Топ игроков обновлен!");
+            plugin.getLogger().info("Топ игроков обновлен!");
         }, 20L * 60, 20L * 60 * 5); // Каждые 5 минут
     }
 }

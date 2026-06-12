@@ -144,6 +144,7 @@ public final class AstraSMPPlugin extends JavaPlugin {
         bind("contract", new ContractCommand(services));
         bind("items", new ItemsCommand(services));
         bind("quest", new QuestCommand(services));
+        bind("blacksmith", new BlacksmithCommand(services));
 
         com.astrasmp.gui.BountiesGui bountiesGui = new com.astrasmp.gui.BountiesGui(this, services);
         bind("bounty", new BountyCommand(this, services, bountiesGui));

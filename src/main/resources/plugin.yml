@@ -36,6 +36,8 @@ commands:
     aliases: [bounties, охота]
   items:
     description: Просмотр уникальных артефактов
+  blacksmith:
+    description: Открыть кузницу артефактов
   marry:
     description: Создать семью с другим игроком
   unmarry:

@@ -5,6 +5,7 @@ import com.astrasmp.casino.CasinoService;
 import com.astrasmp.casino.games.ClassicGame;
 import com.astrasmp.discord.DiscordBridge;
 import com.astrasmp.gui.GuiManager;
+import com.astrasmp.gui.BlacksmithGui;
 import com.astrasmp.casino.games.RouletteGame;
 import com.astrasmp.casino.games.DrumsGame;
 import com.astrasmp.casino.games.BlackjackGame;
@@ -22,6 +23,7 @@ public final class ServiceManager {
     private final ContractService contracts;
     private final DiscordBridge discord;
     private final GuiManager gui;
+    private final BlacksmithGui blacksmithGui;
     private final TabService tab;
     private final TicTacToeGame ticTacToeGame;
     private final NpcShopService shops;
@@ -59,6 +61,7 @@ public final class ServiceManager {
         // 4. Интерфейсы и внешние связи
         this.discord = new DiscordBridge(plugin, economy, mmr, contracts, events, leaderboard);
         this.gui = new GuiManager(plugin, this, auction, contracts);
+        this.blacksmithGui = new BlacksmithGui(this);
         this.tab = new TabService(plugin, this);
 
         // 5. Новые системы (NPC, AFK, Дуэли)
@@ -81,6 +84,7 @@ public final class ServiceManager {
         // Регистрация ивентов для сервисов
         plugin.getServer().getPluginManager().registerEvents(shops, plugin);
         plugin.getServer().getPluginManager().registerEvents(duels, plugin);
+        plugin.getServer().getPluginManager().registerEvents(blacksmithGui, plugin);
 
         // plugin.getServer().getPluginManager().registerEvents(meNetwork, plugin);
     }
@@ -130,6 +134,7 @@ public final class ServiceManager {
     public ContractService contracts() { return contracts; }
     public DiscordBridge discord() { return discord; }
     public GuiManager gui() { return gui; }
+    public BlacksmithGui blacksmithGui() { return blacksmithGui; }
     public TabService tab() { return tab; }
     public QuestManager quests() { return quests; }
     public NpcShopService shops() { return shops; }

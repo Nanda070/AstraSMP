@@ -435,27 +435,33 @@ public final class PlayerListener implements Listener {
         String customId = getCustomId(weapon);
         if (customId == null) return;
 
+        int upgradeLevel = com.astrasmp.items.ItemRegistry.getUpgradeLevel(weapon);
+
         if (customId.equals("infernoSword")) {
+            int fireTicks = 100 + (upgradeLevel * 20);
             event.getEntity().getNearbyEntities(4, 4, 4).forEach(entity -> {
-                if (entity instanceof LivingEntity living && entity != attacker) living.setFireTicks(100);
+                if (entity instanceof LivingEntity living && entity != attacker) living.setFireTicks(fireTicks);
             });
         }
 
         if (!(event.getEntity() instanceof LivingEntity victim)) return;
 
         if (customId.equals("shadowBlade")) {
-            victim.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
-            attacker.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 60, 1));
+            int duration = 60 + (upgradeLevel * 10);
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, duration, 1));
+            attacker.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, 1));
         } else if (customId.equals("thunderHammer")) {
             victim.getWorld().strikeLightningEffect(victim.getLocation());
-            event.setDamage(event.getDamage() + 4.0); // Исправлен вылет от бесконечного цикла!
+            event.setDamage(event.getDamage() + 4.0 + (upgradeLevel * 1.5)); // Исправлен вылет от бесконечного цикла!
         } else if (customId.equals("vampireDagger")) {
-            double heal = event.getFinalDamage() * 0.4;
+            double healPercentage = 0.4 + (upgradeLevel * 0.05);
+            double heal = event.getFinalDamage() * healPercentage;
             double newHealth = Math.min(attacker.getAttribute(Attribute.MAX_HEALTH).getValue(), attacker.getHealth() + heal); // Исправлен MAX_HEALTH!
             attacker.setHealth(newHealth);
             attacker.spawnParticle(Particle.HEART, attacker.getLocation().add(0, 1, 0), 5, 0.3, 0.3, 0.3, 0);
         } else if (customId.equals("frostAxe")) {
-            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 60, 2));
+            int slownessDuration = 60 + (upgradeLevel * 10);
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, slownessDuration, 2));
             victim.getWorld().spawnParticle(Particle.SNOWFLAKE, victim.getLocation().add(0, 1, 0), 15, 0.5, 0.5, 0.5, 0.05);
         } else if (customId.equals("soulOfNanda")) {
             if (victim instanceof Player victimPlayer) {
@@ -548,13 +554,11 @@ public final class PlayerListener implements Listener {
 
         Block block = event.getClickedBlock();
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && block != null && block.getType() == Material.CHEST) {
-            var activeEvent = services.events().active();
-            if (activeEvent != null && services.events().isCrateLocked()) {
-                if (block.getLocation().distance(activeEvent.location()) < 3.5) {
-                    event.setCancelled(true);
-                    long seconds = services.events().getLockTimeLeft();
-                    player.sendMessage(TextUtil.color("&cСундук под защитой! Осталось: &f" + seconds + " сек."));
-                }
+            var lockedEvent = services.events().getLockedEventAt(block.getLocation());
+            if (lockedEvent != null) {
+                event.setCancelled(true);
+                long seconds = services.events().getLockTimeLeft(lockedEvent);
+                player.sendMessage(TextUtil.color("&cСундук под защитой! Осталось: &f" + seconds + " сек."));
             }
         }
     }

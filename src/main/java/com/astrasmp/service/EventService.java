@@ -3,7 +3,7 @@ package com.astrasmp.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicReference;
+
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -33,7 +33,7 @@ import com.astrasmp.util.TextUtil;
 
 import net.kyori.adventure.text.Component;
 
-public final class EventService {
+public final class EventService implements org.bukkit.event.Listener {
 
     public enum EventType {
         METEOR("§e☄ Метеорит", "Метеорит"),
@@ -71,15 +71,14 @@ public final class EventService {
         public String getCleanName() { return cleanName; }
     }
 
-    public record ActiveEvent(EventType type, EventModifier modifier, Location location, long startedAt, long endsAt, LivingEntity boss, List<ArmorStand> holograms) {
+    public record ActiveEvent(EventType type, EventModifier modifier, Location location, long startedAt, long endsAt, LivingEntity boss, List<ArmorStand> holograms, BossBar bossBar) {
         public long getTotalDuration() { return endsAt - startedAt; }
     }
 
     private final AstraSMPPlugin plugin;
     private final EconomyService economy;
     private final Random random = new Random();
-    private final AtomicReference<ActiveEvent> active = new AtomicReference<>();
-    private BossBar bossBar;
+    private final java.util.concurrent.CopyOnWriteArrayList<ActiveEvent> activeEvents = new java.util.concurrent.CopyOnWriteArrayList<>();
     private BukkitTask ticker;
 
     // --- ПЕРЕМЕННЫЕ ДЛЯ КРОВАВОЙ НОЧИ ---
@@ -93,6 +92,7 @@ public final class EventService {
     public EventService(AstraSMPPlugin plugin, EconomyService economy, MMRService mmr) {
         this.plugin = plugin;
         this.economy = economy;
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     public boolean isBloodNight() {
@@ -100,10 +100,49 @@ public final class EventService {
     }
 
     public void startSchedulers() {
+        cleanupAllHolograms();
         for (EventType type : EventType.values()) {
             scheduleRandom("events." + type.name().toLowerCase() + ".interval-minutes", type);
         }
         startBloodNightTask();
+    }
+
+    public void cleanupAllHolograms() {
+        World world = Bukkit.getWorld(plugin.getConfig().getString("server.world-name", "world"));
+        if (world != null) {
+            for (org.bukkit.entity.ArmorStand as : world.getEntitiesByClass(org.bukkit.entity.ArmorStand.class)) {
+                if (isEventHologram(as)) as.remove();
+            }
+        }
+    }
+
+    private boolean isEventHologram(ArmorStand as) {
+        if (!as.isMarker() || as.isVisible()) return false;
+        if (as.customName() == null) return false;
+        String name = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(as.customName());
+        
+        String lower = name.toLowerCase();
+        return lower.contains("аирдроп") || lower.contains("сокровища") || lower.contains("метеорит") 
+            || lower.contains("заблокировано") || lower.contains("открыт") || lower.contains("галеон");
+    }
+
+    @org.bukkit.event.EventHandler
+    public void onChunkLoad(org.bukkit.event.world.ChunkLoadEvent event) {
+        for (org.bukkit.entity.Entity ent : event.getChunk().getEntities()) {
+            if (ent instanceof ArmorStand as) {
+                if (isEventHologram(as)) {
+                    boolean keep = false;
+                    for (ActiveEvent ev : activeEvents) {
+                        if (ev.holograms().contains(as)) {
+                            keep = true;
+                            break;
+                        }
+                    }
+                    if (keep) continue;
+                    as.remove();
+                }
+            }
+        }
     }
 
     // ==========================================
@@ -164,12 +203,15 @@ public final class EventService {
         long minutes = plugin.getConfig().getLong(path, 120L);
         long ticks = 20L * 60L * minutes;
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            if (active.get() == null) start(type, null);
+            start(type, null);
         }, ticks, ticks);
     }
 
     public boolean start(EventType type, Player forcedBy) {
-        if (active.get() != null) return false;
+        if (activeEvents.size() >= 2) return false;
+        for (ActiveEvent ev : activeEvents) {
+            if (ev.type() == type) return false;
+        }
 
         World world = Bukkit.getWorld(plugin.getConfig().getString("server.world-name", "world"));
         if (world == null) world = Bukkit.getWorlds().get(0);
@@ -186,7 +228,10 @@ public final class EventService {
     }
 
     public boolean startAt(EventType type, Location loc) {
-        if (active.get() != null) return false;
+        if (activeEvents.size() >= 2) return false;
+        for (ActiveEvent ev : activeEvents) {
+            if (ev.type() == type) return false;
+        }
 
         if (type == EventType.METEOR) {
             animateMeteor(loc);
@@ -270,9 +315,9 @@ public final class EventService {
             }
         }
 
-        ActiveEvent ev = new ActiveEvent(type, modifier, loc, now, now + durationMs, boss, holograms);
-        active.set(ev);
-        startBossBar(type);
+        BossBar bar = Bukkit.createBossBar(TextUtil.color(type.getTitle()), BarColor.YELLOW, BarStyle.SEGMENTED_10);
+        ActiveEvent ev = new ActiveEvent(type, modifier, loc, now, now + durationMs, boss, holograms, bar);
+        activeEvents.add(ev);
 
         String title = modifier.getPrefix() + type.getTitle();
         Bukkit.broadcastMessage("");
@@ -306,8 +351,9 @@ public final class EventService {
             plugin.getServices().discord().sendEventEmbed(type.getCleanName());
         }
 
-        if (ticker != null) ticker.cancel();
-        ticker = Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 20L, 20L);
+        if (ticker == null || ticker.isCancelled()) {
+            ticker = Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 20L, 20L);
+        }
     }
 
     private void animateMeteor(Location target) {
@@ -342,21 +388,34 @@ public final class EventService {
         return CRATE_LOCK_TIME_MS; // 3 минуты
     }
 
-    public boolean isCrateLocked() {
-        ActiveEvent ev = active.get();
+    public ActiveEvent getLockedEventAt(Location loc) {
+        for (ActiveEvent ev : activeEvents) {
+            if (ev.type() == EventType.AIRDROP || ev.type() == EventType.GALLEON) {
+                if (ev.location().getBlockX() == loc.getBlockX() && ev.location().getBlockY() == loc.getBlockY() && ev.location().getBlockZ() == loc.getBlockZ()) {
+                    long elapsed = System.currentTimeMillis() - ev.startedAt();
+                    if (elapsed < getLockTimeMs(ev.modifier())) return ev;
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean isCrateLocked() { // Legacy support, better use getLockedEventAt
+        ActiveEvent ev = active();
         if (ev == null) return false;
-        if (ev.type() != EventType.AIRDROP && ev.type() != EventType.GALLEON) return false; // Залочены только Аирдроп и Галеон
+        if (ev.type() != EventType.AIRDROP && ev.type() != EventType.GALLEON) return false;
         long elapsed = System.currentTimeMillis() - ev.startedAt();
         return elapsed < getLockTimeMs(ev.modifier());
     }
 
-    public long getLockTimeLeft() {
-        ActiveEvent ev = active.get();
+    public long getLockTimeLeft(ActiveEvent ev) {
         if (ev == null) return 0;
         long unlockTime = ev.startedAt() + getLockTimeMs(ev.modifier());
         long left = (unlockTime - System.currentTimeMillis()) / 1000L;
         return Math.max(0, left);
     }
+    
+    public long getLockTimeLeft() { return getLockTimeLeft(active()); }
 
     private void dropCrate(Location loc, EventType type, EventModifier modifier) {
         loc.getBlock().setType(Material.CHEST);
@@ -428,24 +487,73 @@ public final class EventService {
         return new ItemStack(mat, amount);
     }
 
-    private void tick() {
-        ActiveEvent ev = active.get();
-        if (ev == null) return;
+    private void spawnGuards(ActiveEvent ev) {
+        Location loc = ev.location();
+        int amount = random.nextInt(2) + 1;
+        for (int i = 0; i < amount; i++) {
+            Location spawnLoc = loc.clone().add(random.nextInt(10) - 5, 1, random.nextInt(10) - 5);
+            if (spawnLoc.getBlock().getType().isAir()) {
+                if (ev.type() == EventType.GALLEON) {
+                    loc.getWorld().spawn(spawnLoc, org.bukkit.entity.Drowned.class, entity -> {
+                        entity.customName(Component.text("§cСтраж груза"));
+                        entity.setCustomNameVisible(true);
+                    });
+                } else {
+                    loc.getWorld().spawn(spawnLoc, org.bukkit.entity.Zombie.class, entity -> {
+                        entity.customName(Component.text("§cСтраж груза"));
+                        entity.setCustomNameVisible(true);
+                    });
+                }
+            }
+        }
+    }
 
-        // Прогресс присутствия у ивента: засчитываем раз в 60 секунд, а не каждый тик
+    private void tick() {
+        if (activeEvents.isEmpty()) return;
+
         long now = System.currentTimeMillis();
-        if ((now / 60000L) % 1 == 0) { // раз в 60 секунд
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (player.getWorld().equals(ev.location().getWorld())) {
-                    if (player.getLocation().distance(ev.location()) <= 30.0) {
-                        plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.ATTEND_EVENT, "", 1);
+
+        // 1. Управление видимостью BossBar (к ближайшему ивенту)
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            ActiveEvent nearest = null;
+            double minDist = Double.MAX_VALUE;
+            
+            for (ActiveEvent ev : activeEvents) {
+                if (ev.location().getWorld().equals(p.getWorld())) {
+                    double dist = p.getLocation().distanceSquared(ev.location());
+                    if (dist < minDist) {
+                        minDist = dist;
+                        nearest = ev;
                     }
+                }
+            }
+            
+            if (nearest == null && !activeEvents.isEmpty()) {
+                nearest = activeEvents.get(0);
+            }
+
+            for (ActiveEvent ev : activeEvents) {
+                if (ev == nearest) {
+                    if (!ev.bossBar().getPlayers().contains(p)) ev.bossBar().addPlayer(p);
+                } else {
+                    if (ev.bossBar().getPlayers().contains(p)) ev.bossBar().removePlayer(p);
                 }
             }
         }
 
-        if (ev.modifier() == EventModifier.CURSED) {
-            if ((now / 1000L) % 2 == 0) {
+        // 2. Обработка каждого активного ивента
+        for (ActiveEvent ev : new ArrayList<>(activeEvents)) {
+            boolean finished = false;
+
+            if ((now / 60000L) % 1 == 0) { 
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    if (player.getWorld().equals(ev.location().getWorld()) && player.getLocation().distance(ev.location()) <= 30.0) {
+                        plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.ATTEND_EVENT, "", 1);
+                    }
+                }
+            }
+
+            if (ev.modifier() == EventModifier.CURSED && (now / 1000L) % 2 == 0) {
                 for (Player p : ev.location().getWorld().getPlayers()) {
                     if (p.getLocation().distanceSquared(ev.location()) < 20 * 20) {
                         p.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS, 60, 0));
@@ -453,92 +561,98 @@ public final class EventService {
                     }
                 }
             }
-        }
 
-        if (ev.type() == EventType.AIRDROP || ev.type() == EventType.GALLEON) {
-            long leftLock = getLockTimeLeft();
-            if (!ev.holograms().isEmpty()) {
-                org.bukkit.entity.ArmorStand holo = ev.holograms().get(0);
-                if (leftLock > 0) {
-                    holo.customName(Component.text(TextUtil.color("&b&l" + ev.type().getCleanName().toUpperCase() + " &7| &f" + formatTime(leftLock * 1000L))));
-                } else {
-                    holo.customName(Component.text(TextUtil.color("&a&lОТКРЫТ")));
+            if (ev.type() == EventType.TREASURE) {
+                for (Player p : ev.location().getWorld().getPlayers()) {
+                    double dist = p.getLocation().distance(ev.location());
+                    if (dist < 250.0) {
+                        String color = dist < 50 ? "§a" : (dist < 150 ? "§e" : "§c");
+                        p.sendActionBar(Component.text("§6🧭 Сигнал клада: " + color + String.format("%.1f", dist) + " м."));
+                    }
                 }
             }
-        }
 
-        if (ev.type() == EventType.BOSS && ev.boss() != null) {
-            if (ev.boss().isDead()) {
-                Location deathLoc = ev.boss().getLocation();
-                org.bukkit.entity.Firework fw = deathLoc.getWorld().spawn(deathLoc, org.bukkit.entity.Firework.class);
-                org.bukkit.inventory.meta.FireworkMeta meta = fw.getFireworkMeta();
-                meta.addEffect(org.bukkit.FireworkEffect.builder().withColor(org.bukkit.Color.RED).withFade(org.bukkit.Color.YELLOW).with(org.bukkit.FireworkEffect.Type.BALL_LARGE).build());
-                meta.setPower(1);
-                fw.setFireworkMeta(meta);
-                finish();
-                return;
-            } else if (random.nextInt(12) == 0) { // Примерно раз в 12 секунд
-                useBossSkill(ev.boss(), ev.location());
+            if (ev.type() == EventType.AIRDROP || ev.type() == EventType.GALLEON) {
+                long leftLock = getLockTimeLeft(ev);
+                if (!ev.holograms().isEmpty()) {
+                    org.bukkit.entity.ArmorStand holo = ev.holograms().get(0);
+                    if (leftLock > 0) {
+                        holo.customName(Component.text(TextUtil.color("&b&l" + ev.type().getCleanName().toUpperCase() + " &7| &f" + formatTime(leftLock * 1000L))));
+                        if (random.nextInt(10) == 0) spawnGuards(ev);
+                    } else {
+                        holo.customName(Component.text(TextUtil.color("&a&lОТКРЫТ")));
+                    }
+                }
             }
-        }
 
-        if (ev.type() == EventType.BOSS && ev.boss() == null) {
-            finish();
-            return;
-        }
+            if (ev.type() == EventType.BOSS && ev.boss() != null) {
+                if (ev.boss().isDead()) {
+                    Location deathLoc = ev.boss().getLocation();
+                    org.bukkit.entity.Firework fw = deathLoc.getWorld().spawn(deathLoc, org.bukkit.entity.Firework.class);
+                    org.bukkit.inventory.meta.FireworkMeta meta = fw.getFireworkMeta();
+                    meta.addEffect(org.bukkit.FireworkEffect.builder().withColor(org.bukkit.Color.RED).withFade(org.bukkit.Color.YELLOW).with(org.bukkit.FireworkEffect.Type.BALL_LARGE).build());
+                    meta.setPower(1);
+                    fw.setFireworkMeta(meta);
+                    finished = true;
+                } else if (random.nextInt(12) == 0) {
+                    useBossSkill(ev.boss(), ev.location());
+                }
+            }
 
-        long left = ev.endsAt() - System.currentTimeMillis();
-        if (left <= 0) {
-            finish();
-            return;
-        }
+            long left = ev.endsAt() - System.currentTimeMillis();
+            if (left <= 0 || (ev.type() == EventType.BOSS && ev.boss() == null)) {
+                finished = true;
+            }
 
-        if (bossBar != null) {
-            bossBar.setTitle(TextUtil.color(ev.type().getTitle() + " &7| &f" + formatTime(left)));
-            double progress = (double) left / ev.getTotalDuration();
-            bossBar.setProgress(Math.max(0.0, Math.min(1.0, progress)));
+            if (!finished) {
+                ev.bossBar().setTitle(TextUtil.color(ev.type().getTitle() + " &7| &f" + formatTime(left)));
+                double progress = (double) left / ev.getTotalDuration();
+                ev.bossBar().setProgress(Math.max(0.0, Math.min(1.0, progress)));
+            } else {
+                finishEvent(ev);
+            }
         }
     }
 
     public void finish() {
-        ActiveEvent ev = active.getAndSet(null);
-        if (ev == null) return;
+        for (ActiveEvent ev : new ArrayList<>(activeEvents)) {
+            finishEvent(ev);
+        }
+    }
 
-        // 1. Удаление босса или торговца
+    public void finishEvent(ActiveEvent ev) {
+        if (!activeEvents.remove(ev)) return;
+
         if (ev.boss() != null && ev.boss().isValid()) ev.boss().remove();
 
-        // 2. Радарная зачистка голограмм (даже если чанк выгружался)
-        ev.holograms().forEach(h -> {
-            if (h != null && h.isValid()) h.remove();
-        });
+        ev.holograms().forEach(h -> { if (h != null && h.isValid()) h.remove(); });
 
-        // Дополнительная страховка: ищем все арморстенды в радиусе 5 блоков и удаляем наши голограммы
         if (ev.location().getWorld() != null && ev.location().getChunk().isLoaded()) {
             ev.location().getNearbyEntitiesByType(ArmorStand.class, 5).forEach(as -> {
                 if (as.isMarker() && !as.isVisible()) as.remove();
             });
 
-            // 3. Зачистка сундука после окончания ивента
             if (ev.type() != EventType.BOSS) {
                 ev.location().getBlock().setType(Material.AIR);
             }
         }
 
-        if (bossBar != null) {
-            bossBar.removeAll();
-            bossBar = null;
+        if (ev.bossBar() != null) {
+            ev.bossBar().removeAll();
         }
-        if (ticker != null) { ticker.cancel(); ticker = null; }
+
+        if (activeEvents.isEmpty() && ticker != null) {
+            ticker.cancel();
+            ticker = null;
+        }
 
         Bukkit.broadcast(Component.text("§8[§bChetCraft§8] §aИвент " + ev.type().getCleanName() + " завершен."));
         rewardNearby(ev.location());
     }
 
-    public ActiveEvent active() { return active.get(); }
+    public ActiveEvent active() { return activeEvents.isEmpty() ? null : activeEvents.get(0); }
 
-    public void addPlayerToBossBar(Player player) {
-        if (bossBar != null) bossBar.addPlayer(player);
-    }
+    public void addPlayerToBossBar(Player player) { }
 
     private long durationFor(EventType type) {
         return plugin.getConfig().getLong("events." + type.name().toLowerCase() + ".duration-minutes", 15L) * 60L * 1000L;
@@ -606,10 +720,46 @@ public final class EventService {
         return false;
     }
 
+    private int[] generateEventCoords(World world, int radius, List<Player> players) {
+        int x, z;
+        if (!players.isEmpty()) {
+            Player p = players.get(random.nextInt(players.size()));
+            int dist = 150 + random.nextInt(350); // Спавн в радиусе 150-500 блоков от игрока
+            double angle = random.nextDouble() * 2 * Math.PI;
+            x = p.getLocation().getBlockX() + (int)(Math.cos(angle) * dist);
+            z = p.getLocation().getBlockZ() + (int)(Math.sin(angle) * dist);
+        } else {
+            x = random.nextInt(radius * 2) - radius;
+            z = random.nextInt(radius * 2) - radius;
+        }
+
+        // Ограничение по границе мира (отступ 10 блоков от края для страховки)
+        org.bukkit.WorldBorder border = world.getWorldBorder();
+        double borderSize = border.getSize() / 2.0;
+        int centerX = border.getCenter().getBlockX();
+        int centerZ = border.getCenter().getBlockZ();
+        
+        int minX = (int) (centerX - borderSize + 10);
+        int maxX = (int) (centerX + borderSize - 10);
+        int minZ = (int) (centerZ - borderSize + 10);
+        int maxZ = (int) (centerZ + borderSize - 10);
+        
+        x = Math.max(minX, Math.min(maxX, x));
+        z = Math.max(minZ, Math.min(maxZ, z));
+
+        return new int[]{x, z};
+    }
+
     private Location findSafeLocation(World world, int radius) {
+        List<Player> players = new ArrayList<>(world.getPlayers());
         for (int i = 0; i < 50; i++) {
-            int x = random.nextInt(radius * 2) - radius;
-            int z = random.nextInt(radius * 2) - radius;
+            int[] coords = generateEventCoords(world, radius, players);
+            int x = coords[0];
+            int z = coords[1];
+
+            // Запрет спавна около спавна (в радиусе 150 блоков от 0,0)
+            if (Math.abs(x) < 150 && Math.abs(z) < 150) continue;
+
             org.bukkit.block.Block highest = world.getHighestBlockAt(x, z);
             Location loc = highest.getLocation().add(0.5, 1, 0.5);
 
@@ -626,13 +776,23 @@ public final class EventService {
         // Fallback
         int x = random.nextInt(radius * 2) - radius;
         int z = random.nextInt(radius * 2) - radius;
+        // Даже в фолбэке стараемся избегать 0,0, но если совсем плохо, берем как есть
+        if (Math.abs(x) < 150 && Math.abs(z) < 150) {
+            x += 300;
+            z += 300;
+        }
         return world.getHighestBlockAt(x, z).getLocation().add(0.5, 1, 0.5);
     }
 
     private Location findOceanLocation(World world, int radius) {
+        List<Player> players = new ArrayList<>(world.getPlayers());
         for (int i = 0; i < 50; i++) {
-            int x = random.nextInt(radius * 2) - radius;
-            int z = random.nextInt(radius * 2) - radius;
+            int[] coords = generateEventCoords(world, radius, players);
+            int x = coords[0];
+            int z = coords[1];
+
+            if (Math.abs(x) < 150 && Math.abs(z) < 150) continue;
+
             org.bukkit.block.Block highest = world.getHighestBlockAt(x, z);
             
             if (highest.getType() != Material.WATER) continue;
@@ -651,10 +811,7 @@ public final class EventService {
         return findSafeLocation(world, radius);
     }
 
-    private void startBossBar(EventType type) {
-        bossBar = Bukkit.createBossBar(TextUtil.color(type.getTitle()), BarColor.YELLOW, BarStyle.SEGMENTED_10);
-        Bukkit.getOnlinePlayers().forEach(bossBar::addPlayer);
-    }
+
 
     private void useBossSkill(LivingEntity boss, Location loc) {
         int skill = random.nextInt(3);

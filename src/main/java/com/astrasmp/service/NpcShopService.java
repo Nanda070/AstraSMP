@@ -68,6 +68,7 @@ public final class NpcShopService implements Listener {
             case "7" -> "§4Казино (Карты и Настолки)";
             case "8" -> "§5Ивент Магазин";
             case "9" -> "§d💎 Черный Рынок";
+            case "10" -> "§8🔨 Кузнец Артефактов";
             default -> "§7Торговец";
         };
         npc.customName(net.kyori.adventure.text.Component.text(TextUtil.color(name)));
@@ -94,6 +95,7 @@ public final class NpcShopService implements Listener {
             case "7" -> openVegasTables(p);
             case "8" -> openEventShop(p, 0);
             case "9" -> openBlackMarketShop(p, 0);
+            case "10" -> services.blacksmithGui().open(p);
         }
     }
 

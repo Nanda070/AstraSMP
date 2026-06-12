@@ -1,7 +1,7 @@
 server:
   name: AstraSMP
   currency-name: Coins
-  tax-rate: 0.08
+  tax-rate: 0.02
   auction-limit-per-player: 12
   sell-cooldown-seconds: 2
   autosave-seconds: 120
@@ -9,44 +9,74 @@ server:
   world-name: world
 
 storage:
-  mode: yaml
+  mode: mysql
   mysql:
-    enabled: false
-    host: localhost
-    port: 3306
-    database: astrasmp
-    username: root
-    password: password
+    enabled: true
+    host: 185.207.164.19
+    port: 1025
+    database: s16125_astrasmp
+    username: u16125_SCLUUPENEU
+    password: "+rGV80M.dB63FuuYLVX.ytw5"
     pool-size: 8
 
 discord:
   enabled: true
-  token: ""
-  guild-id: ""
-  chat-channel-id: ""
-  log-channel-id: ""
-  control-channel-id: ""
-  linked-role-id: ""
-  admin-role-id: ""
+  token: "MTQ5MzA4MTU4NjY5Mjc4NDEyOA.GC6Eyu.artmt-_zWsYFJ2oHnr_-6VQb-Skv2VwMqNQEnA"
+  guild-id: "1324239354154975252"
+  chat-channel-id: "1493114039163818127"
+  log-channel-id: "1493114225747558522"
+  control-channel-id: "1493114039163818127"
+  linked-role-id: "1493411583743885523"
+  admin-role-id: "1493411595089346612"
+  leader-role-id: "1508625935409086644"
+  forum-channel-id: "1508625325985108170"
+  event-ping-id: "1493417811765235732"
   prefix: "!as"
 
 economy:
   prices:
-    COBBLESTONE: 
-    COAL: 
-    RAW_IRON: 
-    IRON_INGOT:
-    RAW_GOLD: 
-    GOLD_INGOT: 
-    DIAMOND: 
-    EMERALD: 
-    NETHERITE_SCRAP: 
-    REDSTONE: 
-    LAPIS_LAZULI: 
-    QUARTZ: 
-    GLOWSTONE_DUST: 
-    AMETHYST_SHARD: 
-    ANCIENT_DEBRIS: 
+    COBBLESTONE: 0.5
+    COAL: 2.0
+    RAW_IRON: 8.0
+    IRON_INGOT: 10.0
+    RAW_GOLD: 12.0
+    GOLD_INGOT: 15.0
+    DIAMOND: 100.0
+    EMERALD: 40.0
+    NETHERITE_SCRAP: 450.0
+    REDSTONE: 1.5
+    LAPIS_LAZULI: 2.5
+    QUARTZ: 3.0
+    GLOWSTONE_DUST: 4.0
+    AMETHYST_SHARD: 5.0
+    ANCIENT_DEBRIS: 400.0
+    APPLE: 1.0
+    BREAD: 3.5
+    GOLDEN_APPLE: 125.0
+    CARROT: 0.5
+    POTATO: 0.5
+    PUMPKIN: 1.0
+    MELON_SLICE: 0.2
+    SWEET_BERRIES: 0.3
+    GLOW_BERRIES: 0.8
+    MUTTON: 2.0
+    RABBIT: 2.5
+    COD: 1.5
+    SALMON: 1.5
+    TROPICAL_FISH: 5.0
+    PUFFERFISH: 8.0
+    ROTTEN_FLESH: 0.1
+    GHAST_TEAR: 75.0
+    PHANTOM_MEMBRANE: 15.0
+    SHULKER_SHELL: 150.0
+    BLAZE_ROD: 12.0
+    MAGMA_CREAM: 6.0
+    SLIME_BALL: 5.0
+    GUNPOWDER: 2.5
+    STRING: 1.0
+    SPIDER_EYE: 1.5
+    BONE: 1.5
+    ENDER_PEARL: 8.0
 
 events:
   meteor:
@@ -58,15 +88,26 @@ events:
   boss:
     interval-minutes: 120
     duration-minutes: 15
-  chaos:
+  merchant:
     interval-minutes: 300
-    duration-minutes: 25
+    duration-minutes: 10
   treasure:
     interval-minutes: 110
     duration-minutes: 12
+  galleon:
+    interval-minutes: 240
+    duration-minutes: 20
+  loot:
+    basic:
+      - "IRON_INGOT"
+      - "GOLD_INGOT"
+      - "DIAMOND"
+      - "EMERALD"
+      - "EXPERIENCE_BOTTLE"
+      - "GOLDEN_APPLE"
 
 mmr:
-  start: 1000
+  start: 50
   bronze: 0
   silver: 1100
   gold: 1300
@@ -93,8 +134,23 @@ spawn:
 locations:
   spawn: "world;26;68;444"
   pvp: "world;26;68;422"
-  afk: "world;61;68;435"
+  afk: "world;1;68;420"
   casino: "world;59.00;68.06;464.48"
   eventshop: "world;32.69;68.00;509.75"
   duel_pos1: "world;35;76;385"
   duel_pos2: "world;17;76;385"
+
+rewards:
+  base-coins: 500
+  base-items:
+    - "IRON_INGOT:2"
+  weekly-coins: 10000
+  weekly-ep: 100
+  weekly-items:
+    - "DIAMOND:3"
+    - "GOLD_INGOT:10"
+  monthly-coins: 50000
+  monthly-ep: 1000
+  monthly-items:
+    - "NETHERITE_INGOT:1"
+    - "ENCHANTED_GOLDEN_APPLE:2"

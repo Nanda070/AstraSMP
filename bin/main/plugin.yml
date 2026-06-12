@@ -31,6 +31,9 @@ commands:
     description: Подробная статистика игрока
   contract:
     description: Управление контрактами на убийство
+  bounty:
+    description: Меню и управление заказами на убийство
+    aliases: [bounties, охота]
   items:
     description: Просмотр уникальных артефактов
   marry:
@@ -49,6 +52,9 @@ commands:
     description: Телепорт в Казино
   eventshop:
     description: Телепорт в Ивент Шоп
+  tutorial:
+    description: Показать туториал по механикам
+    usage: /tutorial <topic>
   guild:
     description: Главная команда управления гильдиями
     aliases: [ g, клан, гильдия ]
@@ -57,6 +63,12 @@ commands:
   duel:
     description: Вызвать игрока на дуэль
     usage: /duel <ник>
+  rewards:
+    description: Ежедневные награды
+    aliases: [reward, daily, календарь]
+  talents:
+    description: Пассивные таланты и навыки
+    aliases: [talent, skills, навыки]
   admin:
     description: Панель управления сервером
     usage: /admin <give|npc|event|setcoins|awardblock|setspawn|reload>
@@ -80,8 +92,31 @@ commands:
   setrtpblock:
     description: Сделать блок под ногами точкой RTP
     permission: astrasmp.admin
-
-
+  gm:
+    description: Изменить игровой режим
+    usage: /gm <0|1|2|3> [игрок]
+    permission: astrasmp.admin
+  god:
+    description: Включить/выключить режим бога
+    usage: /god [игрок]
+    permission: astrasmp.admin
+  heal:
+    description: Восстановить здоровье и сытость
+    usage: /heal [игрок]
+    permission: astrasmp.admin
+  feed:
+    description: Восстановить сытость
+    usage: /feed [игрок]
+    permission: astrasmp.admin
+  vanish:
+    description: Стать невидимым
+    permission: astrasmp.admin
+  unvanish:
+    description: Стать видимым
+    permission: astrasmp.admin
+  dm:
+    description: Написать личное сообщение игроку
+    usage: /dm <игрок> <текст>
 
 permissions:
   astrasmp.admin:

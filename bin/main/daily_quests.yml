@@ -1,0 +1,244 @@
+quests:
+  "daily_mine_wood":
+    name: "Дровосек"
+    action: MINE_BLOCK
+    target: "LOG"
+    required: 128
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_mine_stone":
+    name: "Шахтер"
+    action: MINE_BLOCK
+    target: "STONE"
+    required: 256
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_kill_zombies":
+    name: "Истребитель зомби"
+    action: KILL_MOB
+    target: "ZOMBIE"
+    required: 30
+    rewardInfo: "500-1500 ❂, +5 MMR"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+      - "admin setmmr %player% +5"
+  "daily_sell_items":
+    name: "Барыга"
+    action: SELL_ITEM
+    target: ""
+    required: 5
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_smelt_iron":
+    name: "Кузнец"
+    action: SMELT
+    target: "IRON_INGOT"
+    required: 64
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_ah_sell":
+    name: "Торговец аукциона"
+    action: AH_SELL
+    target: ""
+    required: 3
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_event":
+    name: "Искатель приключений"
+    action: ATTEND_EVENT
+    target: ""
+    required: 1
+    rewardInfo: "500-1500 ❂, +10 EP"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_mine_diamond":
+    name: "Блестяшки"
+    action: MINE_BLOCK
+    target: "DIAMOND_ORE"
+    required: 10
+    rewardInfo: "500-1500 ❂, 1 Алмаз"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+      - "give %player% diamond 1"
+  "daily_kill_skeletons":
+    name: "Костолом"
+    action: KILL_MOB
+    target: "SKELETON"
+    required: 25
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_kill_creepers":
+    name: "Сапер"
+    action: KILL_MOB
+    target: "CREEPER"
+    required: 15
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_smelt_gold":
+    name: "Ювелир"
+    action: SMELT
+    target: "GOLD_INGOT"
+    required: 32
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_mine_copper":
+    name: "Медный магнат"
+    action: MINE_BLOCK
+    target: "COPPER_ORE"
+    required: 100
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_mine_coal":
+    name: "Угледобытчик"
+    action: MINE_BLOCK
+    target: "COAL_ORE"
+    required: 128
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_kill_spiders":
+    name: "Арахнофоб"
+    action: KILL_MOB
+    target: "SPIDER"
+    required: 20
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_smelt_copper":
+    name: "Медный плавильщик"
+    action: SMELT
+    target: "COPPER_INGOT"
+    required: 64
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_mine_emerald":
+    name: "Изумрудный город"
+    action: MINE_BLOCK
+    target: "EMERALD_ORE"
+    required: 5
+    rewardInfo: "1000-2000 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{1000-2000}"
+  "daily_kill_endermen":
+    name: "Гроза Энда"
+    action: KILL_MOB
+    target: "ENDERMAN"
+    required: 10
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_kill_pigs":
+    name: "Мясник (Свиньи)"
+    action: KILL_MOB
+    target: "PIG"
+    required: 20
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_kill_cows":
+    name: "Мясник (Коровы)"
+    action: KILL_MOB
+    target: "COW"
+    required: 20
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_mine_sand":
+    name: "Песочный человек"
+    action: MINE_BLOCK
+    target: "SAND"
+    required: 256
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_mine_gravel":
+    name: "Искатель кремня"
+    action: MINE_BLOCK
+    target: "GRAVEL"
+    required: 128
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_mine_obsidian":
+    name: "Крепкий орешек"
+    action: MINE_BLOCK
+    target: "OBSIDIAN"
+    required: 16
+    rewardInfo: "800-1800 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{800-1800}"
+  "daily_kill_blaze":
+    name: "Повелитель огня"
+    action: KILL_MOB
+    target: "BLAZE"
+    required: 15
+    rewardInfo: "600-1600 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{600-1600}"
+  "daily_kill_wither_skeleton":
+    name: "Охотник за черепами"
+    action: KILL_MOB
+    target: "WITHER_SKELETON"
+    required: 10
+    rewardInfo: "800-1800 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{800-1800}"
+  "daily_mine_netherrack":
+    name: "Адский шахтер"
+    action: MINE_BLOCK
+    target: "NETHERRACK"
+    required: 512
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_mine_quartz":
+    name: "Искатель кварца"
+    action: MINE_BLOCK
+    target: "NETHER_QUARTZ_ORE"
+    required: 64
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_kill_ghast":
+    name: "Плакса"
+    action: KILL_MOB
+    target: "GHAST"
+    required: 5
+    rewardInfo: "800-1800 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{800-1800}"
+  "daily_kill_magma_cube":
+    name: "Горячая штучка"
+    action: KILL_MOB
+    target: "MAGMA_CUBE"
+    required: 20
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
+  "daily_mine_ancient_debris":
+    name: "Древние обломки"
+    action: MINE_BLOCK
+    target: "ANCIENT_DEBRIS"
+    required: 2
+    rewardInfo: "1500-3000 ❂, +20 MMR"
+    rewardCommands:
+      - "admin setcoins %player% +{1500-3000}"
+      - "admin setmmr %player% +20"
+  "daily_rtp_use":
+    name: "Телепортер"
+    action: USE_RTP
+    target: ""
+    required: 3
+    rewardInfo: "500-1500 ❂"
+    rewardCommands:
+      - "admin setcoins %player% +{500-1500}"
