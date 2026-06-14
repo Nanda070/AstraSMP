@@ -19,6 +19,28 @@ public class ItemSerializer {
         return item.getType().name() + ":" + cmd;
     }
 
+    public static ItemStack fromHash(String hash) {
+        if (hash == null || hash.isEmpty()) return null;
+        try {
+            String[] parts = hash.split(":");
+            org.bukkit.Material mat = org.bukkit.Material.valueOf(parts[0]);
+            ItemStack item = new ItemStack(mat);
+            if (parts.length > 1) {
+                int cmd = Integer.parseInt(parts[1]);
+                if (cmd != 0) {
+                    org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+                    if (meta != null) {
+                        meta.setCustomModelData(cmd);
+                        item.setItemMeta(meta);
+                    }
+                }
+            }
+            return item;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static String toBase64(ItemStack item) {
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

@@ -113,26 +113,13 @@ public final class TrampolineListener implements Listener {
         Block blockUnder = locUnder.getBlock();
         
         // Проверяем, наступил ли игрок на батут
-        if (isTrampoline(blockUnder)) {
-            // Если игрок двигается вниз (падает)
-            if (player.getVelocity().getY() < -0.1) {
-                Vector vel = player.getVelocity();
-                // Придаем сильный импульс вверх (например, множитель падения или фиксированный мощный прыжок)
-                // Math.max позволяет отбивать как при падении (отражаем Y), так и при обычном наступании
-                double jumpVelocity = Math.max(1.5, Math.abs(vel.getY()) * 1.5);
-                // Ограничим максимальную скорость, чтобы не выкинуло за орбиту
-                jumpVelocity = Math.min(jumpVelocity, 3.5);
-                
-                player.setVelocity(new Vector(vel.getX(), jumpVelocity, vel.getZ()));
+        if (isTrampoline(blockUnder) && !player.isSneaking()) {
+            Vector vel = player.getVelocity();
+            // Подбрасываем высоко вверх при любом наступании (если игрок уже не летит высоко)
+            if (vel.getY() < 1.0) {
+                player.setVelocity(new Vector(vel.getX(), 2.5, vel.getZ()));
                 player.playSound(player.getLocation(), Sound.ENTITY_SLIME_SQUISH, 1.0f, 0.5f);
                 player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 0.5f, 1.0f);
-            } else if (player.getVelocity().getY() >= 0 && event.getFrom().getY() < event.getTo().getY()) {
-                // Если игрок просто прыгнул стоя на блоке
-                Vector vel = player.getVelocity();
-                if (vel.getY() > 0) {
-                    player.setVelocity(new Vector(vel.getX(), 1.5, vel.getZ()));
-                    player.playSound(player.getLocation(), Sound.ENTITY_SLIME_SQUISH, 1.0f, 0.5f);
-                }
             }
         }
     }

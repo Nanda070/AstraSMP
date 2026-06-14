@@ -25,11 +25,23 @@ public final class HelpCommand implements org.bukkit.command.TabExecutor {
         TextUtil.send(player, "&f/ah &7- Аукцион предметов");
         TextUtil.send(player, "&f/link &7- Привязать Discord (&aБонус!&7)");
         TextUtil.send(player, "&f/quest &7- Список твоих заданий");
+        TextUtil.send(player, "&f/talents &7- Дерево талантов");
+        TextUtil.send(player, "&f/rewards &7- Ежедневные награды");
+        TextUtil.send(player, "&f/stats &7- Твоя статистика");
+        TextUtil.send(player, "&f/top &7- Топ игроков сервера");
+        TextUtil.send(player, "&f/sell &7- Продать предметы (Меню)");
+        TextUtil.send(player, "&f/blacksmith &7- Кузнец (Улучшение)");
         TextUtil.send(player, "&f/rtp &7- Рандомная телепортация");
+        TextUtil.send(player, "&f/spawn &7- Вернуться на спавн");
         TextUtil.send(player, "&f/contract &7- Заказать убийство или контракт");
+        TextUtil.send(player, "&f/bounty &7- Список наград за головы");
         TextUtil.send(player, "&f/marry &7- Свадьбы и отношения");
-        TextUtil.send(player, "&f/prefix &7- Управление твоим префиксом");
         TextUtil.send(player, "&f/guild &7- Управление твоей гильдией");
+        TextUtil.send(player, "&f/prefix &7- Управление твоим префиксом");
+        TextUtil.send(player, "&f/feed &7- Утолить голод");
+        TextUtil.send(player, "&f/heal &7- Вылечить себя");
+        TextUtil.send(player, "&f/location &7- Поделиться координатами");
+        TextUtil.send(player, "&f/tutorial &7- Пройти обучение");
         TextUtil.send(player, "&b&l-------------------------");
 
         return true;

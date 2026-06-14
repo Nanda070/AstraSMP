@@ -138,4 +138,42 @@ public final class ArmorMechanicsListener implements Listener {
             }
         }
     }
+
+    // ==========================================
+    // РЫВОК У КЛАССОВ
+    // ==========================================
+    private final java.util.Map<java.util.UUID, Long> dashCooldowns = new java.util.HashMap<>();
+
+    @EventHandler
+    public void onInteract(org.bukkit.event.player.PlayerInteractEvent event) {
+        if (!event.getAction().isRightClick()) return;
+        Player p = event.getPlayer();
+        
+        org.bukkit.Material mainHand = p.getInventory().getItemInMainHand().getType();
+        boolean validItem = mainHand.isAir() || mainHand.name().endsWith("_SWORD") || mainHand.name().endsWith("_AXE");
+        
+        if (validItem) {
+            if (hasFullSet(p, "miner_") || hasFullSet(p, "juggernaut_") ||
+                hasFullSet(p, "berserker_") || hasFullSet(p, "mercenary_") ||
+                hasFullSet(p, "bloodhunter_") || hasFullSet(p, "inquisitor_") ||
+                hasFullSet(p, "assassin_")) {
+                
+                long now = System.currentTimeMillis();
+                long last = dashCooldowns.getOrDefault(p.getUniqueId(), 0L);
+                if (now - last < 5000) {
+                    long timeLeft = (5000 - (now - last)) / 1000;
+                    if (timeLeft > 0 && mainHand.isAir()) {
+                        com.astrasmp.util.TextUtil.send(p, "&cРывок перезаряжается! Осталось: " + timeLeft + "с.");
+                    }
+                    return;
+                }
+                
+                dashCooldowns.put(p.getUniqueId(), now);
+                Vector dir = p.getLocation().getDirection().normalize().multiply(1.5).setY(0.4);
+                p.setVelocity(dir);
+                p.playSound(p.getLocation(), org.bukkit.Sound.ENTITY_ENDER_DRAGON_FLAP, 1f, 1.5f);
+                p.spawnParticle(Particle.CLOUD, p.getLocation(), 20, 0.5, 0.5, 0.5, 0.1);
+            }
+        }
+    }
 }

@@ -52,7 +52,7 @@ public class METerminalGui implements Listener {
         List<Map.Entry<String, Long>> filteredItems = new ArrayList<>();
 
         for (Map.Entry<String, Long> entry : network.getStorage().entrySet()) {
-            ItemStack item = ItemSerializer.fromBase64(entry.getKey());
+            ItemStack item = ItemSerializer.fromHash(entry.getKey());
             if (item == null)
                 continue;
 
@@ -76,7 +76,7 @@ public class METerminalGui implements Listener {
 
         for (int i = startIndex; i < endIndex; i++) {
             Map.Entry<String, Long> entry = filteredItems.get(i);
-            ItemStack displayItem = ItemSerializer.fromBase64(entry.getKey());
+            ItemStack displayItem = ItemSerializer.fromHash(entry.getKey());
 
             if (displayItem != null) {
                 long amount = entry.getValue();
@@ -230,7 +230,7 @@ public class METerminalGui implements Listener {
             if (hash == null)
                 return;
 
-            ItemStack realItem = ItemSerializer.fromBase64(hash);
+            ItemStack realItem = ItemSerializer.fromHash(hash);
             if (realItem == null)
                 return;
 
