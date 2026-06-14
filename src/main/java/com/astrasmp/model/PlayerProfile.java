@@ -37,6 +37,10 @@ public final class PlayerProfile {
     private String customPrefix = "";
     private String prefixColor = "&7";
 
+    // Темная Магия
+    private int corruption = 0;
+    private boolean hasPact = false;
+
     // transient поля не сохраняются в конфиг-файлы
     private transient boolean frozen = false;
 
@@ -97,6 +101,13 @@ public final class PlayerProfile {
     public void setTalents(Map<String, Integer> talents) { this.talents = talents; }
     public int getTalentLevel(String talentId) { return talents.getOrDefault(talentId, 0); }
     public void setTalentLevel(String talentId, int level) { talents.put(talentId, level); }
+
+    // --- ГЕТТЕРЫ И СЕТТЕРЫ ТЕМНОЙ МАГИИ ---
+    public int getCorruption() { return corruption; }
+    public void setCorruption(int corruption) { this.corruption = Math.max(0, corruption); }
+
+    public boolean hasPact() { return hasPact; }
+    public void setHasPact(boolean hasPact) { this.hasPact = hasPact; }
 
     // --- ОСТАЛЬНЫЕ ГЕТТЕРЫ И СЕТТЕРЫ ---
 

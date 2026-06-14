@@ -41,6 +41,9 @@ public final class ServiceManager {
     // ME-сеть
     private final MENetworkService meNetwork;
 
+    // Темная Магия
+    private com.astrasmp.rift.RiftManager riftManager;
+
     public ServiceManager(AstraSMPPlugin plugin) {
         this.plugin = plugin;
 
@@ -152,4 +155,8 @@ public final class ServiceManager {
 
     // Геттер ME-сети
     public MENetworkService meNetwork() { return meNetwork; }
+
+    // Геттеры Темной Магии
+    public void setRiftManager(com.astrasmp.rift.RiftManager riftManager) { this.riftManager = riftManager; }
+    public com.astrasmp.rift.RiftManager rift() { return riftManager; }
 }

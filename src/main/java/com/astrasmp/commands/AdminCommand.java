@@ -214,7 +214,41 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                 TextUtil.send(p, "&aТочка спавна успешно установлена!");
             }
 
-            default -> TextUtil.send(sender, "&cНеизвестная подкоманда. Используйте: reload, setcoins, setevent, give, me, event, spawnevent, npc, awardblock, setspawn.");
+            // Управление Скверной
+            case "corruption" -> {
+                if (args.length < 4) return usage(sender, "/admin corruption <add|set> <игрок> <количество>");
+                try {
+                    OfflinePlayer target = Bukkit.getOfflinePlayer(args[2]);
+                    int amount = Integer.parseInt(args[3]);
+                    PlayerProfile profile = services.economy().profile(target.getUniqueId(), target.getName() == null ? args[2] : target.getName());
+                    if (profile != null) {
+                        if (args[1].equalsIgnoreCase("add")) {
+                            profile.setCorruption(profile.getCorruption() + amount);
+                        } else {
+                            profile.setCorruption(amount);
+                        }
+                        services.store().requestSave();
+                        TextUtil.send(sender, "&5[Скверна] &dУровень скверны игрока &f" + args[2] + " &dтеперь: &f" + profile.getCorruption());
+                    }
+                } catch (NumberFormatException e) {
+                    TextUtil.send(sender, "&cОшибка: количество должно быть числом.");
+                }
+            }
+
+            // Управление Вратами Бездны
+            case "rift" -> {
+                if (!(sender instanceof Player p)) {
+                    TextUtil.send(sender, "&cЭту команду может использовать только игрок.");
+                    return true;
+                }
+                if (args.length < 2) return usage(sender, "/admin rift <spawn>");
+                if (args[1].equalsIgnoreCase("spawn")) {
+                    services.rift().createRift(p.getLocation());
+                    TextUtil.send(p, "&4[Врата] &cВрата Бездны открыты на ваших координатах.");
+                }
+            }
+
+            default -> TextUtil.send(sender, "&cНеизвестная подкоманда. Используйте: reload, setcoins, setevent, give, me, event, spawnevent, npc, awardblock, setspawn, corruption, rift.");
         }
         return true;
     }
@@ -312,6 +346,15 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
             
             // Батут
             case "trampoline" -> ItemRegistry.trampoline();
+            
+            // Темная Магия
+            case "sacrificial_dagger" -> ItemRegistry.sacrificialDagger();
+            case "blood_drop" -> ItemRegistry.bloodDrop();
+            case "demon_soul" -> ItemRegistry.demonSoul();
+            case "demonic_pact" -> ItemRegistry.demonicPact();
+            case "blood_cauldron" -> ItemRegistry.bloodCauldron();
+            case "ritual_altar" -> ItemRegistry.ritualAltar();
+            case "cleansing_totem" -> ItemRegistry.cleansingTotem();
             default -> null;
         };
 
@@ -336,7 +379,7 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
         if (!sender.isOp()) return List.of();
 
         if (args.length == 1) {
-            return List.of("reload", "setcoins", "setevent", "spawnevent", "give", "me", "event", "npc", "awardblock", "setspawn").stream()
+            return List.of("reload", "setcoins", "setevent", "spawnevent", "give", "me", "event", "npc", "awardblock", "setspawn", "corruption", "rift").stream()
                     .filter(s -> s.startsWith(args[0].toLowerCase())).toList();
         }
 
@@ -372,7 +415,8 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                         "miner_helmet", "miner_chestplate", "miner_leggings", "miner_boots",
                         "bloodhunter_helmet", "bloodhunter_chestplate", "bloodhunter_leggings", "bloodhunter_boots",
                         "trophy_common", "trophy_legendary", "relic_time_core", "relic_void_fragment", "artifact_heart_of_world",
-                        "trampoline", "nanda"
+                        "trampoline", "nanda",
+                        "sacrificial_dagger", "blood_drop", "demon_soul", "demonic_pact", "blood_cauldron", "ritual_altar", "cleansing_totem"
                 ).stream().filter(s -> s.startsWith(args[2].toLowerCase())).toList();
             }
             if (args[0].equalsIgnoreCase("me")) {

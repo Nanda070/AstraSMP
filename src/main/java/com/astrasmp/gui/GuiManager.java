@@ -35,7 +35,7 @@ public final class GuiManager {
 
     public enum MenuType {
         MAIN, AUCTION, ITEMS, RECIPE_VIEW, STATS, CONTRACTS, ADMIN, SELL_RESOURCES, SELL_FOOD, SELL_DROPS,
-        ADMIN_PLAYERS, GUILD_UPGRADE, ADMIN_GUILDS, ADMIN_GIVE_ITEMS, GUILD, GUILD_MEMBERS, GUILD_RANKS_LIST, GUILD_RANK_SETTINGS, GUILD_RANK_PERMISSIONS, GUILD_TREASURY, QUESTS
+        ADMIN_PLAYERS, GUILD_UPGRADE, ADMIN_GUILDS, ADMIN_GIVE_ITEMS, GUILD, GUILD_MEMBERS, GUILD_RANKS_LIST, GUILD_RANK_SETTINGS, GUILD_RANK_PERMISSIONS, GUILD_TREASURY, QUESTS, RITUAL_GUIDE
     }
 
     public record MenuHolder(MenuType type, int page, String query, String metadata) implements InventoryHolder {
@@ -116,12 +116,52 @@ public final class GuiManager {
         inv.setItem(23, button(Material.ENDER_EYE, "&bСтатистика", "&7Топ игроков и MMR"));
         inv.setItem(24, button(Material.BOOK, "&5Контракты", "&7Заказы на убийства"));
         inv.setItem(31, button(Material.WHITE_BANNER, "&6Моя Гильдия", "&7Управление кланом", "&eКлик: Открыть меню"));
+        inv.setItem(33, button(Material.CRYING_OBSIDIAN, "&5Темная Магия", "&7Ритуалы, Контракты и Алтари", "&eКлик: Открыть гайд"));
 
         inv.setItem(37, build(Material.COMPASS, "&bСпавн", "&7Телепортация в\n&7безопасную зону"));
         inv.setItem(38, build(Material.DIAMOND_SWORD, "&cPvP Арена", "&7Сражайся с другими\n&7игроками!"));
         inv.setItem(40, build(Material.EMERALD, "&6Казино", "&7Испытай удачу\n&7в рулетке"));
         inv.setItem(42, build(Material.GOLDEN_APPLE, "&dИвент Шоп", "&7Уникальные вещи\n&7за Event Points"));
         inv.setItem(43, build(Material.CAMPFIRE, "&eAFK Зона", "&7Стой и получай\n&7по 5 ❂ в минуту"));
+
+        player.openInventory(inv);
+    }
+
+    public void openRitualGuide(Player player) {
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.RITUAL_GUIDE, 0, "", ""), 54, title("Гайд: Темная Магия"));
+        fill(inv);
+
+        // Основные механики
+        inv.setItem(11, button(Material.CRYING_OBSIDIAN, "&5Алтари и Круги", 
+                "&7Чтобы начать ритуал, поставьте", "&5Ядро Алтаря&7 и окружите его", "&7редстоуном и свечами.", 
+                "", "&7Уровень 1: 4 пыли крестом, 4 свечи по углам.", "&7Уровень 2: 5х5 кольцо и 4 черепа."));
+                
+        inv.setItem(12, button(Material.NETHERITE_SWORD, "&cЖертвоприношения", 
+                "&7Бросайте ресурсы на Ядро Алтаря", "&7и убивайте мобов &4Ритуальным Кинжалом", "&7прямо внутри круга.", 
+                "", "&7Кликните пустой рукой по алтарю,", "&7чтобы начертить пентаграмму."));
+                
+        inv.setItem(13, button(Material.REDSTONE, "&4Скверна", 
+                "&7Каждый ритуал наполняет вашу душу Скверной.", "&7Скверна невидима, но дает эффекты:", 
+                "", "&7• 50: Кровавые следы", "&7• 200: Пассивное Ночное Зрение", "&7• 500: Пассивная Сила"));
+
+        inv.setItem(14, button(Material.CAULDRON, "&cРезервуары Крови", 
+                "&7Поставьте котел с водой", "&7и убивайте мобов рядом с ним,", "&7чтобы собирать &cКровь&7 для ритуалов."));
+
+        inv.setItem(15, button(Material.OBSIDIAN, "&5Врата Бездны", 
+                "&7Особые ритуалы могут прорвать ткань", "&7реальности. Врата Бездны будут", "&7искажать мир вокруг себя."));
+
+        inv.setItem(16, button(Material.PAPER, "&8Контракты", 
+                "&7Обменяйте часть своего максимального", "&7здоровья на невероятные баффы", "&7с помощью Демонических Контрактов!"));
+
+        // Рецепты
+        inv.setItem(28, button(Material.RED_DYE, "&cРецепт: Капля Крови", "&7Алтарь: &e1 уровень", "&7Ресурсы: &f1x Гнилая Плоть", "&7Жертва: &dСвинья"));
+        inv.setItem(29, button(Material.GHAST_TEAR, "&5Рецепт: Душа Демона", "&7Алтарь: &e2 уровень", "&7Ресурсы: &b1x Алмаз", "&7Жертва: &2Зомби"));
+        inv.setItem(30, button(Material.NETHERITE_SWORD, "&8Рецепт: Теневой Клинок", "&7Алтарь: &e3 уровень", "&7Ресурсы: &81x Незеритовый меч, &c1x Капля крови", "&7Жертва: &cИгрок"));
+        inv.setItem(31, button(Material.PAPER, "&4Рецепт: Контракт", "&7Алтарь: &e3 уровень", "&7Ресурсы: &f1x Бумага, &51x Душа Демона", "&7Жертва: &8Скелет-Иссушитель"));
+        inv.setItem(32, button(Material.ENDER_PEARL, "&5Рецепт: Врата Бездны", "&7Алтарь: &e3 уровень", "&7Ресурсы: &51x Душа Демона, &51x Ядро Алтаря", "&7Жертва: &dЭндермен"));
+        inv.setItem(33, button(Material.GOLDEN_APPLE, "&eРецепт: Ритуал Очищения", "&7Алтарь: &e2 уровень", "&7Ресурсы: &e1x Золотое Яблоко, &f1x Слеза Гаста", "&7Жертва: &aЖитель"));
+
+        inv.setItem(49, button(Material.ARROW, "&cНазад в меню"));
 
         player.openInventory(inv);
     }
@@ -373,6 +413,14 @@ public final class GuiManager {
             inv.setItem(28, ItemRegistry.relic("time_core", org.bukkit.Material.CLOCK, "§dЯдро времени", "Замедляет время вокруг владельца."));
             inv.setItem(29, ItemRegistry.relic("void_fragment", org.bukkit.Material.AMETHYST_SHARD, "§5Фрагмент пустоты", "Рывок через пустоту."));
             inv.setItem(30, ItemRegistry.artifact("heart_of_world", org.bukkit.Material.HEART_OF_THE_SEA, "§bСердце мира", "Пассивная защита для носителя."));
+        } else if (category.equals("Ритуалы")) {
+            inv.setItem(10, ItemRegistry.sacrificialDagger());
+            inv.setItem(11, ItemRegistry.bloodDrop());
+            inv.setItem(12, ItemRegistry.demonSoul());
+            inv.setItem(13, ItemRegistry.demonicPact());
+            inv.setItem(14, ItemRegistry.bloodCauldron());
+            inv.setItem(15, ItemRegistry.ritualAltar());
+            inv.setItem(16, ItemRegistry.cleansingTotem());
         }
 
         inv.setItem(46, button(Material.NETHERITE_SWORD, "&aОружие", "&7Клик для фильтра"));
@@ -382,6 +430,7 @@ public final class GuiManager {
         inv.setItem(50, button(Material.TOTEM_OF_UNDYING, "&6ТоТемы", "&7Клик для фильтра"));
         inv.setItem(51, button(Material.LODESTONE, "&dМЭ Сеть", "&7Клик для фильтра"));
         inv.setItem(52, button(Material.NETHER_STAR, "&dРазное", "&7Клик для фильтра"));
+        inv.setItem(53, button(Material.CRYING_OBSIDIAN, "&5Ритуалы", "&7Клик для фильтра"));
 
         player.openInventory(inv);
     }
@@ -885,6 +934,14 @@ public final class GuiManager {
             inv.setItem(28, withLoreHint(ItemRegistry.relic("time_core", org.bukkit.Material.CLOCK, "§dЯдро времени", "Замедляет время вокруг владельца.")));
             inv.setItem(29, withLoreHint(ItemRegistry.relic("void_fragment", org.bukkit.Material.AMETHYST_SHARD, "§5Фрагмент пустоты", "Рывок через пустоту.")));
             inv.setItem(30, withLoreHint(ItemRegistry.artifact("heart_of_world", org.bukkit.Material.HEART_OF_THE_SEA, "§bСердце мира", "Пассивная защита для носителя.")));
+        } else if (category.equals("Ритуалы")) {
+            inv.setItem(10, withLoreHint(ItemRegistry.sacrificialDagger()));
+            inv.setItem(11, withLoreHint(ItemRegistry.bloodDrop()));
+            inv.setItem(12, withLoreHint(ItemRegistry.demonSoul()));
+            inv.setItem(13, withLoreHint(ItemRegistry.demonicPact()));
+            inv.setItem(14, withLoreHint(ItemRegistry.bloodCauldron()));
+            inv.setItem(15, withLoreHint(ItemRegistry.ritualAltar()));
+            inv.setItem(16, withLoreHint(ItemRegistry.cleansingTotem()));
         }
 
         inv.setItem(46, button(Material.NETHERITE_SWORD, "&aОружие", "&7Клик для просмотра"));
@@ -894,6 +951,7 @@ public final class GuiManager {
         inv.setItem(50, button(Material.TOTEM_OF_UNDYING, "&6ТоТемы", "&7Клик для просмотра"));
         inv.setItem(51, button(Material.LODESTONE, "&dМЭ Сеть", "&7Клик для просмотра"));
         inv.setItem(52, button(Material.NETHER_STAR, "&dРазное", "&7Клик для просмотра"));
+        inv.setItem(53, button(Material.CRYING_OBSIDIAN, "&5Ритуалы", "&7Клик для просмотра"));
 
         player.openInventory(inv);
     }
@@ -929,12 +987,16 @@ public final class GuiManager {
                         if (guild != null) openGuildMain(player, guild);
                         else TextUtil.send(player, "&cУ вас нет гильдии! Создайте её: /guild create <название>");
                     }
+                    case 33 -> openRitualGuide(player);
                     case 37 -> { player.closeInventory(); services.afk().teleportToLocation(player, "spawn"); }
                     case 38 -> { player.closeInventory(); services.afk().teleportToLocation(player, "pvp"); }
                     case 40 -> { player.closeInventory(); services.afk().teleportToLocation(player, "casino"); }
                     case 42 -> { player.closeInventory(); services.afk().teleportToLocation(player, "eventshop"); }
                     case 43 -> { player.closeInventory(); services.afk().teleportToLocation(player, "afk"); }
                 }
+            }
+            case RITUAL_GUIDE -> {
+                if (event.getSlot() == 49) openMain(player);
             }
             case SELL_RESOURCES, SELL_FOOD, SELL_DROPS -> {
                 if (clicked.getType() == Material.ARROW) {
@@ -974,6 +1036,8 @@ public final class GuiManager {
                     openItems(player, "МЭ Сеть");
                 } else if (event.getSlot() == 52) {
                     openItems(player, "Разное");
+                } else if (event.getSlot() == 53) {
+                    openItems(player, "Ритуалы");
                 } else if (event.getSlot() < 45) {
                     String customId = ItemRegistry.id(clicked);
                     if (customId != null && getRecipeMatrix(customId) != null) {
@@ -1010,6 +1074,8 @@ public final class GuiManager {
                     openAdminItems(player, "МЭ Сеть");
                 } else if (event.getSlot() == 52) {
                     openAdminItems(player, "Разное");
+                } else if (event.getSlot() == 53) {
+                    openAdminItems(player, "Ритуалы");
                 } else if (event.getSlot() < 45) {
                     player.getInventory().addItem(clicked.clone());
                     TextUtil.send(player, "&a&l[!] &aВы выдали себе предмет!");

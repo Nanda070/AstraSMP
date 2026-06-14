@@ -146,7 +146,10 @@ public final class ArmorMechanicsListener implements Listener {
 
     @EventHandler
     public void onInteract(org.bukkit.event.player.PlayerInteractEvent event) {
-        if (!event.getAction().isRightClick()) return;
+        org.bukkit.event.block.Action action = event.getAction();
+        // Right-clicking air with a sword doesn't send packets in modern versions,
+        // so we also allow LEFT_CLICK_AIR to trigger the dash "in the air".
+        if (!action.isRightClick() && action != org.bukkit.event.block.Action.LEFT_CLICK_AIR) return;
         Player p = event.getPlayer();
         
         org.bukkit.Material mainHand = p.getInventory().getItemInMainHand().getType();

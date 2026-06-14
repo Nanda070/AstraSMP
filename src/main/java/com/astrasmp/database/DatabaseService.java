@@ -145,6 +145,23 @@ public class DatabaseService {
             try { s.execute("ALTER TABLE profiles ADD COLUMN last_login_date VARCHAR(16)"); } catch (SQLException ignored) {}
             try { s.execute("ALTER TABLE profiles ADD COLUMN daily_reward_day INT DEFAULT 1"); } catch (SQLException ignored) {}
             try { s.execute("ALTER TABLE profiles ADD COLUMN talents TEXT"); } catch (SQLException ignored) {}
+            try { s.execute("ALTER TABLE profiles ADD COLUMN corruption INT DEFAULT 0"); } catch (SQLException ignored) {}
+            try { s.execute("ALTER TABLE profiles ADD COLUMN has_pact BOOLEAN DEFAULT 0"); } catch (SQLException ignored) {}
+
+            s.execute("CREATE TABLE IF NOT EXISTS blood_tanks (" +
+                    "world VARCHAR(64), " +
+                    "x INT, " +
+                    "y INT, " +
+                    "z INT, " +
+                    "amount INT, " +
+                    "PRIMARY KEY (world, x, y, z))");
+
+            s.execute("CREATE TABLE IF NOT EXISTS rifts (" +
+                    "world VARCHAR(64), " +
+                    "x INT, " +
+                    "y INT, " +
+                    "z INT, " +
+                    "PRIMARY KEY (world, x, y, z))");
 
             s.execute("CREATE TABLE IF NOT EXISTS auction_lots (" +
                     "id BIGINT PRIMARY KEY, " +
@@ -252,6 +269,9 @@ public class DatabaseService {
                     }
                 }
 
+                p.setCorruption(rs.getInt("corruption"));
+                p.setHasPact(rs.getBoolean("has_pact"));
+
                 loaded.add(p);
             }
         } catch (SQLException e) {
@@ -262,8 +282,8 @@ public class DatabaseService {
 
     public void saveProfile(PlayerProfile p) {
         String sql = upsert("profiles",
-                "uuid, name, coins, mmr, kills, deaths, sold_value, event_points, faction, base_level, quest_step, quest_progress, prefix, prefix_color, daily_quests, daily_quest_date, login_streak, last_login_date, daily_reward_day, talents",
-                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?");
+                "uuid, name, coins, mmr, kills, deaths, sold_value, event_points, faction, base_level, quest_step, quest_progress, prefix, prefix_color, daily_quests, daily_quest_date, login_streak, last_login_date, daily_reward_day, talents, corruption, has_pact",
+                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?");
         try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, p.getUuid());
             ps.setString(2, p.getName());
@@ -285,6 +305,8 @@ public class DatabaseService {
             ps.setString(18, p.getLastLoginDate());
             ps.setInt(19, p.getDailyRewardDay());
             ps.setString(20, gson.toJson(p.getTalents()));
+            ps.setInt(21, p.getCorruption());
+            ps.setBoolean(22, p.hasPact());
             ps.executeUpdate();
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения профиля игрока в БД", e);
@@ -616,7 +638,109 @@ public class DatabaseService {
                 throw e;
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения ME-сети: " + netIdStr, e);
+            plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения ME-сети в БД", e);
+        }
+    }
+
+    // --- РЕЗЕРВУАРЫ КРОВИ ---
+    public Map<org.bukkit.Location, Integer> loadAllBloodTanks() {
+        Map<org.bukkit.Location, Integer> tanks = new java.util.concurrent.ConcurrentHashMap<>();
+        try (Connection conn = dataSource.getConnection();
+             Statement s = conn.createStatement();
+             ResultSet rs = s.executeQuery("SELECT * FROM blood_tanks")) {
+            while (rs.next()) {
+                String worldName = rs.getString("world");
+                int x = rs.getInt("x");
+                int y = rs.getInt("y");
+                int z = rs.getInt("z");
+                int amount = rs.getInt("amount");
+                org.bukkit.World world = org.bukkit.Bukkit.getWorld(worldName);
+                if (world != null) {
+                    tanks.put(new org.bukkit.Location(world, x, y, z), amount);
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "Ошибка загрузки кровавых котлов из БД", e);
+        }
+        return tanks;
+    }
+
+    public void saveBloodTank(org.bukkit.Location loc, int amount) {
+        if (loc.getWorld() == null) return;
+        if (amount <= 0) {
+            // Удаляем если 0
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement ps = conn.prepareStatement("DELETE FROM blood_tanks WHERE world = ? AND x = ? AND y = ? AND z = ?")) {
+                ps.setString(1, loc.getWorld().getName());
+                ps.setInt(2, loc.getBlockX());
+                ps.setInt(3, loc.getBlockY());
+                ps.setInt(4, loc.getBlockZ());
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.SEVERE, "Ошибка удаления кровавого котла из БД", e);
+            }
+            return;
+        }
+        String sql = upsert("blood_tanks", "world, x, y, z, amount", "?, ?, ?, ?, ?");
+        try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, loc.getWorld().getName());
+            ps.setInt(2, loc.getBlockX());
+            ps.setInt(3, loc.getBlockY());
+            ps.setInt(4, loc.getBlockZ());
+            ps.setInt(5, amount);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения кровавого котла в БД", e);
+        }
+    }
+
+    // --- ВРАТА БЕЗДНЫ (RIFTS) ---
+    public List<org.bukkit.Location> loadAllRifts() {
+        List<org.bukkit.Location> rifts = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             Statement s = conn.createStatement();
+             ResultSet rs = s.executeQuery("SELECT * FROM rifts")) {
+            while (rs.next()) {
+                String worldName = rs.getString("world");
+                int x = rs.getInt("x");
+                int y = rs.getInt("y");
+                int z = rs.getInt("z");
+                org.bukkit.World world = org.bukkit.Bukkit.getWorld(worldName);
+                if (world != null) {
+                    rifts.add(new org.bukkit.Location(world, x, y, z));
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "Ошибка загрузки врат бездны из БД", e);
+        }
+        return rifts;
+    }
+
+    public void saveRift(org.bukkit.Location loc) {
+        if (loc.getWorld() == null) return;
+        String sql = upsert("rifts", "world, x, y, z", "?, ?, ?, ?");
+        try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, loc.getWorld().getName());
+            ps.setInt(2, loc.getBlockX());
+            ps.setInt(3, loc.getBlockY());
+            ps.setInt(4, loc.getBlockZ());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения врат бездны в БД", e);
+        }
+    }
+
+    public void deleteRift(org.bukkit.Location loc) {
+        if (loc.getWorld() == null) return;
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement("DELETE FROM rifts WHERE world = ? AND x = ? AND y = ? AND z = ?")) {
+            ps.setString(1, loc.getWorld().getName());
+            ps.setInt(2, loc.getBlockX());
+            ps.setInt(3, loc.getBlockY());
+            ps.setInt(4, loc.getBlockZ());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "Ошибка удаления врат бездны из БД", e);
         }
     }
 }

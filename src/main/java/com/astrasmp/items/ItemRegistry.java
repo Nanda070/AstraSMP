@@ -273,6 +273,19 @@ public final class ItemRegistry {
     public static ItemStack relic(String id, Material mat, String name, String desc) { return build("relic_"+id, mat, name, List.of("§5Реликвия", "§7"+desc), 5000, true); }
     public static ItemStack artifact(String id, Material mat, String name, String desc) { return build("artifact_"+id, mat, name, List.of("§dАртефакт", "§7"+desc), 6000, true); }
 
+    // --- РИТУАЛЫ И САТАНИЗМ ---
+    public static ItemStack sacrificialDagger() {
+        ItemStack stack = build("sacrificialDagger", Material.NETHERITE_SWORD, "§4Ритуальный Кинжал", List.of("§7Вытягивает кровь из жертв."), 9101, false);
+        stack.addUnsafeEnchantment(Enchantment.SHARPNESS, 5);
+        return stack;
+    }
+    public static ItemStack bloodDrop() { return build("bloodDrop", Material.RED_DYE, "§cКапля Крови", List.of("§7Базовый ресурс для темных ритуалов."), 9102, true); }
+    public static ItemStack demonSoul() { return build("demonSoul", Material.GHAST_TEAR, "§5Душа Демона", List.of("§7Осколок души могущественного существа."), 9103, true); }
+    public static ItemStack demonicPact() { return build("demonicPact", Material.PAPER, "§8Демонический Контракт", List.of("§cОтнимает 4 макс. здоровья.", "§aДает Вампиризм и Иммунитет к огню.", "§4Пути назад не будет..."), 9104, true); }
+    public static ItemStack bloodCauldron() { return build("bloodCauldron", Material.CAULDRON, "§4Кровавый Котел", List.of("§7Поставьте рядом с алтарем для сбора крови.", "§7Накапливает кровь убитых рядом существ."), 9105, false); }
+    public static ItemStack ritualAltar() { return build("ritualAltar", Material.CRYING_OBSIDIAN, "§5Ядро Алтаря", List.of("§7Центр Ритуального Круга.", "§7Поставьте и окружите нужными блоками."), 9106, true); }
+    public static ItemStack cleansingTotem() { return build("cleansingTotem", Material.TOTEM_OF_UNDYING, "§eТотем Очищения", List.of("§7ПКМ по Вратам Бездны,", "§7чтобы закрыть их навсегда."), 9107, true); }
+
     // Кланы
     public static ItemStack guildHeart() {
         ItemStack item = new ItemStack(Material.CRYING_OBSIDIAN);
@@ -333,7 +346,8 @@ public final class ItemRegistry {
                 juggernautHelmet(), juggernautChestplate(), juggernautLeggings(), juggernautBoots(),
                 minerHelmet(), minerChestplate(), minerLeggings(), minerBoots(),
                 bloodHunterHelmet(), bloodHunterChestplate(), bloodHunterLeggings(), bloodHunterBoots(),
-                trampoline(), soulOfNanda(), eventCompass()
+                trampoline(), soulOfNanda(), eventCompass(),
+                sacrificialDagger(), bloodDrop(), demonSoul(), demonicPact(), bloodCauldron(), ritualAltar(), cleansingTotem()
         ));
         return items;
     }

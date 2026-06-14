@@ -61,6 +61,18 @@ public final class AstraSMPPlugin extends JavaPlugin {
         pm.registerEvents(new com.astrasmp.gui.METerminalGui(services), this);
         pm.registerEvents(new com.astrasmp.gui.MEDriveGui(services), this);
 
+        // Сатанизм и Ритуалы
+        com.astrasmp.rituals.RitualService ritualService = new com.astrasmp.rituals.RitualService(this);
+        new com.astrasmp.model.CorruptionManager(this);
+        com.astrasmp.pacts.PactManager pactManager = new com.astrasmp.pacts.PactManager();
+        com.astrasmp.blood.BloodTankManager bloodTankManager = new com.astrasmp.blood.BloodTankManager(this);
+        com.astrasmp.rift.RiftManager riftManager = new com.astrasmp.rift.RiftManager(this);
+        services.setRiftManager(riftManager);
+
+        pm.registerEvents(new com.astrasmp.listener.RitualListener(ritualService), this);
+        pm.registerEvents(pactManager, this);
+        pm.registerEvents(bloodTankManager, this);
+
         startPassiveEffectsTask();
 
         getLogger().info("=======================================");
