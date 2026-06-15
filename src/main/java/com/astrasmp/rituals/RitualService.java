@@ -99,6 +99,16 @@ public class RitualService {
                 new ItemStack(Material.AIR),
                 -100 // -100 Скверны
         ));
+
+        // Ритуал 8: Кровавая Чаша
+        recipes.add(new RitualRecipe(
+                "blood_chalice_craft",
+                List.of(ItemRegistry.bloodDrop(), new ItemStack(Material.CAULDRON, 1), new ItemStack(Material.GOLD_INGOT, 1)),
+                EntityType.WITCH,
+                2,
+                ItemRegistry.bloodChalice(),
+                20 // +20 Скверны
+        ));
     }
 
     /**

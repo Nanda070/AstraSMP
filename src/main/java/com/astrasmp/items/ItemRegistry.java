@@ -285,6 +285,7 @@ public final class ItemRegistry {
     public static ItemStack bloodCauldron() { return build("bloodCauldron", Material.CAULDRON, "§4Кровавый Котел", List.of("§7Поставьте рядом с алтарем для сбора крови.", "§7Накапливает кровь убитых рядом существ."), 9105, false); }
     public static ItemStack ritualAltar() { return build("ritualAltar", Material.CRYING_OBSIDIAN, "§5Ядро Алтаря", List.of("§7Центр Ритуального Круга.", "§7Поставьте и окружите нужными блоками."), 9106, true); }
     public static ItemStack cleansingTotem() { return build("cleansingTotem", Material.TOTEM_OF_UNDYING, "§eТотем Очищения", List.of("§7ПКМ по Вратам Бездны,", "§7чтобы закрыть их навсегда."), 9107, true); }
+    public static ItemStack bloodChalice() { return build("bloodChalice", Material.DRAGON_BREATH, "§4Карманная Чаша Крови", List.of("§7Автоматически собирает", "§7кровь убитых вами мобов.", "§7Шанс 15% получить Каплю Крови."), 9108, true); }
 
     // Кланы
     public static ItemStack guildHeart() {
@@ -347,7 +348,7 @@ public final class ItemRegistry {
                 minerHelmet(), minerChestplate(), minerLeggings(), minerBoots(),
                 bloodHunterHelmet(), bloodHunterChestplate(), bloodHunterLeggings(), bloodHunterBoots(),
                 trampoline(), soulOfNanda(), eventCompass(),
-                sacrificialDagger(), bloodDrop(), demonSoul(), demonicPact(), bloodCauldron(), ritualAltar(), cleansingTotem()
+                sacrificialDagger(), bloodDrop(), demonSoul(), demonicPact(), bloodCauldron(), ritualAltar(), cleansingTotem(), bloodChalice()
         ));
         return items;
     }

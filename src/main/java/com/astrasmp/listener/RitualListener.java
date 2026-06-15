@@ -22,6 +22,7 @@ public class RitualListener implements Listener {
 
     @EventHandler
     public void onRiftInteract(PlayerInteractEvent event) {
+        if (event.getHand() != org.bukkit.inventory.EquipmentSlot.HAND) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_AIR) return;
         
         Player player = event.getPlayer();
@@ -37,20 +38,41 @@ public class RitualListener implements Listener {
                 com.astrasmp.AstraSMPPlugin.getInstance().getServices().rift().closeRift(riftLoc);
                 player.sendMessage("§e[Очищение] §fВы закрыли Врата Бездны и остановили распространение Скверны.");
             } else {
-                // Иначе просто очищаем душу игрока от Скверны
+                // Иначе очищаем душу от Скверны и расторгаем контракт
                 event.setCancelled(true);
-                hand.setAmount(hand.getAmount() - 1);
+                
+                boolean hasPact = com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).hasPact();
                 int current = com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).getCorruption();
-                if (current > 0) {
-                    int newAmount = Math.max(0, current - 50);
-                    com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).setCorruption(newAmount);
+
+                if (hasPact || current > 0) {
+                    hand.setAmount(hand.getAmount() - 1);
+                    
+                    if (hasPact) {
+                        com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).setHasPact(false);
+                        org.bukkit.attribute.AttributeInstance maxHp = player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH);
+                        if (maxHp != null) {
+                            org.bukkit.attribute.AttributeModifier modifier = new org.bukkit.attribute.AttributeModifier(
+                                    new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "demonic_pact_debuff"),
+                                    -8.0,
+                                    org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER
+                            );
+                            maxHp.removeModifier(modifier);
+                        }
+                        player.getWorld().spawnParticle(org.bukkit.Particle.HEART, player.getLocation(), 100, 0.5, 0.5, 0.5, 0.2);
+                        player.sendMessage("§e[Контракт] §fВы использовали Тотем! Демонический контракт разорван, сердца восстановлены!");
+                    }
+
+                    if (current > 0) {
+                        int newAmount = Math.max(0, current - 50);
+                        com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).setCorruption(newAmount);
+                        player.getWorld().spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, player.getLocation(), 100, 0.5, 0.5, 0.5, 0.2);
+                        player.sendMessage("§e[Очищение] §fВаша Скверна уменьшена на 50.");
+                    }
+                    
                     com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().requestSave();
-                    player.getWorld().spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, player.getLocation(), 100, 0.5, 0.5, 0.5, 0.2);
                     player.playSound(player.getLocation(), org.bukkit.Sound.ITEM_TOTEM_USE, 1.0f, 1.0f);
-                    player.sendMessage("§e[Очищение] §fВы использовали Тотем Очищения. Ваша Скверна уменьшена на 50.");
                 } else {
-                    player.sendMessage("§e[Очищение] §fВаша душа и так чиста.");
-                    hand.setAmount(hand.getAmount() + 1); // Возвращаем предмет, если скверны нет
+                    player.sendMessage("§e[Очищение] §fВаша душа и так чиста, а контрактов нет.");
                 }
             }
         }
@@ -58,6 +80,7 @@ public class RitualListener implements Listener {
 
     @EventHandler
     public void onPortalInteract(PlayerInteractEvent event) {
+        if (event.getHand() != org.bukkit.inventory.EquipmentSlot.HAND) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         Block block = event.getClickedBlock();
         if (block == null || block.getType() != org.bukkit.Material.CRYING_OBSIDIAN) return;
@@ -82,6 +105,7 @@ public class RitualListener implements Listener {
 
     @EventHandler
     public void onAltarInteract(PlayerInteractEvent event) {
+        if (event.getHand() != org.bukkit.inventory.EquipmentSlot.HAND) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         Block block = event.getClickedBlock();
         if (block == null) return;

@@ -55,6 +55,7 @@ public class BloodTankManager implements Listener {
 
     @EventHandler
     public void onExtractBlood(org.bukkit.event.player.PlayerInteractEvent event) {
+        if (event.getHand() != org.bukkit.inventory.EquipmentSlot.HAND) return;
         if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) return;
         Block block = event.getClickedBlock();
         if (block == null) return;
@@ -82,7 +83,8 @@ public class BloodTankManager implements Listener {
         } else if (hand.getType() == Material.ROTTEN_FLESH) {
             event.setCancelled(true);
             hand.setAmount(hand.getAmount() - 1);
-            addBlood(block.getLocation(), 10);
+            int addAmount = plugin.getServices().events().isBloodNight() ? 20 : 10;
+            addBlood(block.getLocation(), addAmount);
             player.playSound(block.getLocation(), Sound.ENTITY_SLIME_SQUISH, 0.5f, 0.5f);
             player.getWorld().spawnParticle(Particle.DUST, block.getLocation().clone().add(0.5, 0.8, 0.5), 30, 0.2, 0.1, 0.2, 0, new Particle.DustOptions(org.bukkit.Color.RED, 1.5f));
             player.sendMessage("§4[Кровь] §cВы бросили плоть в котел! (Всего: " + getBlood(block.getLocation()) + " ед.)");
@@ -94,6 +96,27 @@ public class BloodTankManager implements Listener {
         LivingEntity entity = event.getEntity();
         Player killer = entity.getKiller();
         if (killer == null) return;
+
+        boolean isBloodNight = plugin.getServices().events().isBloodNight();
+
+        // 1. Проверяем Кровавую Чашу в инвентаре
+        boolean hasChalice = false;
+        for (org.bukkit.inventory.ItemStack item : killer.getInventory().getContents()) {
+            if (item != null && com.astrasmp.items.ItemRegistry.is(item, "bloodChalice")) {
+                hasChalice = true;
+                break;
+            }
+        }
+
+        if (hasChalice) {
+            double chance = isBloodNight ? 0.30 : 0.15;
+            if (Math.random() < chance) {
+                killer.getWorld().dropItem(entity.getLocation(), com.astrasmp.items.ItemRegistry.bloodDrop());
+                killer.playSound(killer.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.0f, 0.5f);
+                killer.sendMessage("§4[Чаша] §cЧаша поглотила кровь жертвы!");
+                return; // Если чаша сработала, котел не наполняем
+            }
+        }
 
         Location deathLoc = entity.getLocation();
 
@@ -108,8 +131,9 @@ public class BloodTankManager implements Listener {
                         // Здесь в идеале нужна проверка, что это именно "Кровавый котел" (сохраненный в БД)
                         // Для примера просто наполняем любой котел кровью (условно)
                         
-                        // Добавляем кровь (1 моб = 10 единиц)
-                        addBlood(b.getLocation(), 10);
+                        // Добавляем кровь (1 моб = 10 единиц, в кровавую ночь = 20)
+                        int addAmount = isBloodNight ? 20 : 10;
+                        addBlood(b.getLocation(), addAmount);
 
                         // Визуальный эффект всасывания крови
                         drawBloodBeam(deathLoc.clone().add(0, 0.5, 0), b.getLocation().clone().add(0.5, 0.5, 0.5));

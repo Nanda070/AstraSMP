@@ -35,14 +35,44 @@ public class RiftManager {
         loc.getWorld().spawnParticle(Particle.PORTAL, loc, 500, 2, 2, 2, 1);
         Bukkit.broadcast(LegacyComponentSerializer.legacySection().deserialize("§4[Аномалия] §cКто-то открыл Врата Бездны! Мир начинает искажаться..."));
 
-        // Спавн босса через 10 секунд (200 тиков)
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            // Проверяем, что врата еще не закрыли
-            if (activeRifts.contains(loc)) {
-                loc.getWorld().spawnEntity(loc, org.bukkit.entity.EntityType.WITHER);
-                Bukkit.broadcast(LegacyComponentSerializer.legacySection().deserialize("§4[Аномалия] §cИз Врат Бездны вырвался Иссушитель!"));
+        // Спавн волн каждые 4 секунды
+        new org.bukkit.scheduler.BukkitRunnable() {
+            int time = 0;
+            @Override
+            public void run() {
+                if (!activeRifts.contains(loc)) {
+                    this.cancel();
+                    return;
+                }
+                
+                time += 4;
+                
+                if (time == 4) {
+                    Bukkit.broadcast(LegacyComponentSerializer.legacySection().deserialize("§4[Аномалия] §cПервая волна: Из врат лезут Искаженные Зомби!"));
+                    for(int i=0; i<3; i++) {
+                        org.bukkit.entity.Zombie z = (org.bukkit.entity.Zombie) loc.getWorld().spawnEntity(loc, org.bukkit.entity.EntityType.ZOMBIE);
+                        z.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SPEED, 99999, 1));
+                        z.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.STRENGTH, 99999, 0));
+                    }
+                } else if (time == 8) {
+                    Bukkit.broadcast(LegacyComponentSerializer.legacySection().deserialize("§4[Аномалия] §cВторая волна: Из врат лезут Искаженные Скелеты!"));
+                    for(int i=0; i<3; i++) {
+                        org.bukkit.entity.Skeleton s = (org.bukkit.entity.Skeleton) loc.getWorld().spawnEntity(loc, org.bukkit.entity.EntityType.SKELETON);
+                        s.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SPEED, 99999, 1));
+                    }
+                } else if (time == 12) {
+                    Bukkit.broadcast(LegacyComponentSerializer.legacySection().deserialize("§4[Аномалия] §cТретья волна: Из врат лезут Искаженные Пауки!"));
+                    for(int i=0; i<2; i++) {
+                        org.bukkit.entity.Spider sp = (org.bukkit.entity.Spider) loc.getWorld().spawnEntity(loc, org.bukkit.entity.EntityType.SPIDER);
+                        sp.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.STRENGTH, 99999, 1));
+                    }
+                } else if (time == 16) {
+                    loc.getWorld().spawnEntity(loc, org.bukkit.entity.EntityType.WITHER);
+                    Bukkit.broadcast(LegacyComponentSerializer.legacySection().deserialize("§4[Аномалия] §cИз Врат Бездны вырвался Босс - Иссушитель!"));
+                    this.cancel();
+                }
             }
-        }, 200L);
+        }.runTaskTimer(plugin, 80L, 80L);
     }
 
     public Location getNearbyRift(Location loc, double radius) {
