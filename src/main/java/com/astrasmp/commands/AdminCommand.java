@@ -97,7 +97,6 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                 TextUtil.send(sender, "&aПредмет &f" + args[2] + " &aвыдан игроку &f" + target.getName());
             }
 
-            // Выдача компонентов ME-сети
             case "me" -> {
                 if (args.length < 3) return usage(sender, "/admin me <игрок> <компонент> [количество]");
                 Player target = Bukkit.getPlayerExact(args[1]);
@@ -119,6 +118,22 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
 
                 target.getInventory().addItem(stack);
                 TextUtil.send(sender, "&b[ME] &aПредмет &f" + args[2] + " &aвыдан игроку &f" + target.getName());
+            }
+
+            // Выдача Флакона Крови
+            case "giveblood" -> {
+                if (!(sender instanceof Player p)) {
+                    TextUtil.send(sender, "&cКоманду может использовать только игрок.");
+                    return true;
+                }
+                if (args.length < 2) return usage(sender, "/admin giveblood <имя_игрока>");
+                
+                String targetName = args[1];
+                OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
+                
+                ItemStack bloodVial = ItemRegistry.bloodVial(target.getName() != null ? target.getName() : targetName, target.getUniqueId().toString());
+                p.getInventory().addItem(bloodVial);
+                TextUtil.send(p, "&4[Магия] &cВы получили Флакон Крови игрока &f" + targetName + "&c.");
             }
 
             case "npc" -> {
@@ -360,6 +375,8 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
             case "voodoo_doll" -> ItemRegistry.voodooDoll();
             case "soul_fragment" -> ItemRegistry.soulFragment();
             case "madness_sphere" -> ItemRegistry.madnessSphere();
+            case "seed_of_abyss" -> ItemRegistry.seedOfAbyss();
+            case "astral_crystal" -> ItemRegistry.astralCrystal();
             default -> null;
         };
 
@@ -384,7 +401,7 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
         if (!sender.isOp()) return List.of();
 
         if (args.length == 1) {
-            return List.of("reload", "setcoins", "setevent", "spawnevent", "give", "me", "event", "npc", "awardblock", "setspawn", "corruption", "rift").stream()
+            return List.of("reload", "setcoins", "setevent", "spawnevent", "give", "giveblood", "me", "event", "npc", "awardblock", "setspawn", "corruption", "rift").stream()
                     .filter(s -> s.startsWith(args[0].toLowerCase())).toList();
         }
 
@@ -409,7 +426,7 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                 return List.of("spawn", "close").stream()
                         .filter(s -> s.startsWith(args[1].toLowerCase())).toList();
             }
-            if (args[0].equalsIgnoreCase("give") || args[0].equalsIgnoreCase("me") || args[0].equalsIgnoreCase("setcoins") || args[0].equalsIgnoreCase("setevent")) {
+            if (args[0].equalsIgnoreCase("give") || args[0].equalsIgnoreCase("giveblood") || args[0].equalsIgnoreCase("me") || args[0].equalsIgnoreCase("setcoins") || args[0].equalsIgnoreCase("setevent")) {
                 return null; // Предлагает список ников онлайна
             }
         }
@@ -430,7 +447,7 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                         "trophy_common", "trophy_legendary", "relic_time_core", "relic_void_fragment", "artifact_heart_of_world",
                         "trampoline", "nanda",
                         "sacrificial_dagger", "blood_drop", "demon_soul", "demonic_pact", "blood_cauldron", "ritual_altar", "cleansing_totem",
-                        "blood_chalice", "blood_vial", "voodoo_doll", "soul_fragment", "madness_sphere"
+                        "blood_chalice", "blood_vial", "voodoo_doll", "soul_fragment", "madness_sphere", "seed_of_abyss", "astral_crystal"
                 ).stream().filter(s -> s.startsWith(args[2].toLowerCase())).toList();
             }
             if (args[0].equalsIgnoreCase("me")) {

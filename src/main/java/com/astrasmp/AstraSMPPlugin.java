@@ -25,6 +25,14 @@ public final class AstraSMPPlugin extends JavaPlugin {
     private DatabaseService database;
 
     @Override
+    public org.bukkit.generator.ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
+        if ("astrasmp_pockets".equals(worldName)) {
+            return new com.astrasmp.util.VoidChunkGenerator();
+        }
+        return super.getDefaultWorldGenerator(worldName, id);
+    }
+
+    @Override
     public void onEnable() {
         instance = this;
 
@@ -58,6 +66,10 @@ public final class AstraSMPPlugin extends JavaPlugin {
         pm.registerEvents(new RegionListener(services), this);
         pm.registerEvents(new MEBlockListener(services), this);
         pm.registerEvents(new TrampolineListener(this, services.store()), this);
+        pm.registerEvents(new PocketDimensionListener(services), this);
+        pm.registerEvents(services.corruption(), this);
+        pm.registerEvents(services.bloodMoon(), this);
+        pm.registerEvents(services.astral(), this);
         pm.registerEvents(new com.astrasmp.gui.METerminalGui(services), this);
         pm.registerEvents(new com.astrasmp.gui.MEDriveGui(services), this);
 
@@ -72,6 +84,16 @@ public final class AstraSMPPlugin extends JavaPlugin {
         pm.registerEvents(new com.astrasmp.listener.RitualListener(ritualService), this);
         pm.registerEvents(pactManager, this);
         pm.registerEvents(bloodTankManager, this);
+
+        // Загрузка карманного измерения
+        org.bukkit.WorldCreator wc = new org.bukkit.WorldCreator("astrasmp_pockets");
+        wc.generator(new com.astrasmp.util.VoidChunkGenerator());
+        org.bukkit.World pocketWorld = org.bukkit.Bukkit.createWorld(wc);
+        if (pocketWorld != null) {
+            applyPocketWorldRules(pocketWorld);
+            pocketWorld.setTime(6000);
+            pocketWorld.setStorm(false);
+        }
 
         startPassiveEffectsTask();
 
@@ -119,6 +141,12 @@ public final class AstraSMPPlugin extends JavaPlugin {
     }
 
     private static final NamespacedKey KEY_CUSTOM_ID = new NamespacedKey("astrasmp", "custom_id");
+
+    @SuppressWarnings("removal")
+    private void applyPocketWorldRules(org.bukkit.World world) {
+        world.setGameRule(org.bukkit.GameRule.DO_DAYLIGHT_CYCLE, false);
+        world.setGameRule(org.bukkit.GameRule.DO_WEATHER_CYCLE, false);
+    }
 
     private void startPassiveEffectsTask() {
         Bukkit.getScheduler().runTaskTimer(this, () -> {
@@ -201,6 +229,9 @@ public final class AstraSMPPlugin extends JavaPlugin {
         bind("eventshop", locCmd);
         bind("afk", locCmd);
         bind("duel", locCmd);
+
+        bind("prunus", new PrunusCommand(services));
+        bind("malus", new MalusCommand(services));
     }
 
     private void bind(String name, org.bukkit.command.CommandExecutor executor) {

@@ -65,6 +65,11 @@ commands:
   duel:
     description: Вызвать игрока на дуэль
     usage: /duel <ник>
+  prunus:
+    description: Войти в Карманное Измерение
+    usage: /prunus [invite|join] [игрок]
+  malus:
+    description: Покинуть Карманное Измерение
   rewards:
     description: Ежедневные награды
     aliases: [reward, daily, календарь]

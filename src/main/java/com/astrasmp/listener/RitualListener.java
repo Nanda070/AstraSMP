@@ -132,6 +132,38 @@ public class RitualListener implements Listener {
             }
             return;
         }
+        
+        // Seed of Abyss
+        if (ItemRegistry.is(item, "seedOfAbyss")) {
+            event.setCancelled(true);
+            boolean isUnlocked = com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).isUnlockedPocketDimension();
+            
+            if (isUnlocked) {
+                player.sendMessage("§cВы уже открыли Карманное Измерение.");
+                return;
+            }
+            
+            com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).setUnlockedPocketDimension(true);
+            com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().requestSave();
+            item.setAmount(item.getAmount() - 1);
+            
+            player.sendMessage("§5[Бездна] §dВаш разум пронзает шепот пустоты. Доступ к Карманному Измерению открыт! Используйте /prunus.");
+            player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 0.5f);
+            player.getWorld().spawnParticle(org.bukkit.Particle.PORTAL, player.getLocation(), 200, 1, 1, 1, 0.5);
+            return;
+        }
+
+        // Astral Crystal
+        if (ItemRegistry.is(item, "astralCrystal")) {
+            event.setCancelled(true);
+            
+            // Запускаем астральную проекцию
+            com.astrasmp.AstraSMPPlugin.getInstance().getServices().astral().enterAstral(player);
+            
+            item.setAmount(item.getAmount() - 1);
+            player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_BEACON_ACTIVATE, 1f, 1.5f);
+            return;
+        }
     }
 
     @EventHandler

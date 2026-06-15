@@ -138,7 +138,9 @@ public final class PlayerListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         event.setQuitMessage(TextUtil.color("&8[&c-&8] &f" + event.getPlayer().getName()));
-        services.discord().sendJoinQuitMessage(event.getPlayer().getName(), false);
+        if (plugin.isEnabled()) {
+            services.discord().sendJoinQuitMessage(event.getPlayer().getName(), false);
+        }
         services.store().requestSave();
         services.afk().removePlayer(event.getPlayer());
 

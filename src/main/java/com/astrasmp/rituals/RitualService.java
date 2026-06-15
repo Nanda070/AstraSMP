@@ -140,6 +140,34 @@ public class RitualService {
                 50
         ));
 
+        // Ритуал 12: Семя Бездны (Карманное измерение)
+        recipes.add(new RitualRecipe(
+                "seed_of_abyss_ritual",
+                List.of(
+                        new ItemStack(Material.NETHER_STAR, 1),
+                        ItemRegistry.soulFragment(),
+                        ItemRegistry.bloodVial()
+                ),
+                EntityType.WITHER_SKELETON,
+                3,
+                ItemRegistry.seedOfAbyss(),
+                250
+        ));
+
+        // Ритуал 13: Астральная Проекция
+        recipes.add(new RitualRecipe(
+                "astral_ritual",
+                List.of(
+                        ItemRegistry.soulFragment(),
+                        new ItemStack(Material.PHANTOM_MEMBRANE, 1),
+                        ItemRegistry.bloodVial()
+                ),
+                EntityType.PHANTOM,
+                3,
+                ItemRegistry.astralCrystal(),
+                150
+        ));
+
         // Фоновый таск для Безумия (Одержимость)
         startMadnessTask();
     }
@@ -213,20 +241,24 @@ public class RitualService {
             }
         }
 
+        boolean consumeItems = !com.astrasmp.AstraSMPPlugin.getInstance().getServices().bloodMoon().isBloodMoonActive();
+
         // Удаляем только необходимое количество предметов
-        for (ItemStack req : recipe.getRequiredItems()) {
-            int needed = req.getAmount();
-            for (Item groundItem : groundItems) {
-                if (needed <= 0) break;
-                ItemStack stack = groundItem.getItemStack();
-                if (stack.getType() == req.getType()) {
-                    if (stack.getAmount() <= needed) {
-                        needed -= stack.getAmount();
-                        groundItem.remove();
-                    } else {
-                        stack.setAmount(stack.getAmount() - needed);
-                        groundItem.setItemStack(stack);
-                        needed = 0;
+        if (consumeItems) {
+            for (ItemStack req : recipe.getRequiredItems()) {
+                int needed = req.getAmount();
+                for (Item groundItem : groundItems) {
+                    if (needed <= 0) break;
+                    ItemStack stack = groundItem.getItemStack();
+                    if (stack.getType() == req.getType()) {
+                        if (stack.getAmount() <= needed) {
+                            needed -= stack.getAmount();
+                            groundItem.remove();
+                        } else {
+                            stack.setAmount(stack.getAmount() - needed);
+                            groundItem.setItemStack(stack);
+                            needed = 0;
+                        }
                     }
                 }
             }
@@ -242,12 +274,17 @@ public class RitualService {
             center.getWorld().dropItem(center.clone().add(0, 1, 0), recipe.getResult());
         }
 
+        // Заражение чанка
+        int corruptionAmount = com.astrasmp.AstraSMPPlugin.getInstance().getServices().bloodMoon().isBloodMoonActive() ? 30 : 10;
+        com.astrasmp.AstraSMPPlugin.getInstance().getServices().corruption().addCorruption(center.getChunk(), corruptionAmount);
+
         // Кастомные эффекты по ID рецепта
         if (recipe.getId().equals("rift_summon")) {
             com.astrasmp.AstraSMPPlugin.getInstance().getServices().rift().createRift(center);
         } else if (recipe.getId().equals("cleansing_ritual") && killer != null) {
             killer.getWorld().spawnParticle(Particle.TOTEM_OF_UNDYING, center, 200, 1, 1, 1, 0.5);
-            killer.sendMessage("§e[Очищение] §fСвет омывает вашу душу, смывая пятна Скверны.");
+            com.astrasmp.AstraSMPPlugin.getInstance().getServices().corruption().setCorruption(center.getChunk(), 0);
+            killer.sendMessage("§e[Очищение] §fСвет омывает вашу душу и очищает землю, смывая пятна Скверны.");
         } else if (recipe.getId().equals("pact_break_ritual") && killer != null) {
             boolean hasPact = com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(killer.getUniqueId().toString(), null).hasPact();
             if (hasPact) {
@@ -283,7 +320,7 @@ public class RitualService {
         } else if (recipe.getId().equals("summoning_ritual")) {
             if (targetUuid != null) {
                 org.bukkit.entity.Player target = org.bukkit.Bukkit.getPlayer(java.util.UUID.fromString(targetUuid));
-                if (target != null && target.isOnline() && target.getWorld().equals(center.getWorld())) {
+                if (target != null && target.isOnline()) {
                     target.teleport(center.clone().add(0, 1, 0));
                     target.sendMessage("§4[Призыв] §cВас насильно притянули во Врата Тьмы!");
                     if (killer != null) killer.sendMessage("§4[Ритуал] §cЖертва прибыла.");
@@ -299,7 +336,7 @@ public class RitualService {
                         }, i * 10L);
                     }
                 } else {
-                    if (killer != null) killer.sendMessage("§cЖертва слишком далеко или не в этом мире. Ритуал потрачен впустую.");
+                    if (killer != null) killer.sendMessage("§cИгрок оффлайн. Ритуал потрачен впустую.");
                 }
             }
         }

@@ -43,6 +43,10 @@ public final class ServiceManager {
 
     // Темная Магия
     private com.astrasmp.rift.RiftManager riftManager;
+    private com.astrasmp.rituals.PocketDimensionManager pocketManager;
+    private com.astrasmp.rituals.ChunkCorruptionManager chunkCorruptionManager;
+    private com.astrasmp.rituals.BloodMoonManager bloodMoonManager;
+    private com.astrasmp.rituals.AstralManager astralManager;
 
     public ServiceManager(AstraSMPPlugin plugin) {
         this.plugin = plugin;
@@ -56,6 +60,14 @@ public final class ServiceManager {
         this.mmr = new MMRService(plugin, store);
         this.contracts = new ContractService(plugin, store);
         this.leaderboard = new LeaderboardService(plugin, store);
+
+        this.riftManager = null;
+        this.pocketManager = new com.astrasmp.rituals.PocketDimensionManager(plugin);
+        this.chunkCorruptionManager = new com.astrasmp.rituals.ChunkCorruptionManager(plugin);
+        this.bloodMoonManager = new com.astrasmp.rituals.BloodMoonManager(plugin);
+        this.astralManager = new com.astrasmp.rituals.AstralManager(plugin);
+
+        this.guilds = new GuildService(plugin);
 
         // 3. Геймплей
         this.auction = new AuctionService(plugin, store, economy);
@@ -71,7 +83,6 @@ public final class ServiceManager {
         this.shops = new NpcShopService(plugin, this);
         this.afk = new AfkService(plugin, this);
         this.duels = new DuelService(plugin, this);
-        this.guilds = new GuildService(plugin);
 
         // 6. Нативный гемблинг AstraSMP
         this.casinoService = new CasinoService(plugin, this);
@@ -155,6 +166,11 @@ public final class ServiceManager {
 
     // Геттер ME-сети
     public MENetworkService meNetwork() { return meNetwork; }
+    
+    public com.astrasmp.rituals.PocketDimensionManager pockets() { return pocketManager; }
+    public com.astrasmp.rituals.ChunkCorruptionManager corruption() { return chunkCorruptionManager; }
+    public com.astrasmp.rituals.BloodMoonManager bloodMoon() { return bloodMoonManager; }
+    public com.astrasmp.rituals.AstralManager astral() { return astralManager; }
 
     // Геттеры Темной Магии
     public void setRiftManager(com.astrasmp.rift.RiftManager riftManager) { this.riftManager = riftManager; }

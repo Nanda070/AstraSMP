@@ -279,7 +279,25 @@ public final class ItemRegistry {
         stack.addUnsafeEnchantment(Enchantment.SHARPNESS, 5);
         return stack;
     }
-    public static ItemStack bloodDrop() { return build("bloodDrop", Material.RED_DYE, "§cКапля Крови", List.of("§7Базовый ресурс для темных ритуалов."), 9102, true); }
+    public static ItemStack bloodDrop() {
+        return build("bloodDrop", Material.REDSTONE, "§cКапля Крови", List.of("§7Базовый ингредиент ритуалов."), 0, true);
+    }
+
+    public static ItemStack seedOfAbyss() {
+        return build("seedOfAbyss", Material.HEART_OF_THE_SEA, "§5Семя Бездны", List.of(
+                "§7Ультимативный артефакт культистов.",
+                "§7ПКМ открывает доступ к личному",
+                "§7Карманному Измерению (/prunus)."
+        ), 0, true);
+    }
+
+    public static ItemStack astralCrystal() {
+        return build("astralCrystal", Material.AMETHYST_SHARD, "§dАстральный Кристалл", List.of(
+                "§7Отделяет вашу душу от тела.",
+                "§7Вы становитесь призраком на 2 минуты.",
+                "§cОсторожно: ваше тело уязвимо."
+        ), 0, true);
+    }
     public static ItemStack demonSoul() { return build("demonSoul", Material.GHAST_TEAR, "§5Душа Демона", List.of("§7Осколок души могущественного существа."), 9103, true); }
     public static ItemStack demonicPact() { return build("demonicPact", Material.PAPER, "§8Демонический Контракт", List.of("§cОтнимает 4 макс. здоровья.", "§aДает Вампиризм и Иммунитет к огню.", "§4Пути назад не будет..."), 9104, true); }
     public static ItemStack bloodCauldron() { return build("bloodCauldron", Material.CAULDRON, "§4Кровавый Котел", List.of("§7Поставьте рядом с алтарем для сбора крови.", "§7Накапливает кровь убитых рядом существ."), 9105, false); }

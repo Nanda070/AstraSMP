@@ -104,61 +104,78 @@ public final class GuiManager {
     }
 
     public void openMain(Player player) {
-        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.MAIN, 0, "", ""), 45, title("ChetCraft Меню"));
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.MAIN, 0, "", ""), 54, title("§8✦ §0Меню Сервера §8✦"));
         fill(inv);
 
-        inv.setItem(12, button(Material.MINECART, "&aЕжедневные Награды", "&7Забирай призы каждый день!"));
-        inv.setItem(13, services.quests().createQuestItem(player));
-        inv.setItem(14, button(Material.ENCHANTED_BOOK, "&eДерево Талантов", "&7Прокачивай пассивные навыки!"));
-        inv.setItem(20, button(Material.GOLD_INGOT, "&aСкупщик", "&7Продать ресурсы и еду", "&eНажми, чтобы открыть"));
-        inv.setItem(21, button(Material.ANVIL, "&dАукцион", "&7Рынок предметов"));
-        inv.setItem(22, button(Material.NETHERITE_SWORD, "&cПредметы", "&7Список всех уникальных вещей"));
-        inv.setItem(23, button(Material.ENDER_EYE, "&bСтатистика", "&7Топ игроков и MMR"));
-        inv.setItem(24, button(Material.BOOK, "&5Контракты", "&7Заказы на убийства"));
+        // Декорации
+        ItemStack decor = button(Material.BLACK_STAINED_GLASS_PANE, " ", "");
+        int[] borders = {0,1,7,8,9,17,36,44,45,46,52,53};
+        for (int b : borders) inv.setItem(b, decor);
+
+        inv.setItem(4, button(Material.NETHER_STAR, "&e&lAstraSMP", "&7Главное меню сервера"));
+
+        inv.setItem(19, button(Material.MINECART, "&aЕжедневные Награды", "&7Забирай призы каждый день!"));
+        inv.setItem(20, services.quests().createQuestItem(player));
+        inv.setItem(21, button(Material.ENCHANTED_BOOK, "&eДерево Талантов", "&7Прокачивай пассивные навыки!"));
+
+        inv.setItem(23, button(Material.GOLD_INGOT, "&aСкупщик", "&7Продать ресурсы и еду", "&eНажми, чтобы открыть"));
+        inv.setItem(24, button(Material.ANVIL, "&dАукцион", "&7Рынок предметов"));
+        inv.setItem(25, button(Material.NETHERITE_SWORD, "&cПредметы", "&7Список всех уникальных вещей"));
+
+        inv.setItem(29, button(Material.ENDER_EYE, "&bСтатистика", "&7Топ игроков и MMR"));
+        inv.setItem(30, button(Material.BOOK, "&5Контракты", "&7Заказы на убийства"));
         inv.setItem(31, button(Material.WHITE_BANNER, "&6Моя Гильдия", "&7Управление кланом", "&eКлик: Открыть меню"));
         inv.setItem(33, button(Material.CRYING_OBSIDIAN, "&5Темная Магия", "&7Ритуалы, Контракты и Алтари", "&eКлик: Открыть гайд"));
 
-        inv.setItem(37, build(Material.COMPASS, "&bСпавн", "&7Телепортация в\n&7безопасную зону"));
-        inv.setItem(38, build(Material.DIAMOND_SWORD, "&cPvP Арена", "&7Сражайся с другими\n&7игроками!"));
-        inv.setItem(40, build(Material.EMERALD, "&6Казино", "&7Испытай удачу\n&7в рулетке"));
-        inv.setItem(42, build(Material.GOLDEN_APPLE, "&dИвент Шоп", "&7Уникальные вещи\n&7за Event Points"));
-        inv.setItem(43, build(Material.CAMPFIRE, "&eAFK Зона", "&7Стой и получай\n&7по 5 ❂ в минуту"));
+        inv.setItem(48, build(Material.COMPASS, "&bСпавн", "&7Телепортация в\n&7безопасную зону"));
+        inv.setItem(49, build(Material.DIAMOND_SWORD, "&cPvP Арена", "&7Сражайся с другими\n&7игроками!"));
+        inv.setItem(50, build(Material.EMERALD, "&6Казино", "&7Испытай удачу\n&7в рулетке"));
+        inv.setItem(51, build(Material.GOLDEN_APPLE, "&dИвент Шоп", "&7Уникальные вещи\n&7за Event Points"));
+        inv.setItem(52, build(Material.CAMPFIRE, "&eAFK Зона", "&7Стой и получай\n&7по 5 ❂ в минуту"));
 
         player.openInventory(inv);
     }
 
     public void openRitualGuide(Player player) {
-        ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
-        org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) book.getItemMeta();
-        
-        meta.setTitle("Гримуар Бездны");
-        meta.setAuthor("Древний Культист");
-        
-        // Страница 1: Вступление
-        Component page1 = Component.text(TextUtil.color("&4&lГримуар Бездны\n\n&8«За всё нужно платить...»\n\n&0Использование темной магии оставляет шрамы на вашей душе — &5Скверну&0.\n\n&c[50]&0: Кровавые следы\n&c[200]&0: Проклятое зрение\n&c[500]&0: Демоническая сила"));
-        
-        // Страница 2: Основы (Кинжал и Алтарь)
-        Component page2 = Component.text(TextUtil.color("&5&lОсновы\n\n&8Ритуальный Кинжал\n&0Железо + Золото + Палка. Бьете игрока - есть 10% шанс выбить его &cФлакон Крови&0.\n\n&8Ядро Алтаря\n&0Алмазы по углам, Обсидиан крестом, Редстоун в центре. Клик пустой рукой строит пентаграмму."));
-        
-        // Страница 3: Кровь и Чаша
-        Component page3 = Component.text(TextUtil.color("&4&lКровь и Чаша\n\n&0Бросьте плоть в Котел с водой, чтобы получить Каплю Крови.\n\n&8Ритуал: Карманная Чаша\n&0Ур: 2 | Жертва: Ведьма\nПредметы: Котел, Золото, Капля Крови. Автоматически собирает кровь при убийствах (15%)."));
-        
-        // Страница 4: Кукла Вуду
-        Component page4 = Component.text(TextUtil.color("&5&lКукла Вуду\n\n&0Ур: 2 | Жертва: Зомби\nПредметы: Флакон крови, Плоть, Нить.\n\nПозволяет накладывать порчу (урон, слепоту, удушье) на владельца крови на любом расстоянии. Прочность: 3."));
-        
-        // Страница 5: Опустошение Души
-        Component page5 = Component.text(TextUtil.color("&8&lОпустошение Души\n\n&0Убейте игрока Кинжалом в центре Алтаря.\nЕго душа будет разорвана: он потеряет 2 сердца на 30 минут.\nВы получите его &bОсколок Души&0."));
-        
-        // Страница 6: Сфера Безумия и Призыв
-        Component page6 = Component.text(TextUtil.color("&5&lОдержимость и Призыв\n\n&8Сфера Безумия\n&0Ур: 3 | Жертва: Ведьма\nПредметы: Осколок Души, Душа Демона. Сводит жертву с ума на 10 минут.\n\n&8Врата Призыва\n&0Ур: 3 | Жертва: Эндермен\nПредметы: Кровь, Эндер Перл. Притягивает жертву на алтарь."));
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.RITUAL_GUIDE, 0, "", ""), 54, title("§5✦ §0Гримуар Бездны §5✦"));
+        fill(inv);
 
-        // Страница 7: Контракты и Врата
-        Component page7 = Component.text(TextUtil.color("&4&lВеликое Зло\n\n&8Демонический Контракт\n&0Отнимает 2 сердца навсегда. Дает вампиризм. Снять можно Тотемом Очищения (ПКМ).\n\n&8Врата Бездны\n&0Портал 4х5 из Плачущего обсидиана + Душа Демона. Вызывает Вторжения."));
+        // Декорации (Темно-фиолетовая и черная рамка)
+        ItemStack blackDecor = button(Material.BLACK_STAINED_GLASS_PANE, " ", "");
+        ItemStack purpleDecor = button(Material.PURPLE_STAINED_GLASS_PANE, " ", "");
+        int[] blackBorders = {0,8,9,17,36,44,45,53};
+        int[] purpleBorders = {1,7,46,52};
+        for (int b : blackBorders) inv.setItem(b, blackDecor);
+        for (int p : purpleBorders) inv.setItem(p, purpleDecor);
 
-        meta.addPages(page1, page2, page3, page4, page5, page6, page7);
-        book.setItemMeta(meta);
+        // Основы
+        inv.setItem(4, button(Material.CRYING_OBSIDIAN, "&5&lОсновы Темной Магии", 
+                "&7Алтарь строится из Плачущего Обсидиана (центр).", 
+                "&7Ступени 1-3 требуют Редстоун, Черепа и Незерит.",
+                "",
+                "&cКровь&7 добывается Ритуальным Кинжалом",
+                "&7с игроков (шанс 10%)."));
 
-        player.openBook(book);
+        // Ритуалы (1-2 тиры)
+        inv.setItem(20, button(Material.REDSTONE, "&cИзвлечение крови", "&7Ур: 1 | Жертва: Свинья | Скверна: +5", "&7Предмет: Гнилая Плоть"));
+        inv.setItem(21, button(Material.DIAMOND, "&bДуша Демона", "&7Ур: 2 | Жертва: Зомби | Скверна: +15", "&7Предмет: Алмаз"));
+        inv.setItem(22, button(Material.CAULDRON, "&4Кровавая Чаша", "&7Ур: 2 | Жертва: Ведьма | Скверна: +20", "&7Предметы: Котел, Золото, Капля крови", "", "&eПассивный сбор крови (15%)"));
+        inv.setItem(23, button(Material.TOTEM_OF_UNDYING, "&5Кукла Вуду", "&7Ур: 2 | Жертва: Зомби | Скверна: +25", "&7Предметы: Флакон крови, Плоть, Нить", "", "&eНакладывает порчу на врага"));
+        inv.setItem(24, button(Material.GOLDEN_APPLE, "&aОчищение Скверны", "&7Ур: 2 | Жертва: Житель | Скверна: -50", "&7Предметы: Яблоко, Слеза Гаста", "", "&eСнимает эффекты и очищает чанк"));
+
+        // Ритуалы (3 тир)
+        inv.setItem(29, button(Material.NETHERITE_SWORD, "&8Теневой Клинок", "&7Ур: 3 | Жертва: Игрок | Скверна: +50", "&7Предметы: Незерит. меч, Капля крови"));
+        inv.setItem(30, button(Material.PAPER, "&4Демонический Контракт", "&7Ур: 3 | Жертва: Визер Скелет | Скверна: +100", "&7Предметы: Бумага, Душа Демона", "", "&c-2 Сердца навсегда, +Вампиризм"));
+        inv.setItem(31, button(Material.ENDER_PEARL, "&3Врата Призыва", "&7Ур: 3 | Жертва: Эндермен | Скверна: +50", "&7Предметы: Флакон Крови, Жемчуг Края", "", "&eТелепортирует врага к вам"));
+        inv.setItem(32, button(Material.ENDER_EYE, "&dСфера Безумия", "&7Ур: 3 | Жертва: Ведьма | Скверна: +50", "&7Предметы: Осколок Души, Душа Демона", "", "&eОдержимость врага на 10 мин."));
+
+        // Ритуалы (Высшие)
+        inv.setItem(39, button(Material.PHANTOM_MEMBRANE, "&bАстральная Проекция", "&7Ур: 3 | Жертва: Фантом | Скверна: +150", "&7Предметы: Осколок Души, Мембрана, Кровь", "", "&dВыход из тела на 2 минуты"));
+        inv.setItem(41, button(Material.NETHER_STAR, "&0Семя Бездны", "&7Ур: 3 | Жертва: Визер Скелет | Скверна: +250", "&7Предметы: Звезда Незера, Осколок, Кровь", "", "&5Доступ в Карманное Измерение"));
+
+        inv.setItem(49, button(Material.ARROW, "&cНазад в меню"));
+
+        player.openInventory(inv);
     }
 
     public void openVoodooGui(Player player, String targetName, String targetUuid) {
@@ -285,25 +302,26 @@ public final class GuiManager {
 
     public void openAdmin(Player player) {
         Inventory inv = Bukkit.createInventory(
-            new MenuHolder(MenuType.ADMIN, 0, "", ""), 45,
-            title("Панель администратора"));
+            new MenuHolder(MenuType.ADMIN, 0, "", ""), 54,
+            title("§4✦ §0Панель Админа §4✦"));
         fill(inv);
-    
-        inv.setItem(10, button(Material.COMMAND_BLOCK,  "&e⚡ Ивенты",          "&7/admin event <тип>",
-                                                                                "&7/admin spawnevent <тип>"));
-        inv.setItem(11, button(Material.CHEST,           "&6Выдача предметов",   "&7Все кастомные вещи сервера"));
-        inv.setItem(12, button(Material.GOLD_BLOCK,      "&aЭкономика",          "&7Управление балансами",
-                                                                                "&7/admin setcoins <игрок> <сумма>"));
-        inv.setItem(13, button(Material.WHITE_BANNER,    "&dГильдии",            "&7Управление гильдиями",
-                                                                                "&7Просмотр, удаление, изменение уровня"));
-        inv.setItem(14, button(Material.PLAYER_HEAD,     "&bИгроки",             "&7Invsee, заморозка, баны"));
-        inv.setItem(15, button(Material.COMPARATOR,      "&cКонфигурация",       "&7/admin reload"));
-    
-        inv.setItem(20, button(Material.ENDER_CHEST,     "&bInvsee",             "&7Открыть инвентарь игрока"));
-        inv.setItem(21, button(Material.PACKED_ICE,      "&bЗаморозить",         "&7Остановить игрока"));
-        inv.setItem(23, button(Material.MAGMA_BLOCK,     "&cРазморозить",        "&7Снять заморозку"));
-        inv.setItem(24, button(Material.RECOVERY_COMPASS,"&7История",            "&7Журнал действий"));
-    
+        
+        ItemStack decor = button(Material.RED_STAINED_GLASS_PANE, " ", "");
+        int[] borders = {0,1,7,8,9,17,36,44,45,46,52,53};
+        for (int b : borders) inv.setItem(b, decor);
+
+        inv.setItem(4, button(Material.COMMAND_BLOCK, "&c&lУправление Сервером", "&7Главная панель"));
+
+        inv.setItem(20, button(Material.BEACON,  "&e⚡ Ивенты",          "&7Запуск глобальных ивентов", "&7/admin event <тип>"));
+        inv.setItem(21, button(Material.CHEST,           "&6Выдача предметов",   "&7Меню выдачи кастомных вещей"));
+        inv.setItem(22, button(Material.GOLD_BLOCK,      "&aЭкономика",          "&7Управление балансами игроков", "&7/admin setcoins <игрок> <сумма>"));
+        
+        inv.setItem(29, button(Material.WHITE_BANNER,    "&dГильдии",            "&7Управление гильдиями", "&7/admin guildadmin"));
+        inv.setItem(30, button(Material.DIAMOND_SWORD,   "&cPVP / Арены",        "&7Управление PvP аренами", "&7/admin addduelspawn"));
+        inv.setItem(31, button(Material.CRYING_OBSIDIAN, "&5Темная Магия",       "&7Ритуалы, Скверна и Луна", "&7(В разработке)"));
+        inv.setItem(32, button(Material.PLAYER_HEAD,     "&bИгроки",             "&7Модерация: бан, мут, инвентарь", "&7/admin invsee"));
+        inv.setItem(33, button(Material.COMPARATOR,      "&cСистемное",          "&7Перезагрузка конфигов", "&7/admin reload"));
+
         player.openInventory(inv);
     }
 
@@ -431,6 +449,13 @@ public final class GuiManager {
             inv.setItem(14, ItemRegistry.bloodCauldron());
             inv.setItem(15, ItemRegistry.ritualAltar());
             inv.setItem(16, ItemRegistry.cleansingTotem());
+            inv.setItem(19, ItemRegistry.bloodChalice());
+            inv.setItem(20, ItemRegistry.bloodVial());
+            inv.setItem(21, ItemRegistry.voodooDoll());
+            inv.setItem(22, ItemRegistry.soulFragment());
+            inv.setItem(23, ItemRegistry.madnessSphere());
+            inv.setItem(24, ItemRegistry.seedOfAbyss());
+            inv.setItem(25, ItemRegistry.astralCrystal());
         }
 
         inv.setItem(46, button(Material.NETHERITE_SWORD, "&aОружие", "&7Клик для фильтра"));
@@ -952,6 +977,13 @@ public final class GuiManager {
             inv.setItem(14, withLoreHint(ItemRegistry.bloodCauldron()));
             inv.setItem(15, withLoreHint(ItemRegistry.ritualAltar()));
             inv.setItem(16, withLoreHint(ItemRegistry.cleansingTotem()));
+            inv.setItem(19, withLoreHint(ItemRegistry.bloodChalice()));
+            inv.setItem(20, withLoreHint(ItemRegistry.bloodVial()));
+            inv.setItem(21, withLoreHint(ItemRegistry.voodooDoll()));
+            inv.setItem(22, withLoreHint(ItemRegistry.soulFragment()));
+            inv.setItem(23, withLoreHint(ItemRegistry.madnessSphere()));
+            inv.setItem(24, withLoreHint(ItemRegistry.seedOfAbyss()));
+            inv.setItem(25, withLoreHint(ItemRegistry.astralCrystal()));
         }
 
         inv.setItem(46, button(Material.NETHERITE_SWORD, "&aОружие", "&7Клик для просмотра"));
@@ -984,25 +1016,28 @@ public final class GuiManager {
         switch (holder.type()) {
             case MAIN -> {
                 switch (event.getSlot()) {
-                    case 12 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); player.performCommand("rewards"); });
-                    case 13 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); player.performCommand("quest"); });
-                    case 14 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); player.performCommand("talents"); });
-                    case 20 -> Bukkit.getScheduler().runTask(plugin, () -> openSellResources(player));
-                    case 21 -> Bukkit.getScheduler().runTask(plugin, () -> openAuction(player, 0, ""));
-                    case 22 -> Bukkit.getScheduler().runTask(plugin, () -> openItems(player, "Броня"));
-                    case 23 -> Bukkit.getScheduler().runTask(plugin, () -> openStatsMenu(player));
-                    case 24 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); player.performCommand("bounty"); });
+                    case 19 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); player.performCommand("rewards"); });
+                    case 20 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); player.performCommand("quest"); });
+                    case 21 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); player.performCommand("talents"); });
+                    
+                    case 23 -> Bukkit.getScheduler().runTask(plugin, () -> openSellResources(player));
+                    case 24 -> Bukkit.getScheduler().runTask(plugin, () -> openAuction(player, 0, ""));
+                    case 25 -> Bukkit.getScheduler().runTask(plugin, () -> openItems(player, "Броня"));
+                    
+                    case 29 -> Bukkit.getScheduler().runTask(plugin, () -> openStatsMenu(player));
+                    case 30 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); player.performCommand("bounty"); });
                     case 31 -> Bukkit.getScheduler().runTask(plugin, () -> {
                         Guild guild = services.guilds().getPlayerGuild(player.getUniqueId());
                         if (guild != null) openGuildMain(player, guild);
                         else TextUtil.send(player, "&cУ вас нет гильдии! Создайте её: /guild create <название>");
                     });
                     case 33 -> Bukkit.getScheduler().runTask(plugin, () -> openRitualGuide(player));
-                    case 37 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "spawn"); });
-                    case 38 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "pvp"); });
-                    case 40 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "casino"); });
-                    case 42 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "eventshop"); });
-                    case 43 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "afk"); });
+                    
+                    case 48 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "spawn"); });
+                    case 49 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "pvp"); });
+                    case 50 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "casino"); });
+                    case 51 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "eventshop"); });
+                    case 52 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "afk"); });
                 }
             }
             case RITUAL_GUIDE -> {
@@ -1057,16 +1092,14 @@ public final class GuiManager {
             }
             case ADMIN -> {
                 switch (event.getSlot()) {
-                    case 10 -> { player.closeInventory(); TextUtil.send(player, "&eИспользуйте: &f/admin event <тип> &7или &f/admin spawnevent <тип>"); }
-                    case 11 -> openAdminItems(player, "Броня");
-                    case 12 -> { player.closeInventory(); TextUtil.send(player, "&eИспользуйте: &f/admin setcoins <игрок> <сумма>"); }
-                    case 13 -> openAdminGuilds(player);
-                    case 14 -> openPlayerList(player, "invsee");
-                    case 15 -> { player.performCommand("admin reload"); player.closeInventory(); }
-                    case 20 -> openPlayerList(player, "invsee");
-                    case 21 -> openPlayerList(player, "freeze");
-                    case 23 -> openPlayerList(player, "unfreeze");
-                    case 24 -> { player.closeInventory(); TextUtil.send(player, "&7История действий пока в разработке."); }
+                    case 20 -> { player.closeInventory(); TextUtil.send(player, "&eИспользуйте: &f/admin event <тип> &7или &f/admin spawnevent <тип>"); }
+                    case 21 -> openAdminItems(player, "Броня");
+                    case 22 -> { player.closeInventory(); TextUtil.send(player, "&eИспользуйте: &f/admin setcoins <игрок> <сумма>"); }
+                    case 29 -> openAdminGuilds(player);
+                    case 30 -> { player.closeInventory(); TextUtil.send(player, "&eИспользуйте: &f/admin addduelspawn &7или &f/admin sethub"); }
+                    case 31 -> { player.closeInventory(); TextUtil.send(player, "&5Управление темной магией в разработке."); }
+                    case 32 -> openPlayerList(player, "invsee");
+                    case 33 -> { player.performCommand("admin reload"); player.closeInventory(); }
                 }
             }
             case ADMIN_GIVE_ITEMS -> {
@@ -1320,16 +1353,16 @@ public final class GuiManager {
                 }
 
                 if (event.getSlot() == 11) { // Укол
-                    target.damage(6.0); // 3 сердца
+                    target.damage(8.5); // +40% (было 6.0)
                     target.sendMessage("§4[Вуду] §cНевидимая игла пронзила вашу плоть!");
                     player.sendMessage("§4[Вуду] §cВы пронзили " + targetName + " иглой.");
                 } else if (event.getSlot() == 13) { // Удушье
-                    target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.POISON, 200, 1));
-                    target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SLOWNESS, 200, 0));
+                    target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.POISON, 280, 1)); // +40% (было 200)
+                    target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SLOWNESS, 280, 0));
                     target.sendMessage("§5[Вуду] §dНевидимая рука сжала ваше горло!");
                     player.sendMessage("§5[Вуду] §dВы начали душить " + targetName + ".");
                 } else if (event.getSlot() == 15) { // Слепота
-                    target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS, 300, 0));
+                    target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS, 420, 0)); // +40% (было 300)
                     target.sendMessage("§8[Вуду] §0Тьма застилает ваши глаза...");
                     player.sendMessage("§8[Вуду] §0Вы ослепили " + targetName + ".");
                 } else {

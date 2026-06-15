@@ -40,6 +40,7 @@ public final class PlayerProfile {
     // Темная Магия
     private int corruption = 0;
     private boolean hasPact = false;
+    private boolean unlockedPocketDimension = false;
 
     // transient поля не сохраняются в конфиг-файлы
     private transient boolean frozen = false;
@@ -108,6 +109,14 @@ public final class PlayerProfile {
 
     public boolean hasPact() { return hasPact; }
     public void setHasPact(boolean hasPact) { this.hasPact = hasPact; }
+
+    public boolean isUnlockedPocketDimension() {
+        return unlockedPocketDimension;
+    }
+
+    public void setUnlockedPocketDimension(boolean unlocked) {
+        this.unlockedPocketDimension = unlocked;
+    }
 
     // --- ОСТАЛЬНЫЕ ГЕТТЕРЫ И СЕТТЕРЫ ---
 
