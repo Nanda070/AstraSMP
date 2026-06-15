@@ -79,6 +79,62 @@ public class RitualListener implements Listener {
     }
 
     @EventHandler
+    public void onSatanicItemUse(PlayerInteractEvent event) {
+        if (event.getHand() != org.bukkit.inventory.EquipmentSlot.HAND) return;
+        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        
+        Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item == null || item.getItemMeta() == null) return;
+        
+        // Voodoo Doll
+        if (ItemRegistry.is(item, "voodooDoll")) {
+            event.setCancelled(true);
+            org.bukkit.persistence.PersistentDataContainer data = item.getItemMeta().getPersistentDataContainer();
+            org.bukkit.NamespacedKey uuidKey = new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "voodoo_target_uuid");
+            org.bukkit.NamespacedKey nameKey = new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "voodoo_target_name");
+            
+            if (data.has(uuidKey, org.bukkit.persistence.PersistentDataType.STRING)) {
+                String targetUuid = data.get(uuidKey, org.bukkit.persistence.PersistentDataType.STRING);
+                String targetName = data.get(nameKey, org.bukkit.persistence.PersistentDataType.STRING);
+                com.astrasmp.AstraSMPPlugin.getInstance().getServices().gui().openVoodooGui(player, targetName, targetUuid);
+            }
+            return;
+        }
+        
+        // Madness Sphere
+        if (ItemRegistry.is(item, "madnessSphere")) {
+            event.setCancelled(true);
+            org.bukkit.persistence.PersistentDataContainer data = item.getItemMeta().getPersistentDataContainer();
+            org.bukkit.NamespacedKey uuidKey = new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "madness_target_uuid");
+            org.bukkit.NamespacedKey nameKey = new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "madness_target_name");
+            
+            if (data.has(uuidKey, org.bukkit.persistence.PersistentDataType.STRING)) {
+                String targetUuid = data.get(uuidKey, org.bukkit.persistence.PersistentDataType.STRING);
+                String targetName = data.get(nameKey, org.bukkit.persistence.PersistentDataType.STRING);
+                
+                org.bukkit.entity.Player target = org.bukkit.Bukkit.getPlayer(java.util.UUID.fromString(targetUuid));
+                if (target != null && target.isOnline()) {
+                    long expiryTime = System.currentTimeMillis() + (10L * 60L * 1000L);
+                    target.getPersistentDataContainer().set(
+                            new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "madness_until"),
+                            org.bukkit.persistence.PersistentDataType.LONG, 
+                            expiryTime
+                    );
+                    target.sendMessage("§5[Безумие] §dМрак поглощает ваш разум...");
+                    player.sendMessage("§5[Безумие] §dВы наслали ужас на " + targetName + ".");
+                    player.getWorld().playSound(player.getLocation(), org.bukkit.Sound.ENTITY_GHAST_SCREAM, 1.0f, 0.5f);
+                    
+                    item.setAmount(item.getAmount() - 1);
+                } else {
+                    player.sendMessage("§cИгрок вне сети или недоступен.");
+                }
+            }
+            return;
+        }
+    }
+
+    @EventHandler
     public void onPortalInteract(PlayerInteractEvent event) {
         if (event.getHand() != org.bukkit.inventory.EquipmentSlot.HAND) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
@@ -143,11 +199,48 @@ public class RitualListener implements Listener {
         if (altarLoc != null) {
             int tier = ritualService.getCircleManager().getCircleTier(altarLoc);
             if (tier > 0) {
+                
+                // --- ОПУСТОШЕНИЕ ДУШИ (Приношение игрока на алтаре) ---
+                if (event.getEntity() instanceof Player victim) {
+                    // Выдаем Осколок Души
+                    deathLoc.getWorld().dropItemNaturally(deathLoc, ItemRegistry.soulFragment(victim.getName(), victim.getUniqueId().toString()));
+                    
+                    // Накладываем дебафф "Опустошенная душа" на 30 минут (через PersistentDataContainer)
+                    long expiryTime = System.currentTimeMillis() + (30L * 60L * 1000L);
+                    victim.getPersistentDataContainer().set(
+                            new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "soul_drained_until"),
+                            org.bukkit.persistence.PersistentDataType.LONG, 
+                            expiryTime
+                    );
+                    victim.sendMessage("§8[Бездна] §cВаша душа была разорвана на Алтаре... Вы прокляты на 30 минут.");
+                    killer.sendMessage("§4[Ритуал] §cВы вырвали Осколок Души у " + victim.getName() + "!");
+                }
+                
                 boolean success = ritualService.attemptRitual(altarLoc, tier, event.getEntity().getType(), killer);
                 if (success) {
-                    // Ритуал успешен
                     killer.sendMessage("§4[Ритуал] §cЖертвоприношение принято!");
                 }
+            }
+        } else {
+            // Если убит игрок кинжалом вне алтаря - гарантированно выпадает флакон крови
+            if (event.getEntity() instanceof Player victim) {
+                deathLoc.getWorld().dropItemNaturally(deathLoc, ItemRegistry.bloodVial(victim.getName(), victim.getUniqueId().toString()));
+                killer.sendMessage("§4[Ритуал] §cВы собрали Флакон с Кровью " + victim.getName() + ".");
+            }
+        }
+    }
+
+    @EventHandler
+    public void onDaggerHit(org.bukkit.event.entity.EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Player victim)) return;
+        if (!(event.getDamager() instanceof Player attacker)) return;
+        
+        ItemStack weapon = attacker.getInventory().getItemInMainHand();
+        if (ItemRegistry.is(weapon, "sacrificialDagger")) {
+            // 10% шанс выбить кровь при ударе
+            if (Math.random() <= 0.10) {
+                victim.getWorld().dropItemNaturally(victim.getLocation(), ItemRegistry.bloodVial(victim.getName(), victim.getUniqueId().toString()));
+                attacker.sendMessage("§4[Ритуал] §cВам удалось добыть Флакон с Кровью " + victim.getName() + " прямо в бою!");
             }
         }
     }

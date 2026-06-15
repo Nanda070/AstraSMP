@@ -85,6 +85,47 @@ public class PactManager implements Listener {
                 maxHp.removeModifier(modifier);
             }
         }
+        checkSoulDrained(player);
+    }
+
+    @EventHandler
+    public void onRespawn(org.bukkit.event.player.PlayerRespawnEvent event) {
+        // Задержка 1 тик для корректного наложения после респавна
+        org.bukkit.Bukkit.getScheduler().runTaskLater(com.astrasmp.AstraSMPPlugin.getInstance(), () -> {
+            if (hasPact(event.getPlayer().getUniqueId())) applyHealthDebuff(event.getPlayer());
+            checkSoulDrained(event.getPlayer());
+        }, 1L);
+    }
+
+    private void checkSoulDrained(Player player) {
+        org.bukkit.persistence.PersistentDataContainer data = player.getPersistentDataContainer();
+        org.bukkit.NamespacedKey key = new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "soul_drained_until");
+        
+        org.bukkit.attribute.AttributeInstance maxHp = player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH);
+        if (maxHp == null) return;
+        
+        org.bukkit.attribute.AttributeModifier modifier = new org.bukkit.attribute.AttributeModifier(
+                new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "soul_drained_debuff"),
+                -4.0, // -2 сердца
+                org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER
+        );
+
+        if (data.has(key, org.bukkit.persistence.PersistentDataType.LONG)) {
+            long expiry = data.get(key, org.bukkit.persistence.PersistentDataType.LONG);
+            if (System.currentTimeMillis() < expiry) {
+                // Все еще действует
+                maxHp.removeModifier(modifier);
+                maxHp.addModifier(modifier);
+                return;
+            } else {
+                // Истекло
+                data.remove(key);
+                player.sendMessage("§a[Бездна] §fВаша душа восстановилась.");
+            }
+        }
+        
+        // Снимаем дебафф, если его не должно быть
+        maxHp.removeModifier(modifier);
     }
 
     @EventHandler

@@ -355,6 +355,11 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
             case "blood_cauldron" -> ItemRegistry.bloodCauldron();
             case "ritual_altar" -> ItemRegistry.ritualAltar();
             case "cleansing_totem" -> ItemRegistry.cleansingTotem();
+            case "blood_chalice" -> ItemRegistry.bloodChalice();
+            case "blood_vial" -> ItemRegistry.bloodVial();
+            case "voodoo_doll" -> ItemRegistry.voodooDoll();
+            case "soul_fragment" -> ItemRegistry.soulFragment();
+            case "madness_sphere" -> ItemRegistry.madnessSphere();
             default -> null;
         };
 
@@ -424,7 +429,8 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                         "bloodhunter_helmet", "bloodhunter_chestplate", "bloodhunter_leggings", "bloodhunter_boots",
                         "trophy_common", "trophy_legendary", "relic_time_core", "relic_void_fragment", "artifact_heart_of_world",
                         "trampoline", "nanda",
-                        "sacrificial_dagger", "blood_drop", "demon_soul", "demonic_pact", "blood_cauldron", "ritual_altar", "cleansing_totem"
+                        "sacrificial_dagger", "blood_drop", "demon_soul", "demonic_pact", "blood_cauldron", "ritual_altar", "cleansing_totem",
+                        "blood_chalice", "blood_vial", "voodoo_doll", "soul_fragment", "madness_sphere"
                 ).stream().filter(s -> s.startsWith(args[2].toLowerCase())).toList();
             }
             if (args[0].equalsIgnoreCase("me")) {

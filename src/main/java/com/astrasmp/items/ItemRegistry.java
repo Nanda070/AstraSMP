@@ -287,6 +287,51 @@ public final class ItemRegistry {
     public static ItemStack cleansingTotem() { return build("cleansingTotem", Material.TOTEM_OF_UNDYING, "§eТотем Очищения", List.of("§7ПКМ по Вратам Бездны,", "§7чтобы закрыть их навсегда."), 9107, true); }
     public static ItemStack bloodChalice() { return build("bloodChalice", Material.DRAGON_BREATH, "§4Карманная Чаша Крови", List.of("§7Автоматически собирает", "§7кровь убитых вами мобов.", "§7Шанс 15% получить Каплю Крови."), 9108, true); }
 
+    public static ItemStack bloodVial(String targetName, String targetUuid) {
+        ItemStack item = build("bloodVial", Material.POTION, "§4Флакон с кровью: §c" + targetName, List.of("§7Кровь игрока " + targetName, "§7Используется в темных ритуалах."), 9109, true);
+        item.editMeta(meta -> {
+            meta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(AstraSMPPlugin.getInstance(), "blood_target_uuid"), org.bukkit.persistence.PersistentDataType.STRING, targetUuid);
+            meta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(AstraSMPPlugin.getInstance(), "blood_target_name"), org.bukkit.persistence.PersistentDataType.STRING, targetName);
+            if (meta instanceof org.bukkit.inventory.meta.PotionMeta pmeta) {
+                pmeta.setColor(org.bukkit.Color.RED);
+            }
+        });
+        return item;
+    }
+
+    public static ItemStack voodooDoll(String targetName, String targetUuid) {
+        ItemStack item = build("voodooDoll", Material.TOTEM_OF_UNDYING, "§5Кукла Вуду: §d" + targetName, List.of("§7Проклятая кукла игрока " + targetName, "§7ПКМ, чтобы наложить проклятие.", "§cПрочность: 3/3"), 9110, true);
+        item.editMeta(meta -> {
+            meta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(AstraSMPPlugin.getInstance(), "voodoo_target_uuid"), org.bukkit.persistence.PersistentDataType.STRING, targetUuid);
+            meta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(AstraSMPPlugin.getInstance(), "voodoo_target_name"), org.bukkit.persistence.PersistentDataType.STRING, targetName);
+            meta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(AstraSMPPlugin.getInstance(), "voodoo_uses"), org.bukkit.persistence.PersistentDataType.INTEGER, 3);
+        });
+        return item;
+    }
+
+    public static ItemStack soulFragment(String targetName, String targetUuid) {
+        ItemStack item = build("soulFragment", Material.GHAST_TEAR, "§bОсколок Души: §3" + targetName, List.of("§7Оторванная часть души " + targetName, "§7Содержит невероятную энергию."), 9111, true);
+        item.editMeta(meta -> {
+            meta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(AstraSMPPlugin.getInstance(), "soul_target_uuid"), org.bukkit.persistence.PersistentDataType.STRING, targetUuid);
+            meta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(AstraSMPPlugin.getInstance(), "soul_target_name"), org.bukkit.persistence.PersistentDataType.STRING, targetName);
+        });
+        return item;
+    }
+
+    public static ItemStack madnessSphere(String targetName, String targetUuid) {
+        ItemStack item = build("madnessSphere", Material.ENDER_PEARL, "§5Сфера Безумия: §d" + targetName, List.of("§7ПКМ, чтобы наслать", "§7ужас на игрока " + targetName), 9112, true);
+        item.editMeta(meta -> {
+            meta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(AstraSMPPlugin.getInstance(), "madness_target_uuid"), org.bukkit.persistence.PersistentDataType.STRING, targetUuid);
+            meta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(AstraSMPPlugin.getInstance(), "madness_target_name"), org.bukkit.persistence.PersistentDataType.STRING, targetName);
+        });
+        return item;
+    }
+
+    public static ItemStack bloodVial() { return bloodVial("Неизвестный", "null"); }
+    public static ItemStack voodooDoll() { return voodooDoll("Неизвестный", "null"); }
+    public static ItemStack soulFragment() { return soulFragment("Неизвестный", "null"); }
+    public static ItemStack madnessSphere() { return madnessSphere("Неизвестный", "null"); }
+
     // Кланы
     public static ItemStack guildHeart() {
         ItemStack item = new ItemStack(Material.CRYING_OBSIDIAN);
@@ -348,7 +393,8 @@ public final class ItemRegistry {
                 minerHelmet(), minerChestplate(), minerLeggings(), minerBoots(),
                 bloodHunterHelmet(), bloodHunterChestplate(), bloodHunterLeggings(), bloodHunterBoots(),
                 trampoline(), soulOfNanda(), eventCompass(),
-                sacrificialDagger(), bloodDrop(), demonSoul(), demonicPact(), bloodCauldron(), ritualAltar(), cleansingTotem(), bloodChalice()
+                sacrificialDagger(), bloodDrop(), demonSoul(), demonicPact(), bloodCauldron(), ritualAltar(), cleansingTotem(), bloodChalice(),
+                bloodVial(), voodooDoll(), soulFragment(), madnessSphere()
         ));
         return items;
     }

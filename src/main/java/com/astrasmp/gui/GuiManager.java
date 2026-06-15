@@ -35,7 +35,7 @@ public final class GuiManager {
 
     public enum MenuType {
         MAIN, AUCTION, ITEMS, RECIPE_VIEW, STATS, CONTRACTS, ADMIN, SELL_RESOURCES, SELL_FOOD, SELL_DROPS,
-        ADMIN_PLAYERS, GUILD_UPGRADE, ADMIN_GUILDS, ADMIN_GIVE_ITEMS, GUILD, GUILD_MEMBERS, GUILD_RANKS_LIST, GUILD_RANK_SETTINGS, GUILD_RANK_PERMISSIONS, GUILD_TREASURY, QUESTS, RITUAL_GUIDE
+        ADMIN_PLAYERS, GUILD_UPGRADE, ADMIN_GUILDS, ADMIN_GIVE_ITEMS, GUILD, GUILD_MEMBERS, GUILD_RANKS_LIST, GUILD_RANK_SETTINGS, GUILD_RANK_PERMISSIONS, GUILD_TREASURY, QUESTS, RITUAL_GUIDE, VOODOO_DOLL
     }
 
     public record MenuHolder(MenuType type, int page, String query, String metadata) implements InventoryHolder {
@@ -128,91 +128,50 @@ public final class GuiManager {
     }
 
     public void openRitualGuide(Player player) {
-        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.RITUAL_GUIDE, 0, "", ""), 54, title("Гримуар: Темная Магия"));
+        ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
+        org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) book.getItemMeta();
+        
+        meta.setTitle("Гримуар Бездны");
+        meta.setAuthor("Древний Культист");
+        
+        // Страница 1: Вступление
+        Component page1 = Component.text(TextUtil.color("&4&lГримуар Бездны\n\n&8«За всё нужно платить...»\n\n&0Использование темной магии оставляет шрамы на вашей душе — &5Скверну&0.\n\n&c[50]&0: Кровавые следы\n&c[200]&0: Проклятое зрение\n&c[500]&0: Демоническая сила"));
+        
+        // Страница 2: Основы (Кинжал и Алтарь)
+        Component page2 = Component.text(TextUtil.color("&5&lОсновы\n\n&8Ритуальный Кинжал\n&0Железо + Золото + Палка. Бьете игрока - есть 10% шанс выбить его &cФлакон Крови&0.\n\n&8Ядро Алтаря\n&0Алмазы по углам, Обсидиан крестом, Редстоун в центре. Клик пустой рукой строит пентаграмму."));
+        
+        // Страница 3: Кровь и Чаша
+        Component page3 = Component.text(TextUtil.color("&4&lКровь и Чаша\n\n&0Бросьте плоть в Котел с водой, чтобы получить Каплю Крови.\n\n&8Ритуал: Карманная Чаша\n&0Ур: 2 | Жертва: Ведьма\nПредметы: Котел, Золото, Капля Крови. Автоматически собирает кровь при убийствах (15%)."));
+        
+        // Страница 4: Кукла Вуду
+        Component page4 = Component.text(TextUtil.color("&5&lКукла Вуду\n\n&0Ур: 2 | Жертва: Зомби\nПредметы: Флакон крови, Плоть, Нить.\n\nПозволяет накладывать порчу (урон, слепоту, удушье) на владельца крови на любом расстоянии. Прочность: 3."));
+        
+        // Страница 5: Опустошение Души
+        Component page5 = Component.text(TextUtil.color("&8&lОпустошение Души\n\n&0Убейте игрока Кинжалом в центре Алтаря.\nЕго душа будет разорвана: он потеряет 2 сердца на 30 минут.\nВы получите его &bОсколок Души&0."));
+        
+        // Страница 6: Сфера Безумия и Призыв
+        Component page6 = Component.text(TextUtil.color("&5&lОдержимость и Призыв\n\n&8Сфера Безумия\n&0Ур: 3 | Жертва: Ведьма\nПредметы: Осколок Души, Душа Демона. Сводит жертву с ума на 10 минут.\n\n&8Врата Призыва\n&0Ур: 3 | Жертва: Эндермен\nПредметы: Кровь, Эндер Перл. Притягивает жертву на алтарь."));
 
-        ItemStack edge = new ItemStack(Material.PURPLE_STAINED_GLASS_PANE); edge.editMeta(meta -> meta.displayName(Component.empty()));
-        ItemStack corner = new ItemStack(Material.BLACK_STAINED_GLASS_PANE); corner.editMeta(meta -> meta.displayName(Component.empty()));
-        ItemStack bg = new ItemStack(Material.GRAY_STAINED_GLASS_PANE); bg.editMeta(meta -> meta.displayName(Component.empty()));
+        // Страница 7: Контракты и Врата
+        Component page7 = Component.text(TextUtil.color("&4&lВеликое Зло\n\n&8Демонический Контракт\n&0Отнимает 2 сердца навсегда. Дает вампиризм. Снять можно Тотемом Очищения (ПКМ).\n\n&8Врата Бездны\n&0Портал 4х5 из Плачущего обсидиана + Душа Демона. Вызывает Вторжения."));
 
-        for (int i = 0; i < 54; i++) {
-            if (i < 9 || i > 44 || i % 9 == 0 || i % 9 == 8) {
-                if (i == 0 || i == 8 || i == 45 || i == 53) inv.setItem(i, corner);
-                else inv.setItem(i, edge);
-            } else {
-                inv.setItem(i, bg);
-            }
-        }
+        meta.addPages(page1, page2, page3, page4, page5, page6, page7);
+        book.setItemMeta(meta);
 
-        // --- ГЛАВА I: ИСТОКИ ---
-        inv.setItem(10, button(Material.BOOK, "&5Глава I: Природа Скверны", 
-                "&7«За всё нужно платить...»", 
-                "", "&fИспользование темной магии оставляет шрамы", "&fна вашей душе, известные как &5Скверна&f.", 
-                "", "&c[!] &7Эффекты Скверны:", "&7• 50: Кровавые следы", "&7• 200: Проклятое Зрение (Ночное Зрение)", "&7• 500: Демоническая Сила (Пассивная сила)"));
+        player.openBook(book);
+    }
 
-        inv.setItem(12, button(Material.IRON_SWORD, "&8Орудие: Ритуальный Кинжал", 
-                "&7«Кровь не польется сама по себе»",
-                "", "&fГлавный инструмент любого оккультиста.", "&fИм вы обязаны убивать жертву в центре круга.",
-                "", "&c[!] &7В любом ритуале вместо требуемого", "&7моба можно принести в жертву &cИгрока&7.",
-                "", "&eРецепт в Верстаке:", "&7Верх: &fЖелезный Слиток", "&7Центр: &6Золотой Слиток", "&7Низ: &eПалка"));
+    public void openVoodooGui(Player player, String targetName, String targetUuid) {
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.VOODOO_DOLL, 0, targetUuid, targetName), 27, title("Кукла Вуду: " + targetName));
+        fill(inv);
 
-        inv.setItem(14, button(Material.CRYING_OBSIDIAN, "&5Основа: Ядро Алтаря", 
-                "&7«Оно плачет слезами павших...»",
-                "", "&fАбсолютный центр любой пентаграммы.", "&fКликните пустой рукой, чтобы начертить круг.",
-                "", "&eРецепт в Верстаке:", "&7Крестом: &54x Обсидиан", "&7Углы: &b4x Алмаз", "&7Центр: &c1x Блок Редстоуна",
-                "", "&8&oУр 1: Окружите ядро 4 пылинками крестом и 4 свечами.", "&8&oУр 2: 5х5 кольцо и 4 черепа иссушителя."));
+        ItemStack needle = button(Material.IRON_SWORD, "&cУкол Иглой", "&7Наносит 3 сердца магического", "&7урона, игнорируя броню.", "", "&eКлик: Использовать");
+        ItemStack choke = button(Material.COBWEB, "&5Удушье", "&7Накладывает Отравление II", "&7и Замедление на 10 секунд.", "", "&eКлик: Использовать");
+        ItemStack blind = button(Material.INK_SAC, "&8Слепота", "&7Погружает жертву в полную", "&7тьму на 15 секунд.", "", "&eКлик: Использовать");
 
-        inv.setItem(16, button(Material.CAULDRON, "&cСбор: Кровавые Котлы", 
-                "&7«Каждая капля имеет значение»",
-                "", "&fПоставьте обычный котел и налейте воду.", "&fБросайте внутрь &cГнилую Плоть&f или убивайте мобов.",
-                "&fСоберите кровь пустой колбой.",
-                "", "&4[!] В Кровавую Луну котлы наполняются", "&4в 2 раза быстрее, а ритуалы дают больше Скверны!"));
-
-        // --- ГЛАВА II: РИТУАЛЫ ---
-        inv.setItem(19, button(Material.RED_DYE, "&cРитуал I: Жатва Крови", 
-                "&7«Даруй нам силу...»", 
-                "", "&7Алтарь: &e1 уровень", "&7Предмет на алтарь: &f1x Гнилая Плоть", "&7Жертва: &dСвинья", 
-                "", "&dРезультат: &cКапля Крови", "&8&o(Дает +5 Скверны)"));
-
-        inv.setItem(21, button(Material.GHAST_TEAR, "&5Ритуал II: Извлечение Души", 
-                "&7«Они кричат в пустоте...»", 
-                "", "&7Алтарь: &e2 уровень", "&7Предмет на алтарь: &b1x Алмаз", "&7Жертва: &2Зомби", 
-                "", "&dРезультат: &5Душа Демона", "&8&o(Дает +15 Скверны)"));
-
-        inv.setItem(23, button(Material.DRAGON_BREATH, "&4Ритуал II: Карманная Чаша Крови", 
-                "&7«Она жаждет пить прямо с ваших рук...»", 
-                "", "&fАвтоматически впитывает кровь убитых врагов.", "&fШанс 15% получить каплю (30% в Кровавую Ночь).",
-                "", "&7Алтарь: &e2 уровень", "&7Предметы: &c1x Капля Крови, &81x Котел, &61x Золото", "&7Жертва: &5Ведьма", 
-                "", "&dРезультат: &4Карманная Чаша Крови", "&8&o(Дает +20 Скверны)"));
-
-        inv.setItem(25, button(Material.TOTEM_OF_UNDYING, "&eРитуал II: Искупление", 
-                "&7«Свет выжжет тьму внутри тебя...»", 
-                "", "&7Алтарь: &e2 уровень", "&7Предметы: &61x Золотое Яблоко, 1x Слеза Гаста", "&7Жертва: &aЖитель", 
-                "", "&dРезультат: &aОчищение души (-50 Скверны)",
-                "", "&eСоздание Тотема Очищения:", "&7Алтарь 2 ур | &61x Тотем, &c1x Капля Крови &7| Жертва: &fКорова"));
-
-        // --- ГЛАВА III: ВЕЛИКОЕ ЗЛО ---
-        inv.setItem(28, button(Material.NETHERITE_SWORD, "&8Ритуал III: Теневой Клинок", 
-                "&7«Оружие, сотканное из ночных кошмаров»", 
-                "", "&7Алтарь: &e3 уровень", "&7Предметы: &81x Незеритовый меч, &c1x Капля Крови", "&7Жертва: &cИгрок", 
-                "", "&dРезультат: &8Теневой Клинок", "&8&o(Дает +50 Скверны)"));
-
-        inv.setItem(30, button(Material.PAPER, "&4Ритуал III: Контракт с Бездной", 
-                "&7«Подпиши кровью...»", 
-                "", "&7Алтарь: &e3 уровень", "&7Предметы: &f1x Бумага, &51x Душа Демона", "&7Жертва: &8Скелет-Иссушитель", 
-                "", "&dРезультат: &4Демонический Контракт", "&cНавсегда отнимает 2 сердца в обмен на мощь."));
-
-        inv.setItem(32, button(Material.DIAMOND_BLOCK, "&eРитуал III: Разрыв Контракта",
-                "&7«Даже дьявола можно обмануть»",
-                "", "&7Алтарь: &e3 уровень", "&7Предметы: &e1x Тотем Очищения, &b1x Алмазный Блок", "&7Жертва: &8Скелет-Иссушитель",
-                "", "&dРезультат: &aВозврат ваших сердец", "&8&o(Дает -100 Скверны)"));
-
-        inv.setItem(34, button(Material.ENDER_PEARL, "&5Ритуал III: Врата Бездны", 
-                "&7«Разрыв в ткани мироздания»", 
-                "", "&fПостройте портал (4x5) из Плачущего Обсидиана.", "&fКликните по рамке &5Душой Демона&f.",
-                "", "&c[!] &fВрата извергнут &cТРИ ВОЛНЫ&f искаженных", "&fмонстров, прежде чем выпустить &4Иссушителя&f.",
-                "&fЗакрыть Врата можно только &eТотемом Очищения&f."));
-
-        inv.setItem(49, button(Material.BARRIER, "&cЗакрыть Гримуар"));
+        inv.setItem(11, needle);
+        inv.setItem(13, choke);
+        inv.setItem(15, blind);
 
         player.openInventory(inv);
     }
@@ -1348,6 +1307,62 @@ public final class GuiManager {
                         }
                     }
                 }
+            }
+            case VOODOO_DOLL -> {
+                String targetUuid = holder.query();
+                String targetName = holder.metadata();
+                org.bukkit.entity.Player target = org.bukkit.Bukkit.getPlayer(java.util.UUID.fromString(targetUuid));
+                
+                if (target == null || !target.isOnline()) {
+                    player.sendMessage("§cИгрок " + targetName + " вне сети или недоступен.");
+                    player.closeInventory();
+                    return true;
+                }
+
+                if (event.getSlot() == 11) { // Укол
+                    target.damage(6.0); // 3 сердца
+                    target.sendMessage("§4[Вуду] §cНевидимая игла пронзила вашу плоть!");
+                    player.sendMessage("§4[Вуду] §cВы пронзили " + targetName + " иглой.");
+                } else if (event.getSlot() == 13) { // Удушье
+                    target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.POISON, 200, 1));
+                    target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SLOWNESS, 200, 0));
+                    target.sendMessage("§5[Вуду] §dНевидимая рука сжала ваше горло!");
+                    player.sendMessage("§5[Вуду] §dВы начали душить " + targetName + ".");
+                } else if (event.getSlot() == 15) { // Слепота
+                    target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS, 300, 0));
+                    target.sendMessage("§8[Вуду] §0Тьма застилает ваши глаза...");
+                    player.sendMessage("§8[Вуду] §0Вы ослепили " + targetName + ".");
+                } else {
+                    return true;
+                }
+                
+                player.getWorld().playSound(player.getLocation(), Sound.ENTITY_WITCH_CELEBRATE, 1f, 0.5f);
+                target.getWorld().playSound(target.getLocation(), Sound.ENTITY_GHAST_HURT, 1f, 0.5f);
+
+                // Уменьшаем прочность куклы Вуду
+                ItemStack doll = player.getInventory().getItemInMainHand();
+                if (doll != null && doll.getItemMeta() != null) {
+                    org.bukkit.inventory.meta.ItemMeta meta = doll.getItemMeta();
+                    org.bukkit.persistence.PersistentDataContainer data = meta.getPersistentDataContainer();
+                    org.bukkit.NamespacedKey usesKey = new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "voodoo_uses");
+                    if (data.has(usesKey, org.bukkit.persistence.PersistentDataType.INTEGER)) {
+                        int uses = data.get(usesKey, org.bukkit.persistence.PersistentDataType.INTEGER);
+                        if (uses <= 1) {
+                            player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                            player.sendMessage("§c[Вуду] Кукла рассыпалась в прах.");
+                            player.closeInventory();
+                        } else {
+                            data.set(usesKey, org.bukkit.persistence.PersistentDataType.INTEGER, uses - 1);
+                            List<Component> lore = meta.lore();
+                            if (lore != null) {
+                                lore.set(2, Component.text(TextUtil.color("&cПрочность: " + (uses - 1) + "/3")));
+                                meta.lore(lore);
+                            }
+                            doll.setItemMeta(meta);
+                        }
+                    }
+                }
+                player.closeInventory();
             }
             default -> {}
         }

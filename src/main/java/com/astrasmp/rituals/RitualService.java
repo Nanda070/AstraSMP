@@ -109,6 +109,69 @@ public class RitualService {
                 ItemRegistry.bloodChalice(),
                 20 // +20 Скверны
         ));
+
+        // Ритуал 9: Кукла Вуду
+        recipes.add(new RitualRecipe(
+                "voodoo_doll_craft",
+                List.of(ItemRegistry.bloodVial(), new ItemStack(Material.ROTTEN_FLESH, 1), new ItemStack(Material.STRING, 1)),
+                EntityType.ZOMBIE,
+                2,
+                new ItemStack(Material.AIR), // Создается динамически
+                25
+        ));
+
+        // Ритуал 10: Сфера Безумия
+        recipes.add(new RitualRecipe(
+                "madness_sphere_craft",
+                List.of(ItemRegistry.soulFragment(), ItemRegistry.demonSoul()),
+                EntityType.WITCH,
+                3,
+                new ItemStack(Material.AIR), // Создается динамически
+                50
+        ));
+
+        // Ритуал 11: Призыв Игрока
+        recipes.add(new RitualRecipe(
+                "summoning_ritual",
+                List.of(ItemRegistry.bloodVial(), new ItemStack(Material.ENDER_PEARL, 1)),
+                EntityType.ENDERMAN,
+                3,
+                new ItemStack(Material.AIR), // Эффект
+                50
+        ));
+
+        // Фоновый таск для Безумия (Одержимость)
+        startMadnessTask();
+    }
+
+    private void startMadnessTask() {
+        org.bukkit.Bukkit.getScheduler().runTaskTimer(com.astrasmp.AstraSMPPlugin.getInstance(), () -> {
+            org.bukkit.NamespacedKey key = new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "madness_until");
+            for (org.bukkit.entity.Player player : org.bukkit.Bukkit.getOnlinePlayers()) {
+                org.bukkit.persistence.PersistentDataContainer data = player.getPersistentDataContainer();
+                if (data.has(key, org.bukkit.persistence.PersistentDataType.LONG)) {
+                    long expiry = data.get(key, org.bukkit.persistence.PersistentDataType.LONG);
+                    if (System.currentTimeMillis() < expiry) {
+                        // Игрок одержим, 20% шанс на пугалку каждую секунду
+                        if (Math.random() < 0.20) {
+                            int scareType = new java.util.Random().nextInt(4);
+                            switch (scareType) {
+                                case 0 -> player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_CREEPER_PRIMED, 1f, 1f);
+                                case 1 -> player.playSound(player.getLocation(), org.bukkit.Sound.AMBIENT_CAVE, 1f, 0.5f);
+                                case 2 -> {
+                                    player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS, 60, 0));
+                                    player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_ENDERMAN_STARE, 1f, 0.5f);
+                                }
+                                case 3 -> player.damage(0.1); // Фейковый урон
+                            }
+                        }
+                    } else {
+                        data.remove(key);
+                        player.sendMessage("§a[Безумие] §fВаш разум прояснился. Мрак отступил.");
+                    }
+                }
+            }
+        }, 100L, 100L); // Каждые 5 секунд проверка (100 тиков)
     }
 
     /**
@@ -135,6 +198,21 @@ public class RitualService {
     }
 
     private void executeRitual(Location center, RitualRecipe recipe, List<Item> groundItems, org.bukkit.entity.Player killer) {
+        // Ищем целевые UUID в предметах (до того как они исчезли или после, но мы сохраним их)
+        String targetUuid = null;
+        String targetName = null;
+        for (Item groundItem : groundItems) {
+            org.bukkit.persistence.PersistentDataContainer data = groundItem.getItemStack().getItemMeta().getPersistentDataContainer();
+            if (data.has(new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "blood_target_uuid"), org.bukkit.persistence.PersistentDataType.STRING)) {
+                targetUuid = data.get(new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "blood_target_uuid"), org.bukkit.persistence.PersistentDataType.STRING);
+                targetName = data.get(new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "blood_target_name"), org.bukkit.persistence.PersistentDataType.STRING);
+            }
+            if (data.has(new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "soul_target_uuid"), org.bukkit.persistence.PersistentDataType.STRING)) {
+                targetUuid = data.get(new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "soul_target_uuid"), org.bukkit.persistence.PersistentDataType.STRING);
+                targetName = data.get(new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "soul_target_name"), org.bukkit.persistence.PersistentDataType.STRING);
+            }
+        }
+
         // Удаляем только необходимое количество предметов
         for (ItemStack req : recipe.getRequiredItems()) {
             int needed = req.getAmount();
@@ -159,7 +237,7 @@ public class RitualService {
         center.getWorld().spawnParticle(Particle.FLAME, center.clone().add(0, 1, 0), 100, 0.5, 0.5, 0.5, 0.1);
         center.getWorld().playSound(center, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f);
 
-        // Спавн награды (если есть)
+        // Спавн награды (если есть статичная)
         if (recipe.getResult() != null && !recipe.getResult().getType().isAir()) {
             center.getWorld().dropItem(center.clone().add(0, 1, 0), recipe.getResult());
         }
@@ -186,7 +264,43 @@ public class RitualService {
                 killer.getWorld().spawnParticle(Particle.HEART, center, 100, 1, 1, 1, 0.1);
                 killer.sendMessage("§e[Контракт] §fВы разорвали демонический контракт и вернули свою жизненную силу!");
             } else {
-                killer.sendMessage("§c[Контракт] У вас нет активного контракта для разрыва.");
+                if (killer != null) killer.sendMessage("§c[Контракт] У вас нет активного контракта для разрыва.");
+            }
+        } else if (recipe.getId().equals("voodoo_doll_craft")) {
+            if (targetUuid != null) {
+                center.getWorld().dropItem(center.clone().add(0, 1, 0), ItemRegistry.voodooDoll(targetName, targetUuid));
+                if (killer != null) killer.sendMessage("§4[Ритуал] §cКукла Вуду создана. Теперь судьба " + targetName + " в ваших руках.");
+            } else {
+                if (killer != null) killer.sendMessage("§cКровь была испорчена. Ритуал не удался.");
+            }
+        } else if (recipe.getId().equals("madness_sphere_craft")) {
+            if (targetUuid != null) {
+                center.getWorld().dropItem(center.clone().add(0, 1, 0), ItemRegistry.madnessSphere(targetName, targetUuid));
+                if (killer != null) killer.sendMessage("§5[Ритуал] §dСфера Безумия соткана из ужаса. Используйте её на " + targetName + ".");
+            } else {
+                if (killer != null) killer.sendMessage("§cОсколок души был пуст. Ритуал не удался.");
+            }
+        } else if (recipe.getId().equals("summoning_ritual")) {
+            if (targetUuid != null) {
+                org.bukkit.entity.Player target = org.bukkit.Bukkit.getPlayer(java.util.UUID.fromString(targetUuid));
+                if (target != null && target.isOnline() && target.getWorld().equals(center.getWorld())) {
+                    target.teleport(center.clone().add(0, 1, 0));
+                    target.sendMessage("§4[Призыв] §cВас насильно притянули во Врата Тьмы!");
+                    if (killer != null) killer.sendMessage("§4[Ритуал] §cЖертва прибыла.");
+                    
+                    // Барьер
+                    for (int i = 0; i < 20; i++) {
+                        org.bukkit.Bukkit.getScheduler().runTaskLater(com.astrasmp.AstraSMPPlugin.getInstance(), () -> {
+                            for (double t = 0; t <= 2 * Math.PI; t += Math.PI / 8) {
+                                double x = 3 * Math.cos(t);
+                                double z = 3 * Math.sin(t);
+                                center.getWorld().spawnParticle(Particle.PORTAL, center.clone().add(x, 1, z), 5, 0, 1, 0, 0);
+                            }
+                        }, i * 10L);
+                    }
+                } else {
+                    if (killer != null) killer.sendMessage("§cЖертва слишком далеко или не в этом мире. Ритуал потрачен впустую.");
+                }
             }
         }
 
