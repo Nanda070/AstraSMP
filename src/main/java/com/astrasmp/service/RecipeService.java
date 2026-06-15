@@ -113,6 +113,13 @@ public final class RecipeService implements Listener {
         register("totem_teleport", ItemRegistry.totemTeleport(), "PPP", "PTP", "PPP",
                 'P', Material.ENDER_PEARL, 'T', Material.TOTEM_OF_UNDYING);
 
+        // --- ТЕМНАЯ МАГИЯ (КРАФТЫ) ---
+        register("sacrificial_dagger", ItemRegistry.sacrificialDagger(), " I ", " G ", " S ",
+                'I', Material.IRON_INGOT, 'G', Material.GOLD_INGOT, 'S', Material.STICK);
+
+        register("ritual_altar", ItemRegistry.ritualAltar(), "DOD", "ORO", "DOD",
+                'D', Material.DIAMOND, 'O', Material.OBSIDIAN, 'R', Material.REDSTONE_BLOCK);
+
         // ==========================================
         // КОМПОНЕНТЫ ME-СЕТИ
         // ==========================================

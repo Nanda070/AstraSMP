@@ -34,8 +34,8 @@ public class RitualRecipe {
         if (tier < minimumCircleTier) return false;
         
         // С жертвой: если requiredSacrifice == null, значит жертва не нужна (или любая).
-        // Если указана, должна совпадать.
-        if (requiredSacrifice != null && requiredSacrifice != victim) return false;
+        // Дополнительно: Игрока (PLAYER) можно принести в жертву в ЛЮБОМ ритуале вместо требуемого моба.
+        if (requiredSacrifice != null && requiredSacrifice != victim && victim != EntityType.PLAYER) return false;
 
         // Проверка предметов
         // Простой алгоритм: каждый требуемый предмет должен быть найден на земле (с нужным материалом, и в нужном или большем количестве).

@@ -128,40 +128,76 @@ public final class GuiManager {
     }
 
     public void openRitualGuide(Player player) {
-        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.RITUAL_GUIDE, 0, "", ""), 54, title("Гайд: Темная Магия"));
-        fill(inv);
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.RITUAL_GUIDE, 0, "", ""), 54, title("Гримуар: Темная Магия"));
 
-        // Основные механики
-        inv.setItem(11, button(Material.CRYING_OBSIDIAN, "&5Алтари и Круги", 
-                "&7Чтобы начать ритуал, поставьте", "&5Ядро Алтаря&7 и окружите его", "&7редстоуном и свечами.", 
-                "", "&7Уровень 1: 4 пыли крестом, 4 свечи по углам.", "&7Уровень 2: 5х5 кольцо и 4 черепа."));
-                
-        inv.setItem(12, button(Material.NETHERITE_SWORD, "&cЖертвоприношения", 
-                "&7Бросайте ресурсы на Ядро Алтаря", "&7и убивайте мобов &4Ритуальным Кинжалом", "&7прямо внутри круга.", 
-                "", "&7Кликните пустой рукой по алтарю,", "&7чтобы начертить пентаграмму."));
-                
-        inv.setItem(13, button(Material.REDSTONE, "&4Скверна", 
-                "&7Каждый ритуал наполняет вашу душу Скверной.", "&7Скверна невидима, но дает эффекты:", 
-                "", "&7• 50: Кровавые следы", "&7• 200: Пассивное Ночное Зрение", "&7• 500: Пассивная Сила"));
+        ItemStack edge = new ItemStack(Material.PURPLE_STAINED_GLASS_PANE); edge.editMeta(meta -> meta.displayName(Component.empty()));
+        ItemStack corner = new ItemStack(Material.BLACK_STAINED_GLASS_PANE); corner.editMeta(meta -> meta.displayName(Component.empty()));
+        ItemStack bg = new ItemStack(Material.GRAY_STAINED_GLASS_PANE); bg.editMeta(meta -> meta.displayName(Component.empty()));
 
-        inv.setItem(14, button(Material.CAULDRON, "&cРезервуары Крови", 
-                "&7Поставьте котел с водой", "&7и убивайте мобов рядом с ним,", "&7чтобы собирать &cКровь&7 для ритуалов."));
+        for (int i = 0; i < 54; i++) {
+            if (i < 9 || i > 44 || i % 9 == 0 || i % 9 == 8) {
+                if (i == 0 || i == 8 || i == 45 || i == 53) inv.setItem(i, corner);
+                else inv.setItem(i, edge);
+            } else {
+                inv.setItem(i, bg);
+            }
+        }
 
-        inv.setItem(15, button(Material.OBSIDIAN, "&5Врата Бездны", 
-                "&7Особые ритуалы могут прорвать ткань", "&7реальности. Врата Бездны будут", "&7искажать мир вокруг себя."));
+        // --- Раздел 1: Основы и Инструменты ---
+        inv.setItem(10, button(Material.BOOK, "&5Основы Искусства: Скверна", 
+                "&7Каждое использование темной магии", "&7навсегда очерняет вашу душу.", 
+                "", "&c[!] &7Эффекты Скверны:", "&7• 50: Кровавые следы", "&7• 200: Вечное Ночное Зрение", "&7• 500: Пассивная Сила"));
 
-        inv.setItem(16, button(Material.PAPER, "&8Контракты", 
-                "&7Обменяйте часть своего максимального", "&7здоровья на невероятные баффы", "&7с помощью Демонических Контрактов!"));
+        inv.setItem(12, button(Material.IRON_SWORD, "&8Создание: Ритуальный Кинжал", 
+                "&7Главный инструмент оккультиста.", "&7Им вы должны убивать жертву в круге.",
+                "", "&c[!] &7В любом ритуале вместо требуемого", "&7моба можно принести в жертву &cИгрока&7.",
+                "", "&eРецепт в Верстаке:", "&7Верх: &fЖелезный Слиток", "&7Центр: &6Золотой Слиток", "&7Низ: &eПалка"));
 
-        // Рецепты
-        inv.setItem(28, button(Material.RED_DYE, "&cРецепт: Капля Крови", "&7Алтарь: &e1 уровень", "&7Ресурсы: &f1x Гнилая Плоть", "&7Жертва: &dСвинья"));
-        inv.setItem(29, button(Material.GHAST_TEAR, "&5Рецепт: Душа Демона", "&7Алтарь: &e2 уровень", "&7Ресурсы: &b1x Алмаз", "&7Жертва: &2Зомби"));
-        inv.setItem(30, button(Material.NETHERITE_SWORD, "&8Рецепт: Теневой Клинок", "&7Алтарь: &e3 уровень", "&7Ресурсы: &81x Незеритовый меч, &c1x Капля крови", "&7Жертва: &cИгрок"));
-        inv.setItem(31, button(Material.PAPER, "&4Рецепт: Контракт", "&7Алтарь: &e3 уровень", "&7Ресурсы: &f1x Бумага, &51x Душа Демона", "&7Жертва: &8Скелет-Иссушитель"));
-        inv.setItem(32, button(Material.ENDER_PEARL, "&5Рецепт: Врата Бездны", "&7Алтарь: &e3 уровень", "&7Ресурсы: &51x Душа Демона, &51x Ядро Алтаря", "&7Жертва: &dЭндермен"));
-        inv.setItem(33, button(Material.GOLDEN_APPLE, "&eРецепт: Ритуал Очищения", "&7Алтарь: &e2 уровень", "&7Ресурсы: &e1x Золотое Яблоко, &f1x Слеза Гаста", "&7Жертва: &aЖитель"));
+        inv.setItem(14, button(Material.CRYING_OBSIDIAN, "&5Создание: Ядро Алтаря", 
+                "&7Сердце любой пентаграммы.", "&7Кликните пустой рукой, чтобы начертить круг.",
+                "", "&eРецепт в Верстаке:", "&7По углам: &b4x Алмаз", "&7Крестом: &54x Обсидиан", "&7В центре: &c1x Блок Редстоуна",
+                "", "&8&oУр 1: Окружите ядро 4 пылинками крестом и 4 свечами.", "&8&oУр 2: 5х5 кольцо и 4 черепа иссушителя."));
 
-        inv.setItem(49, button(Material.ARROW, "&cНазад в меню"));
+        inv.setItem(16, button(Material.CAULDRON, "&cСбор: Кровавые Котлы", 
+                "&7Поставьте обычный котел и налейте воду.", "&7Бросайте внутрь &cГнилую Плоть", "&7или убивайте мобов рядом.",
+                "", "&eИспользование:", "&7Когда вода станет алой, кликните", "&7пустым пузырьком, чтобы получить", "&cКаплю Крови&7."));
+
+        // --- Раздел 2: Ритуалы низшего порядка ---
+        inv.setItem(20, button(Material.RED_DYE, "&cРитуал I: Жатва Крови", 
+                "&7Алтарь: &e1 уровень", "&7Предмет на алтарь: &f1x Гнилая Плоть", "&7Жертва: &dСвинья", 
+                "", "&dРезультат: &cКапля Крови", "&8&o(Дает +5 Скверны)"));
+
+        inv.setItem(22, button(Material.GHAST_TEAR, "&5Ритуал II: Извлечение Души", 
+                "&7Алтарь: &e2 уровень", "&7Предмет на алтарь: &b1x Алмаз", "&7Жертва: &2Зомби", 
+                "", "&dРезультат: &5Душа Демона", "&8&o(Дает +15 Скверны)"));
+
+        inv.setItem(24, button(Material.TOTEM_OF_UNDYING, "&eРитуал II: Искупление", 
+                "&7Алтарь: &e2 уровень", "&7Предметы: &61x Золотое Яблоко, 1x Слеза Гаста", "&7Жертва: &aЖитель", 
+                "", "&dРезультат: &aОчищение души (-50 Скверны)",
+                "", "&eТакже можно создать Тотем Очищения:", "&7Алтарь 2 ур | &61x Тотем, &c1x Капля Крови &7| Жертва: &fКорова"));
+
+        // --- Раздел 3: Запретные Знания ---
+        inv.setItem(29, button(Material.NETHERITE_SWORD, "&8Ритуал III: Теневой Клинок", 
+                "&7Алтарь: &e3 уровень", "&7Предметы: &81x Незеритовый меч, &c1x Капля Крови", "&7Жертва: &cИгрок", 
+                "", "&dРезультат: &8Теневой Клинок", "&8&o(Дает +50 Скверны)"));
+
+        inv.setItem(31, button(Material.PAPER, "&4Ритуал III: Контракт с Бездной", 
+                "&7Алтарь: &e3 уровень", "&7Предметы: &f1x Бумага, &51x Душа Демона", "&7Жертва: &8Скелет-Иссушитель", 
+                "", "&dРезультат: &4Демонический Контракт", "&8&oЗабирает 2 сердца навсегда в обмен на огромные баффы."));
+
+        inv.setItem(32, button(Material.DIAMOND_BLOCK, "&eРитуал III: Разрыв Контракта",
+                "&7Позволяет безопасно разорвать", "&7заключенный Демонический Контракт", "&7и вернуть свои сердца.",
+                "", "&7Алтарь: &e3 уровень", "&7Предметы: &e1x Тотем Очищения, &b1x Алмазный Блок", "&7Жертва: &8Скелет-Иссушитель",
+                "", "&dРезультат: &aВосстановление Жизненных Сил", "&8&o(Дает -100 Скверны)"));
+
+        inv.setItem(33, button(Material.ENDER_PEARL, "&5Знание: Врата Бездны", 
+                "&7Разрыв в ткани мироздания.", 
+                "", "&eИнструкция:", "&7Постройте вертикальную рамку портала (4x5)", "&7из &5Плачущего Обсидиана&7.", 
+                "&7Кликните по ней &5Душой Демона&7.",
+                "", "&c[!] &7Врата начнут заражать мир Скверной.", "&7Через 10 секунд из них выйдет &4Иссушитель&7.",
+                "&7Закрыть Врата можно только &eТотемом Очищения&7."));
+
+        inv.setItem(49, button(Material.BARRIER, "&cНазад в меню"));
 
         player.openInventory(inv);
     }
@@ -974,29 +1010,29 @@ public final class GuiManager {
         switch (holder.type()) {
             case MAIN -> {
                 switch (event.getSlot()) {
-                    case 12 -> { player.closeInventory(); player.performCommand("rewards"); }
-                    case 13 -> { player.closeInventory(); player.performCommand("quest"); }
-                    case 14 -> { player.closeInventory(); player.performCommand("talents"); }
-                    case 20 -> openSellResources(player);
-                    case 21 -> openAuction(player, 0, "");
-                    case 22 -> openItems(player, "Броня");
-                    case 23 -> openStatsMenu(player);
-                    case 24 -> { player.closeInventory(); player.performCommand("bounty"); }
-                    case 31 -> {
+                    case 12 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); player.performCommand("rewards"); });
+                    case 13 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); player.performCommand("quest"); });
+                    case 14 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); player.performCommand("talents"); });
+                    case 20 -> Bukkit.getScheduler().runTask(plugin, () -> openSellResources(player));
+                    case 21 -> Bukkit.getScheduler().runTask(plugin, () -> openAuction(player, 0, ""));
+                    case 22 -> Bukkit.getScheduler().runTask(plugin, () -> openItems(player, "Броня"));
+                    case 23 -> Bukkit.getScheduler().runTask(plugin, () -> openStatsMenu(player));
+                    case 24 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); player.performCommand("bounty"); });
+                    case 31 -> Bukkit.getScheduler().runTask(plugin, () -> {
                         Guild guild = services.guilds().getPlayerGuild(player.getUniqueId());
                         if (guild != null) openGuildMain(player, guild);
                         else TextUtil.send(player, "&cУ вас нет гильдии! Создайте её: /guild create <название>");
-                    }
-                    case 33 -> openRitualGuide(player);
-                    case 37 -> { player.closeInventory(); services.afk().teleportToLocation(player, "spawn"); }
-                    case 38 -> { player.closeInventory(); services.afk().teleportToLocation(player, "pvp"); }
-                    case 40 -> { player.closeInventory(); services.afk().teleportToLocation(player, "casino"); }
-                    case 42 -> { player.closeInventory(); services.afk().teleportToLocation(player, "eventshop"); }
-                    case 43 -> { player.closeInventory(); services.afk().teleportToLocation(player, "afk"); }
+                    });
+                    case 33 -> Bukkit.getScheduler().runTask(plugin, () -> openRitualGuide(player));
+                    case 37 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "spawn"); });
+                    case 38 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "pvp"); });
+                    case 40 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "casino"); });
+                    case 42 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "eventshop"); });
+                    case 43 -> Bukkit.getScheduler().runTask(plugin, () -> { player.closeInventory(); services.afk().teleportToLocation(player, "afk"); });
                 }
             }
             case RITUAL_GUIDE -> {
-                if (event.getSlot() == 49) openMain(player);
+                if (event.getSlot() == 49) Bukkit.getScheduler().runTask(plugin, () -> openMain(player));
             }
             case SELL_RESOURCES, SELL_FOOD, SELL_DROPS -> {
                 if (clicked.getType() == Material.ARROW) {

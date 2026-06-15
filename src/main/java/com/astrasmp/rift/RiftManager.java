@@ -34,6 +34,15 @@ public class RiftManager {
         // Визуальное появление портала
         loc.getWorld().spawnParticle(Particle.PORTAL, loc, 500, 2, 2, 2, 1);
         Bukkit.broadcast(LegacyComponentSerializer.legacySection().deserialize("§4[Аномалия] §cКто-то открыл Врата Бездны! Мир начинает искажаться..."));
+
+        // Спавн босса через 10 секунд (200 тиков)
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            // Проверяем, что врата еще не закрыли
+            if (activeRifts.contains(loc)) {
+                loc.getWorld().spawnEntity(loc, org.bukkit.entity.EntityType.WITHER);
+                Bukkit.broadcast(LegacyComponentSerializer.legacySection().deserialize("§4[Аномалия] §cИз Врат Бездны вырвался Иссушитель!"));
+            }
+        }, 200L);
     }
 
     public Location getNearbyRift(Location loc, double radius) {

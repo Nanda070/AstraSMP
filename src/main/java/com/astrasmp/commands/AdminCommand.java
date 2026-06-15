@@ -396,6 +396,14 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                 return List.of("1", "2", "3", "4", "5", "6", "7", "8").stream()
                         .filter(s -> s.startsWith(args[1].toLowerCase())).toList();
             }
+            if (args[0].equalsIgnoreCase("corruption")) {
+                return List.of("add", "set", "remove").stream()
+                        .filter(s -> s.startsWith(args[1].toLowerCase())).toList();
+            }
+            if (args[0].equalsIgnoreCase("rift")) {
+                return List.of("spawn", "close").stream()
+                        .filter(s -> s.startsWith(args[1].toLowerCase())).toList();
+            }
             if (args[0].equalsIgnoreCase("give") || args[0].equalsIgnoreCase("me") || args[0].equalsIgnoreCase("setcoins") || args[0].equalsIgnoreCase("setevent")) {
                 return null; // Предлагает список ников онлайна
             }

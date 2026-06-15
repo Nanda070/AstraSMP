@@ -89,6 +89,16 @@ public class RitualService {
                 new ItemStack(Material.AIR),
                 -50 // -50 Скверны
         ));
+
+        // Ритуал 7: Разрыв Контракта
+        recipes.add(new RitualRecipe(
+                "pact_break_ritual",
+                List.of(ItemRegistry.cleansingTotem(), new ItemStack(Material.DIAMOND_BLOCK, 1)),
+                EntityType.WITHER_SKELETON,
+                3,
+                new ItemStack(Material.AIR),
+                -100 // -100 Скверны
+        ));
     }
 
     /**
@@ -150,19 +160,44 @@ public class RitualService {
         } else if (recipe.getId().equals("cleansing_ritual") && killer != null) {
             killer.getWorld().spawnParticle(Particle.TOTEM_OF_UNDYING, center, 200, 1, 1, 1, 0.5);
             killer.sendMessage("§e[Очищение] §fСвет омывает вашу душу, смывая пятна Скверны.");
+        } else if (recipe.getId().equals("pact_break_ritual") && killer != null) {
+            boolean hasPact = com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(killer.getUniqueId().toString(), null).hasPact();
+            if (hasPact) {
+                com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(killer.getUniqueId().toString(), null).setHasPact(false);
+                org.bukkit.attribute.AttributeInstance maxHp = killer.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH);
+                if (maxHp != null) {
+                    org.bukkit.attribute.AttributeModifier modifier = new org.bukkit.attribute.AttributeModifier(
+                            new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "demonic_pact_debuff"),
+                            -8.0,
+                            org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER
+                    );
+                    maxHp.removeModifier(modifier);
+                }
+                killer.getWorld().spawnParticle(Particle.HEART, center, 100, 1, 1, 1, 0.1);
+                killer.sendMessage("§e[Контракт] §fВы разорвали демонический контракт и вернули свою жизненную силу!");
+            } else {
+                killer.sendMessage("§c[Контракт] У вас нет активного контракта для разрыва.");
+            }
         }
 
         // Начисляем/отнимаем скверну
         if (killer != null && recipe.getCorruptionReward() != 0) {
+            int reward = recipe.getCorruptionReward();
+            // Удвоенная Скверна во время Кровавой Ночи (только для получения, а не очищения)
+            if (reward > 0 && com.astrasmp.AstraSMPPlugin.getInstance().getServices().events().isBloodNight()) {
+                reward *= 2;
+                killer.sendMessage("§4[Кровавая Луна] §cВаша душа жадно впитывает удвоенную Скверну...");
+            }
+
             int current = com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(killer.getUniqueId().toString(), null).getCorruption();
-            int newAmount = Math.max(0, current + recipe.getCorruptionReward());
+            int newAmount = Math.max(0, current + reward);
             com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(killer.getUniqueId().toString(), null).setCorruption(newAmount);
             com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().requestSave();
             
-            if (recipe.getCorruptionReward() > 0) {
-                killer.sendMessage("§5[Скверна] §dВаша душа покрылась пятнами Скверны (+" + recipe.getCorruptionReward() + ")");
+            if (reward > 0) {
+                killer.sendMessage("§5[Скверна] §dВаша душа покрылась пятнами Скверны (+" + reward + ")");
             } else {
-                killer.sendMessage("§e[Скверна] §fВы очистили часть Скверны (" + recipe.getCorruptionReward() + ")");
+                killer.sendMessage("§e[Скверна] §fВы очистили часть Скверны (" + reward + ")");
             }
         }
     }

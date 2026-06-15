@@ -76,7 +76,16 @@ public class BloodTankManager implements Listener {
                 }
                 player.playSound(player.getLocation(), Sound.ITEM_BOTTLE_FILL, 1.0f, 1.0f);
                 player.sendMessage("§4[Кровь] §cВы собрали Каплю Крови! (Осталось: " + getBlood(block.getLocation()) + " ед.)");
+            } else {
+                player.sendMessage("§cВ котле недостаточно крови! Нужно минимум 10 ед.");
             }
+        } else if (hand.getType() == Material.ROTTEN_FLESH) {
+            event.setCancelled(true);
+            hand.setAmount(hand.getAmount() - 1);
+            addBlood(block.getLocation(), 10);
+            player.playSound(block.getLocation(), Sound.ENTITY_SLIME_SQUISH, 0.5f, 0.5f);
+            player.getWorld().spawnParticle(Particle.DUST, block.getLocation().clone().add(0.5, 0.8, 0.5), 30, 0.2, 0.1, 0.2, 0, new Particle.DustOptions(org.bukkit.Color.RED, 1.5f));
+            player.sendMessage("§4[Кровь] §cВы бросили плоть в котел! (Всего: " + getBlood(block.getLocation()) + " ед.)");
         }
     }
 

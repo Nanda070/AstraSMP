@@ -36,6 +36,46 @@ public class RitualListener implements Listener {
                 hand.setAmount(hand.getAmount() - 1);
                 com.astrasmp.AstraSMPPlugin.getInstance().getServices().rift().closeRift(riftLoc);
                 player.sendMessage("§e[Очищение] §fВы закрыли Врата Бездны и остановили распространение Скверны.");
+            } else {
+                // Иначе просто очищаем душу игрока от Скверны
+                event.setCancelled(true);
+                hand.setAmount(hand.getAmount() - 1);
+                int current = com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).getCorruption();
+                if (current > 0) {
+                    int newAmount = Math.max(0, current - 50);
+                    com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).setCorruption(newAmount);
+                    com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().requestSave();
+                    player.getWorld().spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, player.getLocation(), 100, 0.5, 0.5, 0.5, 0.2);
+                    player.playSound(player.getLocation(), org.bukkit.Sound.ITEM_TOTEM_USE, 1.0f, 1.0f);
+                    player.sendMessage("§e[Очищение] §fВы использовали Тотем Очищения. Ваша Скверна уменьшена на 50.");
+                } else {
+                    player.sendMessage("§e[Очищение] §fВаша душа и так чиста.");
+                    hand.setAmount(hand.getAmount() + 1); // Возвращаем предмет, если скверны нет
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPortalInteract(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        Block block = event.getClickedBlock();
+        if (block == null || block.getType() != org.bukkit.Material.CRYING_OBSIDIAN) return;
+
+        Player player = event.getPlayer();
+        ItemStack hand = player.getInventory().getItemInMainHand();
+
+        if (ItemRegistry.is(hand, "demonSoul")) {
+            Location loc = block.getLocation().add(0, 1, 0); // Спавним разлом внутри рамки
+            if (loc.getBlock().getType().isAir()) {
+                event.setCancelled(true);
+                hand.setAmount(hand.getAmount() - 1);
+                com.astrasmp.AstraSMPPlugin.getInstance().getServices().rift().createRift(loc);
+                
+                int current = com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).getCorruption();
+                com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).setCorruption(current + 200);
+                com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().requestSave();
+                player.sendMessage("§5[Скверна] §dОткрытие Врат Бездны наполнило вашу душу Скверной (+200)");
             }
         }
     }
