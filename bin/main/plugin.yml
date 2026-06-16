@@ -36,6 +36,8 @@ commands:
     aliases: [bounties, охота]
   items:
     description: Просмотр уникальных артефактов
+  blacksmith:
+    description: Открыть кузницу артефактов
   marry:
     description: Создать семью с другим игроком
   unmarry:
@@ -63,6 +65,15 @@ commands:
   duel:
     description: Вызвать игрока на дуэль
     usage: /duel <ник>
+  arena:
+    description: Войти на арену
+  leave:
+    description: Покинуть арену
+  prunus:
+    description: Войти в Карманное Измерение
+    usage: /prunus [invite|join] [игрок]
+  malus:
+    description: Покинуть Карманное Измерение
   rewards:
     description: Ежедневные награды
     aliases: [reward, daily, календарь]
