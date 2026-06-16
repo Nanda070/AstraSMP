@@ -230,6 +230,10 @@ public final class AstraSMPPlugin extends JavaPlugin {
         bind("afk", locCmd);
         bind("duel", locCmd);
 
+        ArenaCommand arenaCmd = new ArenaCommand(this, services);
+        bind("arena", arenaCmd);
+        bind("leave", arenaCmd);
+
         bind("prunus", new PrunusCommand(services));
         bind("malus", new MalusCommand(services));
     }

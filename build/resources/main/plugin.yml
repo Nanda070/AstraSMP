@@ -65,6 +65,10 @@ commands:
   duel:
     description: Вызвать игрока на дуэль
     usage: /duel <ник>
+  arena:
+    description: Войти на арену
+  leave:
+    description: Покинуть арену
   prunus:
     description: Войти в Карманное Измерение
     usage: /prunus [invite|join] [игрок]

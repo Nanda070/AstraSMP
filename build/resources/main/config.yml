@@ -139,6 +139,12 @@ locations:
   eventshop: "world;32.69;68.00;509.75"
   duel_pos1: "world;35;76;385"
   duel_pos2: "world;17;76;385"
+  arena:
+    - "world;26;69;407"
+    - "world;48;69;385"
+    - "world;26;69;363"
+    - "world;4;69;385"
+
 
 rewards:
   base-coins: 500
