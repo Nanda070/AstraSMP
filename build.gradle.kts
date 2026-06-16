@@ -46,48 +46,6 @@ tasks.shadowJar {
 
 tasks.build {
     dependsOn(tasks.shadowJar)
-    finalizedBy("deploy")
 }
 
-// Загрузка настроек из local.properties (чтобы не светить пароли в коде)
-val localProps = java.util.Properties()
-val localPropsFile = project.file("local.properties")
-if (localPropsFile.exists()) {
-    localProps.load(localPropsFile.inputStream())
-}
-
-remotes {
-    create("remoteServer") {
-        host = localProps.getProperty("sftp.host", "IP_АДРЕС")
-        port = localProps.getProperty("sftp.port", "22").toInt()
-        user = localProps.getProperty("sftp.user", "ЛОГИН")
-        password = localProps.getProperty("sftp.password", "")
-    }
-}
-
-tasks.register("deploy") {
-    dependsOn(tasks.shadowJar)
-    doLast {
-        // Отключаем строгую проверку ключей (чтобы не было ошибок known_hosts)
-        ssh.settings {
-            knownHosts = allowAny()
-        }
-        ssh.run {
-            session(remotes["remoteServer"]) {
-                val destDir = localProps.getProperty("sftp.dir", "/plugins")
-                val archiveFile = tasks.shadowJar.get().archiveFile.get().asFile
-                
-                println("Начинаем загрузку ${archiveFile.name} на сервер ${remotes["remoteServer"].host}...")
-                
-                put(
-                    hashMapOf(
-                        "from" to archiveFile.absolutePath,
-                        "into" to destDir
-                    )
-                )
-                
-                println("✅ Плагин успешно загружен на удаленный сервер!")
-            }
-        }
-    }
-}
+apply(from = "deploy.gradle")

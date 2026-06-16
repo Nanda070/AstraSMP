@@ -1,0 +1,37 @@
+def localProps = new Properties()
+def localPropsFile = file("local.properties")
+if (localPropsFile.exists()) {
+    localProps.load(localPropsFile.newReader("UTF-8"))
+}
+
+remotes {
+    remoteServer {
+        host = localProps.getProperty("sftp.host", "127.0.0.1")
+        port = localProps.getProperty("sftp.port", "22").toInteger()
+        user = localProps.getProperty("sftp.user", "root")
+        password = localProps.getProperty("sftp.password", "")
+    }
+}
+
+task deploy {
+    dependsOn shadowJar
+    doLast {
+        ssh.settings {
+            knownHosts = allowAnyHosts
+        }
+        ssh.run {
+            session(remotes.remoteServer) {
+                def destDir = localProps.getProperty("sftp.dir", "/plugins")
+                def archiveFile = shadowJar.archiveFile.get().asFile
+                
+                println "Начинаем загрузку ${archiveFile.name} на сервер ${remotes.remoteServer.host}..."
+                
+                put from: archiveFile.absolutePath, into: destDir
+                
+                println "✅ Плагин успешно загружен на удаленный сервер!"
+            }
+        }
+    }
+}
+
+build.finalizedBy(deploy)
