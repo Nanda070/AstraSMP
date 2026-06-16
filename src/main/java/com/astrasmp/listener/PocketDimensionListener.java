@@ -38,8 +38,8 @@ public class PocketDimensionListener implements Listener {
         
         Location center = new Location(loc.getWorld(), centerX + 8.5, 65, centerZ + 8.5);
         
-        // 16 блоков от центра
-        return loc.distance(center) > 16;
+        // 16 блоков от центра (квадрат)
+        return Math.abs(loc.getX() - center.getX()) > 16 || Math.abs(loc.getZ() - center.getZ()) > 16;
     }
 
     @EventHandler
@@ -74,6 +74,40 @@ public class PocketDimensionListener implements Listener {
         if (isOutOfBounds(event.getBlock().getLocation(), event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
             event.getPlayer().sendMessage("§cВы не можете ставить блоки за пределами острова.");
+        }
+    }
+
+    @EventHandler
+    public void onWorldChange(org.bukkit.event.player.PlayerChangedWorldEvent event) {
+        Player player = event.getPlayer();
+        if (player.getWorld().getName().equals("astrasmp_pockets")) {
+            Location loc = player.getLocation();
+            int centerX = Math.round((float) loc.getBlockX() / 10000) * 10000;
+            int centerZ = Math.round((float) loc.getBlockZ() / 10000) * 10000;
+            Location center = new Location(player.getWorld(), centerX + 8.5, 65, centerZ + 8.5);
+            
+            org.bukkit.WorldBorder border = org.bukkit.Bukkit.createWorldBorder();
+            border.setCenter(center);
+            border.setSize(32.0);
+            player.setWorldBorder(border);
+        } else if (event.getFrom().getName().equals("astrasmp_pockets")) {
+            player.setWorldBorder(null);
+        }
+    }
+
+    @EventHandler
+    public void onJoin(org.bukkit.event.player.PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        if (player.getWorld().getName().equals("astrasmp_pockets")) {
+            Location loc = player.getLocation();
+            int centerX = Math.round((float) loc.getBlockX() / 10000) * 10000;
+            int centerZ = Math.round((float) loc.getBlockZ() / 10000) * 10000;
+            Location center = new Location(player.getWorld(), centerX + 8.5, 65, centerZ + 8.5);
+            
+            org.bukkit.WorldBorder border = org.bukkit.Bukkit.createWorldBorder();
+            border.setCenter(center);
+            border.setSize(32.0);
+            player.setWorldBorder(border);
         }
     }
 }

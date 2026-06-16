@@ -51,8 +51,8 @@ public class PocketDimensionManager {
         Location center = getCenterLocation(ownerUuid);
         if (center == null) return false;
 
-        // Расстояние не больше 16 блоков (условно 2х2 чанка, или круг)
-        return loc.distance(center) <= 16;
+        // Расстояние не больше 16 блоков (квадратная зона под WorldBorder 32х32)
+        return Math.abs(loc.getX() - center.getX()) <= 16 && Math.abs(loc.getZ() - center.getZ()) <= 16;
     }
 
     public void enterPocket(Player player, UUID ownerUuid) {
@@ -65,6 +65,12 @@ public class PocketDimensionManager {
         generatePlatform(center);
         returnLocations.put(player.getUniqueId(), player.getLocation());
         player.teleport(center);
+        
+        org.bukkit.WorldBorder border = Bukkit.createWorldBorder();
+        border.setCenter(center);
+        border.setSize(32.0);
+        player.setWorldBorder(border);
+        
         player.sendMessage("§5[Бездна] §dВы вошли в карманное измерение.");
     }
 
@@ -80,6 +86,8 @@ public class PocketDimensionManager {
         } else {
             plugin.getServices().afk().teleportToLocation(player, "spawn");
         }
+        
+        player.setWorldBorder(null);
         player.sendMessage("§5[Бездна] §dВы покинули карманное измерение.");
     }
 
