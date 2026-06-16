@@ -26,6 +26,22 @@ public class BloodTankManager implements Listener {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             tanks.putAll(plugin.getDatabase().loadAllBloodTanks());
         }, 20L); // загружаем через секунду, чтобы миры успели загрузиться
+        startRainTask();
+    }
+
+    private void startRainTask() {
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            if (plugin.getServices().events().isBloodNight()) {
+                for (Location loc : tanks.keySet()) {
+                    if (loc.getWorld().getEnvironment() != org.bukkit.World.Environment.NORMAL) continue;
+                    if (loc.getWorld().hasStorm()) {
+                        if (loc.getWorld().getHighestBlockYAt(loc) <= loc.getBlockY()) {
+                            addBlood(loc, 5);
+                        }
+                    }
+                }
+            }
+        }, 100L, 100L); // Раз в 5 секунд
     }
 
     public void addBlood(Location loc, int amount) {

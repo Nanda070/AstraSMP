@@ -48,7 +48,7 @@ public class RitualListener implements Listener {
                     hand.setAmount(hand.getAmount() - 1);
                     
                     if (hasPact) {
-                        com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).setHasPact(false);
+                        com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).setPactType("");
                         org.bukkit.attribute.AttributeInstance maxHp = player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH);
                         if (maxHp != null) {
                             org.bukkit.attribute.AttributeModifier modifier = new org.bukkit.attribute.AttributeModifier(
@@ -221,19 +221,18 @@ public class RitualListener implements Listener {
         if (killer == null) return;
 
         ItemStack weapon = killer.getInventory().getItemInMainHand();
-        if (!ItemRegistry.is(weapon, "sacrificialDagger")) return;
-
         Location deathLoc = event.getEntity().getLocation();
 
-        // Ищем ближайший алтарь в радиусе 5 блоков
-        // Для простоты сканируем блоки вокруг, но в идеале нужно проверять закэшированные координаты
+        // Проверяем, есть ли алтарь в радиусе 5 блоков
         Location altarLoc = findNearbyAltar(deathLoc);
-        if (altarLoc != null) {
+
+        // --- РИТУАЛЫ: любой меч в пределах 5 блоков от алтаря ---
+        if (altarLoc != null && weapon.getType().name().contains("SWORD")) {
             int tier = ritualService.getCircleManager().getCircleTier(altarLoc);
             if (tier > 0) {
                 
-                // --- ОПУСТОШЕНИЕ ДУШИ (Приношение игрока на алтаре) ---
-                if (event.getEntity() instanceof Player victim) {
+                // --- ОПУСТОШЕНИЕ ДУШИ (Приношение игрока на алтаре, только кинжалом) ---
+                if (event.getEntity() instanceof Player victim && ItemRegistry.is(weapon, "sacrificialDagger")) {
                     // Выдаем Осколок Души
                     deathLoc.getWorld().dropItemNaturally(deathLoc, ItemRegistry.soulFragment(victim.getName(), victim.getUniqueId().toString()));
                     
@@ -253,9 +252,11 @@ public class RitualListener implements Listener {
                     killer.sendMessage("§4[Ритуал] §cЖертвоприношение принято!");
                 }
             }
-        } else {
-            // Если убит игрок кинжалом вне алтаря - гарантированно выпадает флакон крови
-            if (event.getEntity() instanceof Player victim) {
+        }
+
+        // --- ФЛАКОН КРОВИ: только кинжалом, вне алтаря ---
+        if (ItemRegistry.is(weapon, "sacrificialDagger") && event.getEntity() instanceof Player victim) {
+            if (altarLoc == null) {
                 deathLoc.getWorld().dropItemNaturally(deathLoc, ItemRegistry.bloodVial(victim.getName(), victim.getUniqueId().toString()));
                 killer.sendMessage("§4[Ритуал] §cВы собрали Флакон с Кровью " + victim.getName() + ".");
             }

@@ -203,7 +203,7 @@ public final class GuiManager {
 
         // РИТУАЛЫ (3 тир)
         inv.setItem(37, button(Material.NETHERITE_SWORD, "&8Теневой Клинок", "&7Ур: 3 | Жертва: Игрок | Скверна: +50", "&7Предметы: Незерит. меч, Капля крови"));
-        inv.setItem(38, button(Material.PAPER, "&4Демонический Контракт", "&7Ур: 3 | Жертва: Визер Скелет | Скверна: +100", "&7Предметы: Бумага, Душа Демона", "", "&c-2 Сердца навсегда, +Вампиризм"));
+        inv.setItem(38, button(Material.PAPER, "&4Демонические Контракты", "&7Ур: 3 | Жертва: Визер Скелет / Эндермен / Фантом | Скверна: +100", "&7Кровь: Плоть | Бездна: Жемчуг | Тень: Мембрана", "", "&c-2 Сердца навсегда, +Уникальная Сила"));
         inv.setItem(39, button(Material.ENDER_PEARL, "&3Врата Призыва", "&7Ур: 3 | Жертва: Эндермен | Скверна: +50", "&7Предметы: Флакон Крови, Жемчуг Края", "", "&eТелепортирует врага к вам"));
         inv.setItem(40, button(Material.ENDER_EYE, "&dСфера Безумия", "&7Ур: 3 | Жертва: Ведьма | Скверна: +50", "&7Предметы: Осколок Души, Душа Демона", "", "&eОдержимость врага на 10 мин."));
         inv.setItem(41, button(Material.PHANTOM_MEMBRANE, "&bАстральная Проекция", "&7Ур: 3 | Жертва: Фантом | Скверна: +150", "&7Предметы: Осколок Души, Мембрана, Кровь", "", "&dВыход из тела на 2 минуты"));
@@ -358,7 +358,7 @@ public final class GuiManager {
         
         inv.setItem(29, button(Material.WHITE_BANNER,    "&dГильдии",            "&7Управление гильдиями", "&7/admin guildadmin"));
         inv.setItem(30, button(Material.DIAMOND_SWORD,   "&cPVP / Арены",        "&7Управление PvP аренами", "&7/admin addduelspawn"));
-        inv.setItem(31, button(Material.CRYING_OBSIDIAN, "&5Темная Магия",       "&7Ритуалы, Скверна и Луна", "&7(В разработке)"));
+        inv.setItem(31, button(Material.CRYING_OBSIDIAN, "&5Темная Магия",       "&7Ритуалы, Скверна и Луна", "&7(Активно)"));
         inv.setItem(32, button(Material.PLAYER_HEAD,     "&bИгроки",             "&7Модерация: бан, мут, инвентарь", "&7/admin invsee"));
         inv.setItem(33, button(Material.COMPARATOR,      "&cСистемное",          "&7Перезагрузка конфигов", "&7/admin reload"));
 
@@ -485,17 +485,19 @@ public final class GuiManager {
             inv.setItem(10, ItemRegistry.sacrificialDagger());
             inv.setItem(11, ItemRegistry.bloodDrop());
             inv.setItem(12, ItemRegistry.demonSoul());
-            inv.setItem(13, ItemRegistry.demonicPact());
-            inv.setItem(14, ItemRegistry.bloodCauldron());
-            inv.setItem(15, ItemRegistry.ritualAltar());
-            inv.setItem(16, ItemRegistry.cleansingTotem());
-            inv.setItem(19, ItemRegistry.bloodChalice());
-            inv.setItem(20, ItemRegistry.bloodVial());
-            inv.setItem(21, ItemRegistry.voodooDoll());
-            inv.setItem(22, ItemRegistry.soulFragment());
-            inv.setItem(23, ItemRegistry.madnessSphere());
-            inv.setItem(24, ItemRegistry.seedOfAbyss());
-            inv.setItem(25, ItemRegistry.astralCrystal());
+            inv.setItem(13, ItemRegistry.pactOfBlood());
+            inv.setItem(14, ItemRegistry.pactOfVoid());
+            inv.setItem(15, ItemRegistry.pactOfShadow());
+            inv.setItem(16, ItemRegistry.bloodCauldron());
+            inv.setItem(17, ItemRegistry.ritualAltar());
+            inv.setItem(19, ItemRegistry.cleansingTotem());
+            inv.setItem(20, ItemRegistry.bloodChalice());
+            inv.setItem(21, ItemRegistry.bloodVial());
+            inv.setItem(22, ItemRegistry.voodooDoll());
+            inv.setItem(23, ItemRegistry.soulFragment());
+            inv.setItem(24, ItemRegistry.madnessSphere());
+            inv.setItem(25, ItemRegistry.seedOfAbyss());
+            inv.setItem(26, ItemRegistry.astralCrystal());
         }
 
         inv.setItem(46, button(Material.NETHERITE_SWORD, "&aОружие", "&7Клик для фильтра"));
@@ -1013,17 +1015,19 @@ public final class GuiManager {
             inv.setItem(10, withLoreHint(ItemRegistry.sacrificialDagger()));
             inv.setItem(11, withLoreHint(ItemRegistry.bloodDrop()));
             inv.setItem(12, withLoreHint(ItemRegistry.demonSoul()));
-            inv.setItem(13, withLoreHint(ItemRegistry.demonicPact()));
-            inv.setItem(14, withLoreHint(ItemRegistry.bloodCauldron()));
-            inv.setItem(15, withLoreHint(ItemRegistry.ritualAltar()));
-            inv.setItem(16, withLoreHint(ItemRegistry.cleansingTotem()));
-            inv.setItem(19, withLoreHint(ItemRegistry.bloodChalice()));
-            inv.setItem(20, withLoreHint(ItemRegistry.bloodVial()));
-            inv.setItem(21, withLoreHint(ItemRegistry.voodooDoll()));
-            inv.setItem(22, withLoreHint(ItemRegistry.soulFragment()));
-            inv.setItem(23, withLoreHint(ItemRegistry.madnessSphere()));
-            inv.setItem(24, withLoreHint(ItemRegistry.seedOfAbyss()));
-            inv.setItem(25, withLoreHint(ItemRegistry.astralCrystal()));
+            inv.setItem(13, withLoreHint(ItemRegistry.pactOfBlood()));
+            inv.setItem(14, withLoreHint(ItemRegistry.pactOfVoid()));
+            inv.setItem(15, withLoreHint(ItemRegistry.pactOfShadow()));
+            inv.setItem(16, withLoreHint(ItemRegistry.bloodCauldron()));
+            inv.setItem(17, withLoreHint(ItemRegistry.ritualAltar()));
+            inv.setItem(19, withLoreHint(ItemRegistry.cleansingTotem()));
+            inv.setItem(20, withLoreHint(ItemRegistry.bloodChalice()));
+            inv.setItem(21, withLoreHint(ItemRegistry.bloodVial()));
+            inv.setItem(22, withLoreHint(ItemRegistry.voodooDoll()));
+            inv.setItem(23, withLoreHint(ItemRegistry.soulFragment()));
+            inv.setItem(24, withLoreHint(ItemRegistry.madnessSphere()));
+            inv.setItem(25, withLoreHint(ItemRegistry.seedOfAbyss()));
+            inv.setItem(26, withLoreHint(ItemRegistry.astralCrystal()));
         }
 
         inv.setItem(46, button(Material.NETHERITE_SWORD, "&aОружие", "&7Клик для просмотра"));

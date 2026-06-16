@@ -366,7 +366,9 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
             case "sacrificial_dagger" -> ItemRegistry.sacrificialDagger();
             case "blood_drop" -> ItemRegistry.bloodDrop();
             case "demon_soul" -> ItemRegistry.demonSoul();
-            case "demonic_pact" -> ItemRegistry.demonicPact();
+            case "demonic_pact", "pact_blood" -> ItemRegistry.pactOfBlood();
+            case "pact_void" -> ItemRegistry.pactOfVoid();
+            case "pact_shadow" -> ItemRegistry.pactOfShadow();
             case "blood_cauldron" -> ItemRegistry.bloodCauldron();
             case "ritual_altar" -> ItemRegistry.ritualAltar();
             case "cleansing_totem" -> ItemRegistry.cleansingTotem();
@@ -446,7 +448,7 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                         "bloodhunter_helmet", "bloodhunter_chestplate", "bloodhunter_leggings", "bloodhunter_boots",
                         "trophy_common", "trophy_legendary", "relic_time_core", "relic_void_fragment", "artifact_heart_of_world",
                         "trampoline", "nanda",
-                        "sacrificial_dagger", "blood_drop", "demon_soul", "demonic_pact", "blood_cauldron", "ritual_altar", "cleansing_totem",
+                        "sacrificial_dagger", "blood_drop", "demon_soul", "pact_blood", "pact_void", "pact_shadow", "blood_cauldron", "ritual_altar", "cleansing_totem",
                         "blood_chalice", "blood_vial", "voodoo_doll", "soul_fragment", "madness_sphere", "seed_of_abyss", "astral_crystal"
                 ).stream().filter(s -> s.startsWith(args[2].toLowerCase())).toList();
             }

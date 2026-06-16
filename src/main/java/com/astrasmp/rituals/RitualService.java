@@ -29,6 +29,16 @@ public class RitualService {
     }
 
     private void loadRecipes() {
+        // Ритуал 0: Ритуальный Кинжал. (Железный меч + Гнилая плоть + Овца = Кинжал)
+        recipes.add(new RitualRecipe(
+                "sacrificial_dagger_craft",
+                List.of(new ItemStack(Material.IRON_SWORD, 1), new ItemStack(Material.ROTTEN_FLESH, 1)),
+                EntityType.SHEEP,
+                1,
+                ItemRegistry.sacrificialDagger(),
+                10 // +10 Скверны
+        ));
+
         // Ритуал 1: Кровь. (Гнилая плоть + Свинья = Капля крови)
         recipes.add(new RitualRecipe(
                 "blood_extraction",
@@ -60,13 +70,33 @@ public class RitualService {
                 50 // +50 Скверны
         ));
 
-        // Ритуал 4: Демонический контракт
+        // Ритуал 4.1: Контракт Крови
         recipes.add(new RitualRecipe(
-                "pact_creation",
-                List.of(new ItemStack(Material.PAPER, 1), ItemRegistry.demonSoul()),
+                "pact_blood_craft",
+                List.of(ItemRegistry.bloodDrop(), ItemRegistry.demonSoul()),
                 EntityType.WITHER_SKELETON,
                 3,
-                ItemRegistry.demonicPact(),
+                ItemRegistry.pactOfBlood(),
+                100 // +100 Скверны
+        ));
+
+        // Ритуал 4.2: Контракт Бездны
+        recipes.add(new RitualRecipe(
+                "pact_void_craft",
+                List.of(new ItemStack(Material.ENDER_PEARL, 1), ItemRegistry.demonSoul()),
+                EntityType.ENDERMAN,
+                3,
+                ItemRegistry.pactOfVoid(),
+                100 // +100 Скверны
+        ));
+
+        // Ритуал 4.3: Контракт Теней
+        recipes.add(new RitualRecipe(
+                "pact_shadow_craft",
+                List.of(new ItemStack(Material.PHANTOM_MEMBRANE, 1), ItemRegistry.demonSoul()),
+                EntityType.PHANTOM,
+                3,
+                ItemRegistry.pactOfShadow(),
                 100 // +100 Скверны
         ));
 
@@ -288,7 +318,7 @@ public class RitualService {
         } else if (recipe.getId().equals("pact_break_ritual") && killer != null) {
             boolean hasPact = com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(killer.getUniqueId().toString(), null).hasPact();
             if (hasPact) {
-                com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(killer.getUniqueId().toString(), null).setHasPact(false);
+                com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(killer.getUniqueId().toString(), null).setPactType("");
                 org.bukkit.attribute.AttributeInstance maxHp = killer.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH);
                 if (maxHp != null) {
                     org.bukkit.attribute.AttributeModifier modifier = new org.bukkit.attribute.AttributeModifier(

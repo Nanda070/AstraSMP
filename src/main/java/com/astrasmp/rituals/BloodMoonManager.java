@@ -47,6 +47,22 @@ public class BloodMoonManager implements Listener {
                             p.playSound(p.getLocation(), org.bukkit.Sound.AMBIENT_CAVE, 1f, 0.5f);
                         }
                     }
+
+                    // Кровавый дождь
+                    if (world.hasStorm()) {
+                        for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+                            if (p.getWorld().getEnvironment() != org.bukkit.World.Environment.NORMAL) continue;
+                            
+                            // Проверка, что игрок под небом и без шлема
+                            if (p.getWorld().getHighestBlockYAt(p.getLocation()) <= p.getLocation().getBlockY()) {
+                                if (p.getInventory().getHelmet() == null) {
+                                    p.damage(1.0); // 0.5 сердца урона
+                                    p.sendMessage("§4[!] §cКислотная кровь обжигает вашу кожу!");
+                                }
+                            }
+                        }
+                    }
+
                 } else {
                     if (isBloodMoonActive) {
                         isBloodMoonActive = false;
@@ -54,7 +70,7 @@ public class BloodMoonManager implements Listener {
                     }
                 }
             }
-        }.runTaskTimer(plugin, 100L, 100L); // Раз в 5 секунд
+        }.runTaskTimer(plugin, 40L, 40L); // Раз в 2 секунды
     }
 
     @EventHandler

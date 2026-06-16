@@ -29,8 +29,53 @@ public class AstralManager implements Listener {
     // Хранит данные для восстановления (инвентарь, локация, хп) можно хранить в памяти, пока игрок в астрале.
     private final Map<UUID, AstralSession> sessions = new HashMap<>();
 
+    // Хранит UUID Игрока -> UUID захваченного моба
+    private final Map<UUID, UUID> possessedMobs = new HashMap<>();
+
     public AstralManager(AstraSMPPlugin plugin) {
         this.plugin = plugin;
+        startPossessionTask();
+    }
+
+    private void startPossessionTask() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                // Копия для избежания ConcurrentModificationException
+                for (Map.Entry<UUID, UUID> entry : new HashMap<>(possessedMobs).entrySet()) {
+                    Player player = Bukkit.getPlayer(entry.getKey());
+                    if (player == null || !player.isOnline()) {
+                        possessedMobs.remove(entry.getKey());
+                        continue;
+                    }
+                    
+                    org.bukkit.entity.Entity entity = Bukkit.getEntity(entry.getValue());
+                    if (entity == null || entity.isDead() || !(entity instanceof org.bukkit.entity.LivingEntity mob)) {
+                        endPossession(player);
+                        continue;
+                    }
+
+                    // Синхронизация позиции (моб следует за игроком)
+                    Location loc = player.getLocation().clone();
+                    mob.teleport(loc);
+                }
+            }
+        }.runTaskTimer(plugin, 1L, 1L);
+    }
+
+    private void endPossession(Player player) {
+        UUID mobUuid = possessedMobs.remove(player.getUniqueId());
+        if (mobUuid != null) {
+            org.bukkit.entity.Entity entity = Bukkit.getEntity(mobUuid);
+            if (entity instanceof org.bukkit.entity.Mob mob) {
+                mob.setAware(true);
+            }
+        }
+        if (sessions.containsKey(player.getUniqueId())) {
+            player.setGameMode(GameMode.SPECTATOR);
+            player.removePotionEffect(org.bukkit.potion.PotionEffectType.INVISIBILITY);
+            player.sendMessage("§d[Астрал] §5Вы покинули тело существа.");
+        }
     }
 
     public void enterAstral(Player player) {
@@ -80,6 +125,8 @@ public class AstralManager implements Listener {
         AstralSession session = sessions.remove(player.getUniqueId());
         if (session == null) return;
 
+        endPossession(player);
+
         ArmorStand body = (ArmorStand) Bukkit.getEntity(session.bodyUuid);
         if (body != null) {
             astralBodies.remove(body.getUniqueId());
@@ -118,6 +165,59 @@ public class AstralManager implements Listener {
                 }
             }
             event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerSneak(org.bukkit.event.player.PlayerToggleSneakEvent event) {
+        Player player = event.getPlayer();
+        if (event.isSneaking() && sessions.containsKey(player.getUniqueId())) {
+            if (possessedMobs.containsKey(player.getUniqueId())) {
+                endPossession(player);
+            } else {
+                returnToBody(player, false);
+                player.sendMessage("§d[Астрал] §5Вы досрочно вернулись в свое тело.");
+            }
+        }
+    }
+
+    @EventHandler
+    public void onEntityInteract(org.bukkit.event.player.PlayerInteractEntityEvent event) {
+        Player player = event.getPlayer();
+        if (sessions.containsKey(player.getUniqueId()) && !possessedMobs.containsKey(player.getUniqueId())) {
+            if (event.getRightClicked() instanceof org.bukkit.entity.Mob mob) {
+                event.setCancelled(true);
+                possessedMobs.put(player.getUniqueId(), mob.getUniqueId());
+                mob.setAware(false);
+                player.setGameMode(GameMode.ADVENTURE);
+                player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false));
+                player.teleport(mob.getLocation());
+                player.sendMessage("§d[Астрал] §5Вы захватили разум существа. Нажмите Shift, чтобы покинуть его.");
+            }
+        }
+    }
+
+    @EventHandler
+    public void onDamageByPossessed(org.bukkit.event.entity.EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player player) {
+            if (possessedMobs.containsKey(player.getUniqueId())) {
+                UUID mobUuid = possessedMobs.get(player.getUniqueId());
+                org.bukkit.entity.Entity mob = Bukkit.getEntity(mobUuid);
+                if (mob instanceof org.bukkit.entity.LivingEntity livingMob && event.getEntity() instanceof org.bukkit.entity.LivingEntity target) {
+                    event.setCancelled(true);
+                    target.damage(event.getDamage(), livingMob); // Урон от лица моба
+                    if (livingMob instanceof org.bukkit.entity.Mob m) m.swingMainHand();
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPossessedPlayerDamage(org.bukkit.event.entity.EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            if (possessedMobs.containsKey(player.getUniqueId())) {
+                event.setCancelled(true);
+            }
         }
     }
 

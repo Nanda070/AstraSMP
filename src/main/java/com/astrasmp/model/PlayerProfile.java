@@ -39,7 +39,7 @@ public final class PlayerProfile {
 
     // Темная Магия
     private int corruption = 0;
-    private boolean hasPact = false;
+    private String pactType = "";
     private boolean unlockedPocketDimension = false;
 
     // transient поля не сохраняются в конфиг-файлы
@@ -107,8 +107,9 @@ public final class PlayerProfile {
     public int getCorruption() { return corruption; }
     public void setCorruption(int corruption) { this.corruption = Math.max(0, corruption); }
 
-    public boolean hasPact() { return hasPact; }
-    public void setHasPact(boolean hasPact) { this.hasPact = hasPact; }
+    public boolean hasPact() { return pactType != null && !pactType.isEmpty(); }
+    public String getPactType() { return pactType == null ? "" : pactType; }
+    public void setPactType(String pactType) { this.pactType = pactType == null ? "" : pactType; }
 
     public boolean isUnlockedPocketDimension() {
         return unlockedPocketDimension;

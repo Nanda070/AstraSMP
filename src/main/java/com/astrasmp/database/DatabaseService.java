@@ -146,7 +146,7 @@ public class DatabaseService {
             try { s.execute("ALTER TABLE profiles ADD COLUMN daily_reward_day INT DEFAULT 1"); } catch (SQLException ignored) {}
             try { s.execute("ALTER TABLE profiles ADD COLUMN talents TEXT"); } catch (SQLException ignored) {}
             try { s.execute("ALTER TABLE profiles ADD COLUMN corruption INT DEFAULT 0"); } catch (SQLException ignored) {}
-            try { s.execute("ALTER TABLE profiles ADD COLUMN has_pact BOOLEAN DEFAULT 0"); } catch (SQLException ignored) {}
+            try { s.execute("ALTER TABLE profiles ADD COLUMN pact_type VARCHAR(32) DEFAULT ''"); } catch (SQLException ignored) {}
 
             s.execute("CREATE TABLE IF NOT EXISTS blood_tanks (" +
                     "world VARCHAR(64), " +
@@ -270,7 +270,19 @@ public class DatabaseService {
                 }
 
                 p.setCorruption(rs.getInt("corruption"));
-                p.setHasPact(rs.getBoolean("has_pact"));
+                try {
+                    String pactType = rs.getString("pact_type");
+                    if (pactType != null && !pactType.isEmpty()) {
+                        p.setPactType(pactType);
+                    }
+                } catch (SQLException ignored) {
+                    // Fallback for old DBs with has_pact boolean column
+                    try {
+                        if (rs.getBoolean("has_pact")) {
+                            p.setPactType("BLOOD");
+                        }
+                    } catch (SQLException ignored2) {}
+                }
 
                 loaded.add(p);
             }
@@ -282,7 +294,7 @@ public class DatabaseService {
 
     public void saveProfile(PlayerProfile p) {
         String sql = upsert("profiles",
-                "uuid, name, coins, mmr, kills, deaths, sold_value, event_points, faction, base_level, quest_step, quest_progress, prefix, prefix_color, daily_quests, daily_quest_date, login_streak, last_login_date, daily_reward_day, talents, corruption, has_pact",
+                "uuid, name, coins, mmr, kills, deaths, sold_value, event_points, faction, base_level, quest_step, quest_progress, prefix, prefix_color, daily_quests, daily_quest_date, login_streak, last_login_date, daily_reward_day, talents, corruption, pact_type",
                 "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?");
         try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, p.getUuid());
@@ -306,7 +318,7 @@ public class DatabaseService {
             ps.setInt(19, p.getDailyRewardDay());
             ps.setString(20, gson.toJson(p.getTalents()));
             ps.setInt(21, p.getCorruption());
-            ps.setBoolean(22, p.hasPact());
+            ps.setString(22, p.getPactType());
             ps.executeUpdate();
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения профиля игрока в БД", e);

@@ -16,10 +16,16 @@ import java.util.UUID;
 
 public class PactManager implements Listener {
 
-    public PactManager() {}
+    public PactManager() {
+        startPactTasks();
+    }
 
     public boolean hasPact(UUID uuid) {
         return com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(uuid.toString(), null).hasPact();
+    }
+
+    public String getPactType(UUID uuid) {
+        return com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(uuid.toString(), null).getPactType();
     }
 
     @EventHandler
@@ -33,25 +39,66 @@ public class PactManager implements Listener {
         Player player = event.getPlayer();
         ItemStack item = event.getItem();
 
-        if (item != null && ItemRegistry.is(item, "demonicPact")) {
+        String newPactType = "";
+        if (item != null && ItemRegistry.is(item, "pactOfBlood")) newPactType = "BLOOD";
+        else if (item != null && ItemRegistry.is(item, "pactOfVoid")) newPactType = "VOID";
+        else if (item != null && ItemRegistry.is(item, "pactOfShadow")) newPactType = "SHADOW";
+
+        if (!newPactType.isEmpty()) {
             if (hasPact(player.getUniqueId())) {
                 player.sendMessage("§cВы уже заключили Демонический Контракт!");
                 return;
             }
 
             // Забираем контракт
-            item.setAmount(item.getAmount() - 1);
+            if (item != null) item.setAmount(item.getAmount() - 1);
 
             // Заключаем контракт
-            com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).setHasPact(true);
+            com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).setPactType(newPactType);
             com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().requestSave();
 
             // Урезаем максимальное здоровье (отнимаем 8.0 = 4 сердца)
             applyHealthDebuff(player);
 
             player.sendMessage("§4[Демонический Контракт] §cСделка совершена. Часть вашей жизненной силы навсегда потеряна.");
-            player.sendMessage("§4[Демонический Контракт] §aНо взамен вы получили силу крови и защиту от огня!");
+            
+            if (newPactType.equals("BLOOD")) {
+                player.sendMessage("§4[Демонический Контракт] §aНо взамен вы получили силу крови и защиту от огня!");
+            } else if (newPactType.equals("VOID")) {
+                player.sendMessage("§4[Демонический Контракт] §aНо взамен вы получили иммунитет к падениям, но боитесь воды!");
+            } else if (newPactType.equals("SHADOW")) {
+                player.sendMessage("§4[Демонический Контракт] §aНо взамен вы стали повелителем теней, но боитесь света!");
+            }
         }
+    }
+
+    private void startPactTasks() {
+        org.bukkit.Bukkit.getScheduler().runTaskTimer(com.astrasmp.AstraSMPPlugin.getInstance(), () -> {
+            for (Player player : org.bukkit.Bukkit.getOnlinePlayers()) {
+                String pact = getPactType(player.getUniqueId());
+                if (pact.equals("VOID")) {
+                    // Урон в воде
+                    if (player.getLocation().getBlock().getType() == org.bukkit.Material.WATER) {
+                        player.damage(1.0); // 0.5 сердца урона
+                    }
+                } else if (pact.equals("SHADOW")) {
+                    // Проверка света
+                    int light = player.getLocation().getBlock().getLightLevel();
+                    boolean inSunlight = player.getLocation().getBlock().getLightFromSky() == 15 && 
+                                         player.getWorld().getTime() < 13000 && 
+                                         player.getWorld().getTime() > 0 &&
+                                         !player.getWorld().hasStorm();
+                    
+                    if (inSunlight && player.getLocation().getBlock().getLightLevel() > 10) {
+                        player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.WEAKNESS, 40, 0, false, false));
+                        player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SLOWNESS, 40, 0, false, false));
+                    } else if (light < 7) {
+                        player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.INVISIBILITY, 40, 0, false, false));
+                        player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SPEED, 40, 1, false, false));
+                    }
+                }
+            }
+        }, 20L, 20L); // Раз в секунду
     }
 
     private void applyHealthDebuff(Player player) {
@@ -129,26 +176,32 @@ public class PactManager implements Listener {
     }
 
     @EventHandler
-    public void onDamage(EntityDamageByEntityEvent event) {
-        // Вампиризм от Контракта
-        if (event.getDamager() instanceof Player damager) {
-            if (hasPact(damager.getUniqueId())) {
-                double heal = event.getFinalDamage() * 0.15; // 15% вампиризма
-                double newHp = Math.min(damager.getHealth() + heal, damager.getAttribute(Attribute.MAX_HEALTH).getValue());
-                damager.setHealth(newHp);
+    public void onDamage(EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            String pact = getPactType(player.getUniqueId());
+            if (pact.equals("VOID") && event.getCause() == EntityDamageEvent.DamageCause.FALL) {
+                event.setCancelled(true);
+            }
+            if (pact.equals("BLOOD")) {
+                if (event.getCause() == EntityDamageEvent.DamageCause.LAVA || 
+                    event.getCause() == EntityDamageEvent.DamageCause.FIRE || 
+                    event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
+                    event.setCancelled(true);
+                }
             }
         }
     }
 
     @EventHandler
-    public void onFireDamage(EntityDamageEvent event) {
-        if (event.getEntity() instanceof Player player) {
-            if (hasPact(player.getUniqueId())) {
-                // Иммунитет к огню и лаве
-                if (event.getCause() == EntityDamageEvent.DamageCause.LAVA || 
-                    event.getCause() == EntityDamageEvent.DamageCause.FIRE || 
-                    event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
-                    event.setCancelled(true);
+    public void onEntityDamage(EntityDamageByEntityEvent event) {
+        // Вампиризм от Контракта Крови
+        if (event.getDamager() instanceof Player damager) {
+            if (getPactType(damager.getUniqueId()).equals("BLOOD")) {
+                double heal = event.getFinalDamage() * 0.15; // 15% вампиризма
+                AttributeInstance maxHpAttr = damager.getAttribute(Attribute.MAX_HEALTH);
+                if (maxHpAttr != null) {
+                    double newHp = Math.min(damager.getHealth() + heal, maxHpAttr.getValue());
+                    damager.setHealth(newHp);
                 }
             }
         }

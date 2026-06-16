@@ -299,7 +299,9 @@ public final class ItemRegistry {
         ), 0, true);
     }
     public static ItemStack demonSoul() { return build("demonSoul", Material.GHAST_TEAR, "§5Душа Демона", List.of("§7Осколок души могущественного существа."), 9103, true); }
-    public static ItemStack demonicPact() { return build("demonicPact", Material.PAPER, "§8Демонический Контракт", List.of("§cОтнимает 4 макс. здоровья.", "§aДает Вампиризм и Иммунитет к огню.", "§4Пути назад не будет..."), 9104, true); }
+    public static ItemStack pactOfBlood() { return build("pactOfBlood", Material.PAPER, "§4Контракт Крови", List.of("§cОтнимает 4 макс. здоровья.", "§aДает Вампиризм и Иммунитет к огню.", "§4Пути назад не будет..."), 9104, true); }
+    public static ItemStack pactOfVoid() { return build("pactOfVoid", Material.PAPER, "§5Контракт Бездны", List.of("§cОтнимает 4 макс. здоровья.", "§aИммунитет к падению, но слабость к воде.", "§4Пути назад не будет..."), 9114, true); }
+    public static ItemStack pactOfShadow() { return build("pactOfShadow", Material.PAPER, "§8Контракт Теней", List.of("§cОтнимает 4 макс. здоровья.", "§aНевидимость в темноте, слабость на свету.", "§4Пути назад не будет..."), 9115, true); }
     public static ItemStack bloodCauldron() { return build("bloodCauldron", Material.CAULDRON, "§4Кровавый Котел", List.of("§7Поставьте рядом с алтарем для сбора крови.", "§7Накапливает кровь убитых рядом существ."), 9105, false); }
     public static ItemStack ritualAltar() { return build("ritualAltar", Material.CRYING_OBSIDIAN, "§5Ядро Алтаря", List.of("§7Центр Ритуального Круга.", "§7Поставьте и окружите нужными блоками."), 9106, true); }
     public static ItemStack cleansingTotem() { return build("cleansingTotem", Material.TOTEM_OF_UNDYING, "§eТотем Очищения", List.of("§7ПКМ по Вратам Бездны,", "§7чтобы закрыть их навсегда."), 9107, true); }
@@ -411,7 +413,7 @@ public final class ItemRegistry {
                 minerHelmet(), minerChestplate(), minerLeggings(), minerBoots(),
                 bloodHunterHelmet(), bloodHunterChestplate(), bloodHunterLeggings(), bloodHunterBoots(),
                 trampoline(), soulOfNanda(), eventCompass(),
-                sacrificialDagger(), bloodDrop(), demonSoul(), demonicPact(), bloodCauldron(), ritualAltar(), cleansingTotem(), bloodChalice(),
+                sacrificialDagger(), bloodDrop(), demonSoul(), pactOfBlood(), pactOfVoid(), pactOfShadow(), bloodCauldron(), ritualAltar(), cleansingTotem(), bloodChalice(),
                 bloodVial(), voodooDoll(), soulFragment(), madnessSphere()
         ));
         return items;
