@@ -85,6 +85,19 @@ public class ChunkCorruptionManager implements Listener {
         
         Chunk chunk = event.getLocation().getChunk();
         if (getCorruption(chunk) >= 50) {
+            
+            boolean hasDruid = false;
+            for (org.bukkit.entity.Player p : event.getLocation().getWorld().getNearbyEntitiesByType(org.bukkit.entity.Player.class, event.getLocation(), 16)) {
+                org.bukkit.persistence.PersistentDataContainer pdc = p.getPersistentDataContainer();
+                org.bukkit.NamespacedKey classKey = new org.bukkit.NamespacedKey("astraop", "class_id");
+                if ("druid".equalsIgnoreCase(pdc.get(classKey, org.bukkit.persistence.PersistentDataType.STRING))) {
+                    hasDruid = true;
+                    break;
+                }
+            }
+            
+            if (hasDruid) return; // Присутствие Друида очищает ауру, предотвращая мутации
+
             EntityType type = event.getEntityType();
             Location loc = event.getLocation();
             

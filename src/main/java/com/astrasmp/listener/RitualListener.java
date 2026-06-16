@@ -11,6 +11,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.block.BlockBreakEvent;
 
 public class RitualListener implements Listener {
 
@@ -34,7 +35,20 @@ public class RitualListener implements Listener {
             
             if (riftLoc != null) {
                 event.setCancelled(true);
-                hand.setAmount(hand.getAmount() - 1);
+                
+                boolean isDruid = false;
+                org.bukkit.persistence.PersistentDataContainer pdc = player.getPersistentDataContainer();
+                org.bukkit.NamespacedKey classKey = new org.bukkit.NamespacedKey("astraop", "class_id");
+                if (pdc.has(classKey, org.bukkit.persistence.PersistentDataType.STRING)) {
+                    isDruid = "druid".equalsIgnoreCase(pdc.get(classKey, org.bukkit.persistence.PersistentDataType.STRING));
+                }
+                
+                if (isDruid && Math.random() < 0.5) {
+                    player.sendMessage("§a[Природа] §fВаш тотем уцелел благодаря силам природы!");
+                } else {
+                    hand.setAmount(hand.getAmount() - 1);
+                }
+                
                 com.astrasmp.AstraSMPPlugin.getInstance().getServices().rift().closeRift(riftLoc);
                 player.sendMessage("§e[Очищение] §fВы закрыли Врата Бездны и остановили распространение Скверны.");
             } else {
@@ -45,7 +59,19 @@ public class RitualListener implements Listener {
                 int current = com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).getCorruption();
 
                 if (hasPact || current > 0) {
-                    hand.setAmount(hand.getAmount() - 1);
+                    boolean isDruid = false;
+                    org.bukkit.persistence.PersistentDataContainer pdc = player.getPersistentDataContainer();
+                    org.bukkit.NamespacedKey classKey = new org.bukkit.NamespacedKey("astraop", "class_id");
+                    if (pdc.has(classKey, org.bukkit.persistence.PersistentDataType.STRING)) {
+                        isDruid = "druid".equalsIgnoreCase(pdc.get(classKey, org.bukkit.persistence.PersistentDataType.STRING));
+                    }
+                    
+                    if (isDruid && Math.random() < 0.5) {
+                        player.sendMessage("§a[Природа] §fВаш тотем уцелел благодаря силам природы!");
+                    } else {
+                        hand.setAmount(hand.getAmount() - 1);
+                    }
+                    
                     
                     if (hasPact) {
                         com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).setPactType("");
@@ -164,6 +190,46 @@ public class RitualListener implements Listener {
             player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_BEACON_ACTIVATE, 1f, 1.5f);
             return;
         }
+
+        // Blood Stained Note
+        if (ItemRegistry.is(item, "bloodStainedNote")) {
+            event.setCancelled(true);
+            
+            boolean isDarkClass = false;
+            boolean isHuman = false;
+            org.bukkit.persistence.PersistentDataContainer pdc = player.getPersistentDataContainer();
+            org.bukkit.NamespacedKey classKey = new org.bukkit.NamespacedKey("astraop", "class_id");
+            if (pdc.has(classKey, org.bukkit.persistence.PersistentDataType.STRING)) {
+                String c = pdc.get(classKey, org.bukkit.persistence.PersistentDataType.STRING);
+                if (c != null && (c.equalsIgnoreCase("vampire") || c.equalsIgnoreCase("shadow") || c.equalsIgnoreCase("phantom") || c.equalsIgnoreCase("bloodmage"))) {
+                    isDarkClass = true;
+                } else if (c != null && c.equalsIgnoreCase("human")) {
+                    isHuman = true;
+                }
+            }
+            
+            if (isDarkClass) {
+                // Activate dark quest
+                // Let's assume we want to set their base quest or just send them a message and activate something
+                player.sendMessage("§4[Тьма] §cВы прочитали записку. В вашем разуме зазвучал голос... Квест 'Падение во Тьму' начался.");
+                item.setAmount(item.getAmount() - 1);
+                
+                // Set daily quest or something? 
+                // Or just an example logic
+                player.getWorld().playSound(player.getLocation(), org.bukkit.Sound.ENTITY_WITHER_AMBIENT, 1.0f, 0.5f);
+                
+                // Add corruption
+                int currentCorr = com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).getCorruption();
+                com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(player.getUniqueId().toString(), null).setCorruption(currentCorr + 50);
+            } else if (isHuman) {
+                player.sendMessage("§4[Тайное Знание] §cВ записке нарисован странный символ... Похоже на Ритуальный Алтарь 3-го уровня.");
+                player.sendMessage("§c«Принеси в жертву Человека. Возложи Осколок Души и Флакон Крови. Откажись от своей слабости, и твоя кровь станет оружием...»");
+                // Мы не удаляем записку, чтобы игрок мог сохранить её как рецепт
+            } else {
+                player.sendMessage("§cВы не можете разобрать эти кровавые каракули...");
+            }
+            return;
+        }
     }
 
     @EventHandler
@@ -261,6 +327,18 @@ public class RitualListener implements Listener {
                 killer.sendMessage("§4[Ритуал] §cВы собрали Флакон с Кровью " + victim.getName() + ".");
             }
         }
+
+        // Random drop: Blood Stained Note
+        if (Math.random() < 0.01) { // 1% chance on mob kill
+            deathLoc.getWorld().dropItemNaturally(deathLoc, ItemRegistry.bloodStainedNote());
+        }
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        if (Math.random() < 0.005) { // 0.5% chance on block break
+            event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), ItemRegistry.bloodStainedNote());
+        }
     }
 
     @EventHandler
@@ -270,8 +348,14 @@ public class RitualListener implements Listener {
         
         ItemStack weapon = attacker.getInventory().getItemInMainHand();
         if (ItemRegistry.is(weapon, "sacrificialDagger")) {
-            // 10% шанс выбить кровь при ударе
-            if (Math.random() <= 0.10) {
+            boolean isVampire = false;
+            org.bukkit.persistence.PersistentDataContainer pdc = attacker.getPersistentDataContainer();
+            org.bukkit.NamespacedKey classKey = new org.bukkit.NamespacedKey("astraop", "class_id");
+            if (pdc.has(classKey, org.bukkit.persistence.PersistentDataType.STRING)) {
+                isVampire = "vampire".equalsIgnoreCase(pdc.get(classKey, org.bukkit.persistence.PersistentDataType.STRING));
+            }
+            double chance = isVampire ? 0.25 : 0.10;
+            if (Math.random() <= chance) {
                 victim.getWorld().dropItemNaturally(victim.getLocation(), ItemRegistry.bloodVial(victim.getName(), victim.getUniqueId().toString()));
                 attacker.sendMessage("§4[Ритуал] §cВам удалось добыть Флакон с Кровью " + victim.getName() + " прямо в бою!");
             }

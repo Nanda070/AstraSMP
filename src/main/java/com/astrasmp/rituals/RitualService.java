@@ -198,6 +198,19 @@ public class RitualService {
                 150
         ));
 
+        // Ритуал 14: Становление Магом Крови
+        recipes.add(new RitualRecipe(
+                "bloodmage_ritual",
+                List.of(
+                        ItemRegistry.soulFragment(),
+                        ItemRegistry.bloodVial()
+                ),
+                EntityType.PLAYER,
+                3,
+                new ItemStack(Material.AIR),
+                150
+        ));
+
         // Фоновый таск для Безумия (Одержимость)
         startMadnessTask();
     }
@@ -369,6 +382,21 @@ public class RitualService {
                     if (killer != null) killer.sendMessage("§cИгрок оффлайн. Ритуал потрачен впустую.");
                 }
             }
+        } else if (recipe.getId().equals("bloodmage_ritual")) {
+            if (killer != null) {
+                org.bukkit.persistence.PersistentDataContainer pdc = killer.getPersistentDataContainer();
+                org.bukkit.NamespacedKey classKey = new org.bukkit.NamespacedKey("astraop", "class_id");
+                
+                String currentClass = pdc.get(classKey, org.bukkit.persistence.PersistentDataType.STRING);
+                if (currentClass != null && currentClass.equalsIgnoreCase("human")) {
+                    pdc.set(classKey, org.bukkit.persistence.PersistentDataType.STRING, "bloodmage");
+                    killer.getWorld().strikeLightningEffect(killer.getLocation());
+                    killer.getWorld().spawnParticle(org.bukkit.Particle.DUST, killer.getLocation(), 200, 1, 1, 1, 0, new org.bukkit.Particle.DustOptions(org.bukkit.Color.RED, 2.0f));
+                    killer.sendMessage("§4[Бездна] §cВы пожертвовали свою человечность... Ваша кровь кипит от силы Мага Крови!");
+                } else {
+                    killer.sendMessage("§cЭтот ритуал может перенести только простой Человек (HUMAN).");
+                }
+            }
         }
 
         // Начисляем/отнимаем скверну
@@ -378,6 +406,16 @@ public class RitualService {
             if (reward > 0 && com.astrasmp.AstraSMPPlugin.getInstance().getServices().events().isBloodNight()) {
                 reward *= 2;
                 killer.sendMessage("§4[Кровавая Луна] §cВаша душа жадно впитывает удвоенную Скверну...");
+            }
+            
+            // Синергия Вампира (снижение получаемой Скверны)
+            if (reward > 0) {
+                org.bukkit.persistence.PersistentDataContainer pdc = killer.getPersistentDataContainer();
+                org.bukkit.NamespacedKey classKey = new org.bukkit.NamespacedKey("astraop", "class_id");
+                String currentClass = pdc.get(classKey, org.bukkit.persistence.PersistentDataType.STRING);
+                if (currentClass != null && currentClass.equalsIgnoreCase("vampire")) {
+                    reward = (int) (reward * 0.8);
+                }
             }
 
             int current = com.astrasmp.AstraSMPPlugin.getInstance().getServices().store().profile(killer.getUniqueId().toString(), null).getCorruption();

@@ -351,6 +351,13 @@ public final class ItemRegistry {
     public static ItemStack voodooDoll() { return voodooDoll("Неизвестный", "null"); }
     public static ItemStack soulFragment() { return soulFragment("Неизвестный", "null"); }
     public static ItemStack madnessSphere() { return madnessSphere("Неизвестный", "null"); }
+    
+    public static ItemStack bloodStainedNote() {
+        return build("bloodStainedNote", Material.PAPER, "§4Испачканная кровью записка", List.of(
+                "§7Темная аура исходит от этой бумаги...",
+                "§7ПКМ чтобы прочесть."
+        ), 9113, true);
+    }
 
     // Кланы
     public static ItemStack guildHeart() {
@@ -414,7 +421,7 @@ public final class ItemRegistry {
                 bloodHunterHelmet(), bloodHunterChestplate(), bloodHunterLeggings(), bloodHunterBoots(),
                 trampoline(), soulOfNanda(), eventCompass(),
                 sacrificialDagger(), bloodDrop(), demonSoul(), pactOfBlood(), pactOfVoid(), pactOfShadow(), bloodCauldron(), ritualAltar(), cleansingTotem(), bloodChalice(),
-                bloodVial(), voodooDoll(), soulFragment(), madnessSphere()
+                bloodVial(), voodooDoll(), soulFragment(), madnessSphere(), bloodStainedNote()
         ));
         return items;
     }
