@@ -320,11 +320,12 @@ public class RitualListener implements Listener {
             }
         }
 
-        // --- ФЛАКОН КРОВИ: только кинжалом, вне алтаря ---
+        // --- ФЛАКОН КРОВИ И ОСКОЛОК ДУШИ: только кинжалом, вне алтаря ---
         if (ItemRegistry.is(weapon, "sacrificialDagger") && event.getEntity() instanceof Player victim) {
             if (altarLoc == null) {
                 deathLoc.getWorld().dropItemNaturally(deathLoc, ItemRegistry.bloodVial(victim.getName(), victim.getUniqueId().toString()));
-                killer.sendMessage("§4[Ритуал] §cВы собрали Флакон с Кровью " + victim.getName() + ".");
+                deathLoc.getWorld().dropItemNaturally(deathLoc, ItemRegistry.soulFragment(victim.getName(), victim.getUniqueId().toString()));
+                killer.sendMessage("§4[Ритуал] §cВы собрали Флакон с Кровью и Осколок Души " + victim.getName() + ".");
             }
         }
 
@@ -348,16 +349,11 @@ public class RitualListener implements Listener {
         
         ItemStack weapon = attacker.getInventory().getItemInMainHand();
         if (ItemRegistry.is(weapon, "sacrificialDagger")) {
-            boolean isVampire = false;
-            org.bukkit.persistence.PersistentDataContainer pdc = attacker.getPersistentDataContainer();
-            org.bukkit.NamespacedKey classKey = new org.bukkit.NamespacedKey("astraop", "class_id");
-            if (pdc.has(classKey, org.bukkit.persistence.PersistentDataType.STRING)) {
-                isVampire = "vampire".equalsIgnoreCase(pdc.get(classKey, org.bukkit.persistence.PersistentDataType.STRING));
-            }
-            double chance = isVampire ? 0.25 : 0.10;
+            double chance = 1.0;
             if (Math.random() <= chance) {
                 victim.getWorld().dropItemNaturally(victim.getLocation(), ItemRegistry.bloodVial(victim.getName(), victim.getUniqueId().toString()));
-                attacker.sendMessage("§4[Ритуал] §cВам удалось добыть Флакон с Кровью " + victim.getName() + " прямо в бою!");
+                victim.getWorld().dropItemNaturally(victim.getLocation(), ItemRegistry.soulFragment(victim.getName(), victim.getUniqueId().toString()));
+                attacker.sendMessage("§4[Ритуал] §cВам удалось добыть Флакон с Кровью и Осколок Души " + victim.getName() + " прямо в бою!");
             }
         }
     }
