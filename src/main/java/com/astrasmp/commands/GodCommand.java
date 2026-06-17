@@ -23,14 +23,14 @@ public final class GodCommand implements org.bukkit.command.TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!sender.hasPermission("astrasmp.admin")) {
-            TextUtil.send(sender, "&cУ вас нет прав для использования этой команды.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_34bdb4", "&cУ вас нет прав для использования этой команды."));
             return true;
         }
 
         Player target = null;
         if (args.length == 0) {
             if (!(sender instanceof Player player)) {
-                TextUtil.send(sender, "&cКонсоль должна указать ник игрока.");
+                TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d8fdb1", "&cКонсоль должна указать ник игрока."));
                 return true;
             }
             target = player;
@@ -47,12 +47,12 @@ public final class GodCommand implements org.bukkit.command.TabExecutor {
         target.getPersistentDataContainer().set(godKey, PersistentDataType.BYTE, newState);
 
         if (newState == 1) {
-            TextUtil.send(target, "&aРежим бога включен.");
+            TextUtil.send(target, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_18f514", "&aРежим бога включен."));
             if (target != sender) {
                 TextUtil.send(sender, "&aВы включили режим бога для &e" + target.getName() + "&a.");
             }
         } else {
-            TextUtil.send(target, "&cРежим бога выключен.");
+            TextUtil.send(target, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_5f264a", "&cРежим бога выключен."));
             if (target != sender) {
                 TextUtil.send(sender, "&cВы выключили режим бога для &e" + target.getName() + "&c.");
             }

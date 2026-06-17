@@ -26,12 +26,12 @@ public final class VanishCommand implements org.bukkit.command.TabExecutor, List
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            TextUtil.send(sender, "&cТолько для игроков.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_6c0497", "&cТолько для игроков."));
             return true;
         }
 
         if (!player.hasPermission("astrasmp.admin")) {
-            TextUtil.send(player, "&cУ вас нет прав для использования этой команды.");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_34bdb4", "&cУ вас нет прав для использования этой команды."));
             return true;
         }
 
@@ -40,9 +40,9 @@ public final class VanishCommand implements org.bukkit.command.TabExecutor, List
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     p.showPlayer(plugin, player);
                 }
-                TextUtil.send(player, "&aВы вышли из ваниша (стали видимым).");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_f44f84", "&aВы вышли из ваниша (стали видимым)."));
             } else {
-                TextUtil.send(player, "&cВы и так не в ванише.");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d8821b", "&cВы и так не в ванише."));
             }
         } else {
             if (vanished.add(player.getUniqueId())) {
@@ -51,9 +51,9 @@ public final class VanishCommand implements org.bukkit.command.TabExecutor, List
                         p.hidePlayer(plugin, player);
                     }
                 }
-                TextUtil.send(player, "&aВы вошли в ваниш (стали невидимым).");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_4f019f", "&aВы вошли в ваниш (стали невидимым)."));
             } else {
-                TextUtil.send(player, "&cВы уже в ванише. Используйте /unvanish чтобы выйти.");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_9fff7d", "&cВы уже в ванише. Используйте /unvanish чтобы выйти."));
             }
         }
         return true;

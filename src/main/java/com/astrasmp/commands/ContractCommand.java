@@ -1,7 +1,7 @@
 package com.astrasmp.commands;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -17,7 +17,7 @@ public final class ContractCommand implements org.bukkit.command.TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0 || args[0].equalsIgnoreCase("list")) {
-            TextUtil.send(sender, "&8Active contracts:");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_446f98", "&8Active contracts:"));
             for (ContractRecord c : services.contracts().active()) {
                 TextUtil.send(sender, "&7#" + c.getId() + " &f" + c.getType() + " &7target=&f" + c.getTargetUuid() + " &7reward=&a" + c.getReward());
             }
@@ -34,19 +34,29 @@ public final class ContractCommand implements org.bukkit.command.TabExecutor {
 
         if (args[0].equalsIgnoreCase("create")) {
             if (!(sender instanceof Player creator)) {
-                TextUtil.send(sender, "&cPlayer only.");
+                TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_a60b9b", "&cPlayer only."));
                 return true;
             }
             if (args.length < 4 || !args[1].equalsIgnoreCase("bounty")) return usage(sender, "/contract create bounty <player> <reward> [note]");
-            OfflinePlayer target = Bukkit.getOfflinePlayer(args[2]);
-            if (!(target instanceof Player onlineTarget)) {
-                TextUtil.send(sender, "&cTarget must be online in this base.");
+            Player onlineTarget = Bukkit.getPlayerExact(args[2]);
+            if (onlineTarget == null) {
+                TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_1d3ab6", "&cTarget must be online in this base."));
                 return true;
             }
-            long reward = Long.parseLong(args[3]);
+            long reward;
+            try {
+                reward = Long.parseLong(args[3]);
+            } catch (NumberFormatException e) {
+                TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_7ae596", "&cОшибка: количество должно быть числом."));
+                return true;
+            }
+            if (reward <= 0) {
+                TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_1d3ab7", "&cНаграда должна быть больше нуля."));
+                return true;
+            }
             String note = args.length >= 5 ? String.join(" ", java.util.Arrays.copyOfRange(args, 4, args.length)) : "";
             ContractRecord record = services.contracts().createBounty(creator, onlineTarget, reward, note);
-            if (record == null) TextUtil.send(sender, "&cNot enough coins.");
+            if (record == null) TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d1d9aa", "&cNot enough coins."));
             else TextUtil.send(sender, "&aBounty created #" + record.getId());
             return true;
         }

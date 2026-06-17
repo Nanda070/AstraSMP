@@ -35,7 +35,7 @@ public final class LocationCommand implements org.bukkit.command.TabExecutor {
             case "pvp" -> {
                 if (args.length > 0 && args[0].equalsIgnoreCase("holo")) {
                     if (!player.isOp()) {
-                        TextUtil.send(player, "&cУ вас нет прав для этой команды!");
+                        TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_df3b5f", "&cУ вас нет прав для этой команды!"));
                         return true;
                     }
 
@@ -54,23 +54,23 @@ public final class LocationCommand implements org.bukkit.command.TabExecutor {
 
                     // Установка голограммы
                     spawnPvPHologram(player.getLocation());
-                    TextUtil.send(player, "&aГолограмма топ PvP установлена!");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d5c5a5", "&aГолограмма топ PvP установлена!"));
                     return true;
                 }
                 services.afk().teleportToLocation(player, "pvp");
-                TextUtil.send(player, "&cВы телепортированы на PvP Арену!");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_1707a7", "&cВы телепортированы на PvP Арену!"));
             }
             case "casino" -> {
                 services.afk().teleportToLocation(player, "casino");
-                TextUtil.send(player, "&6Вы прибыли в Казино!");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_b2259b", "&6Вы прибыли в Казино!"));
             }
             case "eventshop" -> {
                 services.afk().teleportToLocation(player, "eventshop");
-                TextUtil.send(player, "&dДобро пожаловать в Ивент Шоп!");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_295107", "&dДобро пожаловать в Ивент Шоп!"));
             }
             case "afk" -> {
                 services.afk().teleportToLocation(player, "afk");
-                TextUtil.send(player, "&eВы прибыли в AFK-зону.");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_0b51fa", "&eВы прибыли в AFK-зону."));
             }
             case "duel" -> services.duels().handleCommand(player, args);
         }

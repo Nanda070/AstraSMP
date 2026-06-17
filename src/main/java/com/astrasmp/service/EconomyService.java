@@ -114,7 +114,7 @@ public final class EconomyService {
 
     public void addBalance(UUID uuid, String name, long amount) {
         PlayerProfile p = store.profile(uuid.toString(), name);
-        p.setCoins(p.getCoins() + Math.max(0L, amount));
+        p.setCoins(Math.max(0L, p.getCoins() + amount));
         store.requestSave();
     }
 
@@ -137,6 +137,11 @@ public final class EconomyService {
 
         double price = getPrice(item.getType());
         if (price <= 0) return 0;
+        
+        if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_6b829c", "&cКастомные предметы нельзя продавать скупщику."));
+            return 0;
+        }
 
         long income = Math.round(price * item.getAmount());
 
@@ -145,6 +150,9 @@ public final class EconomyService {
         long finalIncome = income - tax;
 
         addBalance(player.getUniqueId(), player.getName(), finalIncome);
+        PlayerProfile profile = store.profile(player.getUniqueId().toString(), player.getName());
+        profile.setSoldValue(profile.getSoldValue() + income);
+        
         recordSale(item.getType(), item.getAmount());
         player.getInventory().setItemInMainHand(null);
 
@@ -181,6 +189,7 @@ public final class EconomyService {
 
             PlayerProfile profile = profile(player.getUniqueId(), player.getName());
             profile.setCoins(profile.getCoins() + finalIncome);
+            profile.setSoldValue(profile.getSoldValue() + income);
             recordSale(material, totalAmount);
 
             if (tax > 0) {
@@ -219,6 +228,8 @@ public final class EconomyService {
             long finalIncome = totalIncome - tax;
 
             addBalance(player.getUniqueId(), player.getName(), finalIncome);
+            PlayerProfile profile = store.profile(player.getUniqueId().toString(), player.getName());
+            profile.setSoldValue(profile.getSoldValue() + totalIncome);
 
             if (tax > 0) {
                 TextUtil.send(player, "&7Общий налог гильдии: &c-" + tax + " ❂");

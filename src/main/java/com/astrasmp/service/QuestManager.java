@@ -41,10 +41,8 @@ public final class QuestManager {
         baseQuests.clear();
         dailyQuestsPool.clear();
 
+        com.astrasmp.util.ConfigUpdater.updateConfig(plugin, "quests.yml");
         File questsFile = new File(plugin.getDataFolder(), "quests.yml");
-        if (!questsFile.exists()) {
-            plugin.saveResource("quests.yml", false);
-        }
         if (questsFile.exists()) {
             YamlConfiguration qConfig = YamlConfiguration.loadConfiguration(questsFile);
             if (qConfig.getConfigurationSection("base") != null) {
@@ -59,10 +57,8 @@ public final class QuestManager {
             }
         }
 
+        com.astrasmp.util.ConfigUpdater.updateConfig(plugin, "daily_quests.yml");
         File dailyFile = new File(plugin.getDataFolder(), "daily_quests.yml");
-        if (!dailyFile.exists()) {
-            plugin.saveResource("daily_quests.yml", false);
-        }
         if (dailyFile.exists()) {
             YamlConfiguration dConfig = YamlConfiguration.loadConfiguration(dailyFile);
             if (dConfig.getConfigurationSection("quests") != null) {
@@ -191,7 +187,7 @@ public final class QuestManager {
         if (next != null) {
             TextUtil.send(player, "&b&lКВЕСТЫ &8» &fСледующая цель: &e" + next.name());
         } else {
-            TextUtil.send(player, "&b&lКВЕСТЫ &8» &aВы завершили все начальные задания!");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d8d7b3", "&b&lКВЕСТЫ &8» &aВы завершили все начальные задания!"));
             player.getWorld().spawn(player.getLocation(), org.bukkit.entity.Firework.class);
         }
     }

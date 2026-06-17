@@ -141,7 +141,7 @@ public class TalentsGui implements Listener {
         int costEp = getCostEp(nextLevel);
         
         if (profile.getCoins() < costCoins || profile.getEventPoints() < costEp) {
-            TextUtil.send(player, "&cНедостаточно средств для улучшения!");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_55ab43", "&cНедостаточно средств для улучшения!"));
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
             return;
         }

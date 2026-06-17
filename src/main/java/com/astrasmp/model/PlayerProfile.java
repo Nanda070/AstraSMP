@@ -44,6 +44,10 @@ public final class PlayerProfile {
 
     // transient поля не сохраняются в конфиг-файлы
     private transient boolean frozen = false;
+    private transient boolean dirty = true;
+
+    public boolean isDirty() { return dirty; }
+    public void setDirty(boolean dirty) { this.dirty = dirty;  this.dirty = true; }
 
     public PlayerProfile(String uuid, String name, long coins, int mmr, int kills, int deaths, long soldValue, int eventPoints, String faction, int baseLevel) {
         this.uuid = uuid;
@@ -66,6 +70,7 @@ public final class PlayerProfile {
 
     public void setCustomPrefix(String customPrefix) {
         this.customPrefix = customPrefix;
+        this.dirty = true;
     }
 
     public String getPrefixColor() {
@@ -74,42 +79,43 @@ public final class PlayerProfile {
 
     public void setPrefixColor(String prefixColor) {
         this.prefixColor = prefixColor;
+        this.dirty = true;
     }
 
     public int getQuestStep() { return questStep; }
-    public void setQuestStep(int questStep) { this.questStep = questStep; }
+    public void setQuestStep(int questStep) { this.questStep = questStep;  this.dirty = true; }
 
     public int getQuestProgress() { return questProgress; }
-    public void setQuestProgress(int questProgress) { this.questProgress = questProgress; }
+    public void setQuestProgress(int questProgress) { this.questProgress = questProgress;  this.dirty = true; }
 
     public Map<String, Integer> getDailyQuests() { return dailyQuests; }
-    public void setDailyQuests(Map<String, Integer> dailyQuests) { this.dailyQuests = dailyQuests; }
+    public void setDailyQuests(Map<String, Integer> dailyQuests) { this.dailyQuests = dailyQuests;  this.dirty = true; }
 
     public String getDailyQuestDate() { return dailyQuestDate; }
-    public void setDailyQuestDate(String dailyQuestDate) { this.dailyQuestDate = dailyQuestDate; }
+    public void setDailyQuestDate(String dailyQuestDate) { this.dailyQuestDate = dailyQuestDate;  this.dirty = true; }
 
     // --- ГЕТТЕРЫ И СЕТТЕРЫ НАГРАД И ТАЛАНТОВ ---
     public int getLoginStreak() { return loginStreak; }
-    public void setLoginStreak(int loginStreak) { this.loginStreak = loginStreak; }
+    public void setLoginStreak(int loginStreak) { this.loginStreak = loginStreak;  this.dirty = true; }
 
     public String getLastLoginDate() { return lastLoginDate; }
-    public void setLastLoginDate(String lastLoginDate) { this.lastLoginDate = lastLoginDate; }
+    public void setLastLoginDate(String lastLoginDate) { this.lastLoginDate = lastLoginDate;  this.dirty = true; }
 
     public int getDailyRewardDay() { return dailyRewardDay; }
-    public void setDailyRewardDay(int dailyRewardDay) { this.dailyRewardDay = dailyRewardDay; }
+    public void setDailyRewardDay(int dailyRewardDay) { this.dailyRewardDay = dailyRewardDay;  this.dirty = true; }
 
     public Map<String, Integer> getTalents() { return talents; }
-    public void setTalents(Map<String, Integer> talents) { this.talents = talents; }
+    public void setTalents(Map<String, Integer> talents) { this.talents = talents;  this.dirty = true; }
     public int getTalentLevel(String talentId) { return talents.getOrDefault(talentId, 0); }
-    public void setTalentLevel(String talentId, int level) { talents.put(talentId, level); }
+    public void setTalentLevel(String talentId, int level) { talents.put(talentId, level);  this.dirty = true; }
 
     // --- ГЕТТЕРЫ И СЕТТЕРЫ ТЕМНОЙ МАГИИ ---
     public int getCorruption() { return corruption; }
-    public void setCorruption(int corruption) { this.corruption = Math.max(0, corruption); }
+    public void setCorruption(int corruption) { this.corruption = Math.max(0, corruption);  this.dirty = true; }
 
     public boolean hasPact() { return pactType != null && !pactType.isEmpty(); }
     public String getPactType() { return pactType == null ? "" : pactType; }
-    public void setPactType(String pactType) { this.pactType = pactType == null ? "" : pactType; }
+    public void setPactType(String pactType) { this.pactType = pactType == null ? "" : pactType;  this.dirty = true; }
 
     public boolean isUnlockedPocketDimension() {
         return unlockedPocketDimension;
@@ -117,6 +123,7 @@ public final class PlayerProfile {
 
     public void setUnlockedPocketDimension(boolean unlocked) {
         this.unlockedPocketDimension = unlocked;
+        this.dirty = true;
     }
 
     // --- ОСТАЛЬНЫЕ ГЕТТЕРЫ И СЕТТЕРЫ ---
@@ -131,6 +138,7 @@ public final class PlayerProfile {
 
     public void setName(String name) {
         this.name = name;
+        this.dirty = true;
     }
 
     public long getCoins() {
@@ -139,6 +147,7 @@ public final class PlayerProfile {
 
     public void setCoins(long coins) {
         this.coins = Math.max(0L, coins);
+        this.dirty = true;
     }
 
     public int getMmr() {
@@ -147,6 +156,7 @@ public final class PlayerProfile {
 
     public void setMmr(int mmr) {
         this.mmr = Math.max(0, mmr);
+        this.dirty = true;
     }
 
     public int getKills() {
@@ -155,6 +165,7 @@ public final class PlayerProfile {
 
     public void setKills(int kills) {
         this.kills = Math.max(0, kills);
+        this.dirty = true;
     }
 
     public int getDeaths() {
@@ -163,6 +174,7 @@ public final class PlayerProfile {
 
     public void setDeaths(int deaths) {
         this.deaths = Math.max(0, deaths);
+        this.dirty = true;
     }
 
     public long getSoldValue() {
@@ -171,6 +183,7 @@ public final class PlayerProfile {
 
     public void setSoldValue(long soldValue) {
         this.soldValue = Math.max(0L, soldValue);
+        this.dirty = true;
     }
 
     public int getEventPoints() {
@@ -179,6 +192,7 @@ public final class PlayerProfile {
 
     public void setEventPoints(int eventPoints) {
         this.eventPoints = Math.max(0, eventPoints);
+        this.dirty = true;
     }
 
     public String getFaction() {
@@ -187,6 +201,7 @@ public final class PlayerProfile {
 
     public void setFaction(String faction) {
         this.faction = faction == null ? "" : faction;
+        this.dirty = true;
     }
 
     public int getBaseLevel() {
@@ -195,6 +210,7 @@ public final class PlayerProfile {
 
     public void setBaseLevel(int baseLevel) {
         this.baseLevel = Math.max(1, baseLevel);
+        this.dirty = true;
     }
 
     public String getPartnerUuid() {
@@ -203,6 +219,7 @@ public final class PlayerProfile {
 
     public void setPartnerUuid(String partnerUuid) {
         this.partnerUuid = partnerUuid;
+        this.dirty = true;
     }
 
     public boolean isFrozen() {
@@ -211,5 +228,6 @@ public final class PlayerProfile {
 
     public void setFrozen(boolean frozen) {
         this.frozen = frozen;
+        this.dirty = true;
     }
 }

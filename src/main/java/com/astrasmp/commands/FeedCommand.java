@@ -14,14 +14,14 @@ public final class FeedCommand implements org.bukkit.command.TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!sender.hasPermission("astrasmp.admin")) {
-            TextUtil.send(sender, "&cУ вас нет прав для использования этой команды.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_34bdb4", "&cУ вас нет прав для использования этой команды."));
             return true;
         }
 
         Player target = null;
         if (args.length == 0) {
             if (!(sender instanceof Player player)) {
-                TextUtil.send(sender, "&cКонсоль должна указать ник игрока.");
+                TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d8fdb1", "&cКонсоль должна указать ник игрока."));
                 return true;
             }
             target = player;
@@ -36,7 +36,7 @@ public final class FeedCommand implements org.bukkit.command.TabExecutor {
         target.setFoodLevel(20);
         target.setSaturation(20f);
         
-        TextUtil.send(target, "&aВаша сытость восстановлена.");
+        TextUtil.send(target, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_cacfb3", "&aВаша сытость восстановлена."));
         if (target != sender) {
             TextUtil.send(sender, "&aВы накормили игрока &e" + target.getName() + "&a.");
         }

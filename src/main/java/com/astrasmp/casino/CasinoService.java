@@ -24,7 +24,7 @@ public class CasinoService {
 
     public boolean startSession(Player player) {
         if (activeSessions.contains(player.getUniqueId())) {
-            TextUtil.send(player, "&cЗавершите текущую игру перед началом новой!");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_01297a", "&cЗавершите текущую игру перед началом новой!"));
             return false;
         }
         activeSessions.add(player.getUniqueId());
@@ -38,7 +38,7 @@ public class CasinoService {
     public boolean processBet(Player player, int amount) {
         PlayerProfile profile = services.economy().profile(player.getUniqueId(), player.getName());
         if (profile.getCoins() < amount) {
-            TextUtil.send(player, "&cНедостаточно ❂ для ставки!");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_4cd731", "&cНедостаточно ❂ для ставки!"));
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
             return false;
         }

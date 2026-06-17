@@ -46,6 +46,14 @@ public class GuildService {
     }
 
     public void saveGuildAsync(Guild guild) {
+        if (!plugin.isEnabled()) {
+            try {
+                plugin.getDatabase().saveGuild(guild);
+            } catch (Exception e) {
+                plugin.getLogger().severe("[GuildService] Ошибка синхронного сохранения '" + guild.getName() + "': " + e.getMessage());
+            }
+            return;
+        }
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 plugin.getDatabase().saveGuild(guild);
@@ -126,7 +134,8 @@ public class GuildService {
         if (plugin.getDiscord().isEnabled()) plugin.getDiscord().updateGuildRoster(guild);
 
         // Уведомляем участников
-        String announcement = TextUtil.color("&b&lChetCraft &8» &fИгрок &b"
+        String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+        String announcement = prefix + TextUtil.color("&fИгрок &b"
             + player.getName() + " &fвступил в гильдию!");
         guild.getMembers().keySet().stream()
             .map(Bukkit::getPlayer)
@@ -181,7 +190,7 @@ public class GuildService {
 
         if (next == null) {
             Player p = Bukkit.getPlayer(target);
-            if (p != null) TextUtil.send(p, "&7Ваш ранг уже максимальный.");
+            if (p != null) TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_a69494", "&7Ваш ранг уже максимальный."));
             return;
         }
 
@@ -208,7 +217,7 @@ public class GuildService {
 
         if (prev == null) {
             Player p = Bukkit.getPlayer(target);
-            if (p != null) TextUtil.send(p, "&7Ваш ранг уже минимальный.");
+            if (p != null) TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_c301d6", "&7Ваш ранг уже минимальный."));
             return;
         }
 
@@ -237,7 +246,15 @@ public class GuildService {
     /** Передача лидерства другому игроку. */
     public void transferLeadership(Guild guild, Player oldLeader, Player newLeader) {
         guild.setLeader(newLeader.getUniqueId());
-        guild.getMembers().put(oldLeader.getUniqueId(), "officer");
+        
+        Guild.Rank nextRank = guild.getRanks().values().stream()
+            .filter(r -> !r.getId().equals("leader"))
+            .max(Comparator.comparingInt(Guild.Rank::getPriority))
+            .orElse(null);
+            
+        String rankId = nextRank != null ? nextRank.getId() : "member";
+        
+        guild.getMembers().put(oldLeader.getUniqueId(), rankId);
         guild.getMembers().put(newLeader.getUniqueId(), "leader");
         saveGuildAsync(guild);
         if (plugin.getDiscord().isEnabled()) plugin.getDiscord().updateGuildRoster(guild);
@@ -261,11 +278,11 @@ public class GuildService {
             Location loc = new Location(Bukkit.getWorld(parts[0]),
                 Double.parseDouble(parts[1]), Double.parseDouble(parts[2]),
                 Double.parseDouble(parts[3]), Float.parseFloat(parts[4]), Float.parseFloat(parts[5]));
-            TextUtil.send(player, "&aТелепортация в дом гильдии...");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_334de7", "&aТелепортация в дом гильдии..."));
             player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
             player.teleport(loc);
         } catch (Exception e) {
-            TextUtil.send(player, "&cОшибка телепортации! Возможно, мир был удалён.");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_b78513", "&cОшибка телепортации! Возможно, мир был удалён."));
         }
     }
 

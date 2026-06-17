@@ -15,28 +15,28 @@ public final class PayCommand implements org.bukkit.command.TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player from)) {
-            TextUtil.send(sender, "&cPlayer only.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_a60b9b", "&cPlayer only."));
             return true;
         }
         if (args.length < 2) {
-            TextUtil.send(from, "&c/pay <player> <amount>");
+            TextUtil.send(from, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_9f29bd", "&c/pay <player> <amount>"));
             return true;
         }
         Player to = Bukkit.getPlayerExact(args[0]);
         if (to == null) {
-            TextUtil.send(from, "&cИгрок не найден.");
+            TextUtil.send(from, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_426f15", "&cИгрок не найден."));
             return true;
         }
         long amount;
         try { amount = Long.parseLong(args[1]); } catch (NumberFormatException ex) {
-            TextUtil.send(from, "&cНеверная сумма.");
+            TextUtil.send(from, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_522b8c", "&cНеверная сумма."));
             return true;
         }
         if (!services.economy().pay(from, to, amount)) {
-            TextUtil.send(from, "&cНедостаточно coins.");
+            TextUtil.send(from, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_9d86f0", "&cНедостаточно coins."));
             return true;
         }
-        TextUtil.send(from, "&aПеревод выполнен.");
+        TextUtil.send(from, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_1fe7a8", "&aПеревод выполнен."));
         TextUtil.send(to, "&aВы получили &f" + amount + " &acoins от &f" + from.getName());
         services.discord().sendLog("Pay: " + from.getName() + " -> " + to.getName() + " amount=" + amount);
         return true;

@@ -1,0 +1,116 @@
+shops:
+  "1":
+    name: "&aНачальный торговец"
+    items:
+      - { type: material, material: IRON_INGOT, amount: 16, name: "&fЖелезный слиток", price: 400, currency: coins }
+      - { type: material, material: GOLD_INGOT, amount: 16, name: "&eЗолотой слиток", price: 600, currency: coins }
+      - { type: material, material: LAPIS_LAZULI, amount: 32, name: "&9Лазурит", price: 300, currency: coins }
+      - { type: material, material: REDSTONE, amount: 64, name: "&cРедстоун", price: 250, currency: coins }
+      - { type: material, material: COAL, amount: 64, name: "&8Уголь", price: 200, currency: coins }
+      - { type: material, material: COOKED_BEEF, amount: 32, name: "&cЖареная говядина", price: 250, currency: coins }
+      - { type: material, material: COOKED_CHICKEN, amount: 32, name: "&fЖареная курятина", price: 200, currency: coins }
+      - { type: material, material: BREAD, amount: 32, name: "&eХлеб", price: 150, currency: coins }
+      - { type: material, material: GOLDEN_CARROT, amount: 16, name: "&6Золотая морковь", price: 500, currency: coins }
+      - { type: custom, id: mercenaryHelmet, price: 800, currency: coins }
+      - { type: custom, id: mercenaryChestplate, price: 1200, currency: coins }
+      - { type: custom, id: mercenaryLeggings, price: 1000, currency: coins }
+      - { type: custom, id: mercenaryBoots, price: 800, currency: coins }
+      - { type: custom, id: minerHelmet, price: 1000, currency: coins }
+      - { type: custom, id: minerChestplate, price: 1500, currency: coins }
+      - { type: custom, id: minerLeggings, price: 1300, currency: coins }
+      - { type: custom, id: minerBoots, price: 1000, currency: coins }
+
+  "2":
+    name: "&eДекоратор"
+    items:
+      - { type: material, material: GLASS, amount: 64, name: "&fСтекло", price: 150, currency: coins }
+      - { type: material, material: STONE_BRICKS, amount: 64, name: "&7Каменные кирпичи", price: 200, currency: coins }
+      - { type: material, material: QUARTZ_BLOCK, amount: 64, name: "&fКварцевый блок", price: 500, currency: coins }
+      - { type: material, material: SMOOTH_STONE, amount: 64, name: "&7Гладкий камень", price: 200, currency: coins }
+      - { type: material, material: DEEPSLATE_BRICKS, amount: 64, name: "&8Кирпичи из глубинного сланца", price: 250, currency: coins }
+      - { type: material, material: TUFF, amount: 64, name: "&7Туф", price: 150, currency: coins }
+      - { type: material, material: CALCITE, amount: 64, name: "&fКальцит", price: 300, currency: coins }
+      - { type: material, material: WHITE_CONCRETE, amount: 64, name: "&fБелый бетон", price: 300, currency: coins }
+      - { type: material, material: GRAY_CONCRETE, amount: 64, name: "&8Серый бетон", price: 300, currency: coins }
+      - { type: material, material: BLACK_CONCRETE, amount: 64, name: "&0Черный бетон", price: 300, currency: coins }
+      - { type: material, material: RED_CONCRETE, amount: 64, name: "&cКрасный бетон", price: 300, currency: coins }
+      - { type: material, material: TERRACOTTA, amount: 64, name: "&6Терракота", price: 250, currency: coins }
+      - { type: material, material: BROWN_TERRACOTTA, amount: 64, name: "&6Коричневая терракота", price: 250, currency: coins }
+      - { type: material, material: WHITE_TERRACOTTA, amount: 64, name: "&fБелая терракота", price: 250, currency: coins }
+      - { type: material, material: SPRUCE_LOG, amount: 64, name: "&6Еловое бревно", price: 300, currency: coins }
+      - { type: material, material: CHERRY_LOG, amount: 64, name: "&dВишневое бревно", price: 400, currency: coins }
+      - { type: material, material: MANGROVE_LOG, amount: 64, name: "&cМангровое бревно", price: 400, currency: coins }
+      - { type: material, material: OAK_LEAVES, amount: 64, name: "&aЛиства дуба", price: 400, currency: coins }
+      - { type: material, material: CHERRY_LEAVES, amount: 64, name: "&dВишневая листва", price: 650, currency: coins }
+      - { type: material, material: MOSS_BLOCK, amount: 64, name: "&aБлок мха", price: 500, currency: coins }
+      - { type: material, material: DIRT_PATH, amount: 64, name: "&6Тропинка", price: 400, currency: coins }
+      - { type: material, material: LANTERN, amount: 16, name: "&eФонарь", price: 600, currency: coins }
+      - { type: material, material: SOUL_LANTERN, amount: 16, name: "&bФонарь душ", price: 600, currency: coins }
+      - { type: material, material: SEA_LANTERN, amount: 64, name: "&bМорской фонарь", price: 600, currency: coins }
+      - { type: material, material: GLOWSTONE, amount: 64, name: "&eСветокамень", price: 400, currency: coins }
+      - { type: material, material: IRON_BARS, amount: 16, name: "&7Железная решетка", price: 300, currency: coins }
+      - { type: material, material: AMETHYST_BLOCK, amount: 64, name: "&dАметистовый блок", price: 500, currency: coins }
+      - { type: material, material: COPPER_BLOCK, amount: 64, name: "&6Медный блок", price: 400, currency: coins }
+      - { type: custom, id: trampoline, price: 50000, currency: coins }
+
+  "3":
+    name: "&dБиблиотекарь"
+    items:
+      - { type: book, enchantment: protection, level: 2, price: 1500, currency: coins }
+      - { type: book, enchantment: sharpness, level: 3, price: 1900, currency: coins }
+      - { type: book, enchantment: power, level: 3, price: 1850, currency: coins }
+      - { type: book, enchantment: fire_aspect, level: 1, price: 1700, currency: coins }
+      - { type: book, enchantment: efficiency, level: 3, price: 1800, currency: coins }
+      - { type: book, enchantment: unbreaking, level: 2, price: 1600, currency: coins }
+      - { type: book, enchantment: fortune, level: 2, price: 1200, currency: coins }
+      - { type: book, enchantment: silk_touch, level: 1, price: 1500, currency: coins }
+      - { type: book, enchantment: feather_falling, level: 2, price: 1700, currency: coins }
+      - { type: book, enchantment: looting, level: 2, price: 1000, currency: coins }
+
+  "4":
+    name: "&6Фермер"
+    items:
+      - { type: material, material: WHEAT_SEEDS, amount: 16, name: "&aСемена пшеницы", price: 350, currency: coins }
+      - { type: material, material: PUMPKIN_SEEDS, amount: 8, name: "&6Семена тыквы", price: 550, currency: coins }
+      - { type: material, material: MELON_SEEDS, amount: 8, name: "&aСемена арбуза", price: 650, currency: coins }
+      - { type: material, material: BEETROOT_SEEDS, amount: 16, name: "&cСемена свеклы", price: 300, currency: coins }
+      - { type: material, material: CARROT, amount: 16, name: "&6Морковь", price: 350, currency: coins }
+      - { type: material, material: POTATO, amount: 16, name: "&eКартофель", price: 350, currency: coins }
+      - { type: material, material: SUGAR_CANE, amount: 16, name: "&fТростник", price: 250, currency: coins }
+      - { type: material, material: BAMBOO, amount: 32, name: "&aБамбук", price: 400, currency: coins }
+      - { type: material, material: CACTUS, amount: 12, name: "&2Кактус", price: 400, currency: coins }
+      - { type: material, material: BONE_MEAL, amount: 12, name: "&fКостная мука", price: 300, currency: coins }
+      - { type: material, material: MUSHROOM_STEW, amount: 1, name: "&6Грибной суп", price: 300, currency: coins }
+
+  "8":
+    name: "&5Ивент Магазин"
+    items:
+      - { type: custom, id: mining3x3, name: "&bШахтер 3x3", price: 500, currency: events }
+      - { type: custom, id: mining5x5, name: "&5Шахтер 5x5", price: 850, currency: events }
+      - { type: custom, id: veinMiner, name: "&bЖильный шахтер", price: 600, currency: events }
+      - { type: custom, id: autoSmelt, name: "&6Авто-плавка", price: 450, currency: events }
+      - { type: custom, id: magnet, name: "&eМагнит", price: 400, currency: events }
+      - { type: custom, id: mining3x3Netherite, name: "&dШахтер 3x3+", price: 1000, currency: events }
+      - { type: custom, id: mining5x5Netherite, name: "&5Шахтер 5x5+", price: 1700, currency: events }
+      - { type: custom, id: veinMinerNetherite, name: "&dЖильный шахтер+", price: 1200, currency: events }
+      - { type: custom, id: autoSmeltNetherite, name: "&6Авто-плавка+", price: 900, currency: events }
+      - { type: custom, id: magnetNetherite, name: "&eМагнит+", price: 800, currency: events }
+      - { type: custom, id: shadowBlade, name: "&8Теневой клинок", price: 700, currency: events }
+      - { type: custom, id: thunderHammer, name: "&bМолот грома", price: 750, currency: events }
+      - { type: custom, id: vampireDagger, name: "&cVampire Dagger", price: 600, currency: events }
+      - { type: custom, id: infernoSword, name: "&6Меч инферно", price: 700, currency: events }
+      - { type: custom, id: frostAxe, name: "&9Ледяной топор", price: 650, currency: events }
+      - { type: custom, id: totemSpeed, name: "&bТотем скорости", price: 200, currency: events }
+      - { type: custom, id: totemShield, name: "&7Тотем щита", price: 250, currency: events }
+      - { type: custom, id: inquisitorHelmet, name: "&eШлем Инквизитора", price: 600, currency: events }
+      - { type: custom, id: inquisitorChestplate, name: "&eНагрудник Инквизитора", price: 800, currency: events }
+      - { type: custom, id: inquisitorLeggings, name: "&eПоножи Инквизитора", price: 700, currency: events }
+      - { type: custom, id: inquisitorBoots, name: "&eСапоги Инквизитора", price: 500, currency: events }
+
+  "9":
+    name: "&d💎 Черный Рынок"
+    items:
+      - { type: relic, id: time_core, material: CLOCK, name: "&dЯдро времени", lore: "Замедляет время вокруг владельца.", price: 10000, currency: coins }
+      - { type: artifact, id: heart_of_world, material: HEART_OF_THE_SEA, name: "&bСердце мира", lore: "Пассивная защита для носителя.", price: 15000, currency: coins }
+      - { type: custom, id: trampoline, price: 8000, currency: coins }
+      - { type: material, material: ENCHANTED_GOLDEN_APPLE, amount: 1, name: "&6Зачарованное яблоко", price: 5000, currency: coins }

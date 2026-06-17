@@ -36,39 +36,45 @@ import net.kyori.adventure.text.Component;
 public final class EventService implements org.bukkit.event.Listener {
 
     public enum EventType {
-        METEOR("§e☄ Метеорит", "Метеорит"),
-        AIRDROP("§b✈ Аирдроп", "Аирдроп"),
-        BOSS("§c☠ Мировой Босс", "Мировой Босс"),
-        MERCHANT("§d💎 Черный Рынок", "Черный Рынок"),
-        GALLEON("§3⚓ Затонувший Галеон", "Затонувший Галеон"),
-        TREASURE("§6☁ Затерянный Клад", "Затерянный Клад");
+        METEOR("meteor"),
+        AIRDROP("airdrop"),
+        BOSS("boss"),
+        MERCHANT("merchant"),
+        GALLEON("galleon"),
+        TREASURE("treasure");
 
-        private final String title;
-        private final String cleanName;
+        private final String key;
 
-        EventType(String title, String cleanName) {
-            this.title = title;
-            this.cleanName = cleanName;
+        EventType(String key) {
+            this.key = key;
         }
-        public String getTitle() { return title; }
-        public String getCleanName() { return cleanName; }
+        public String getTitle() { 
+            return AstraSMPPlugin.getInstance().getConfigManager().getMessage("events.types." + key + ".title", "§e" + name()); 
+        }
+        public String getCleanName() { 
+            return AstraSMPPlugin.getInstance().getConfigManager().getMessage("events.types." + key + ".cleanName", name()); 
+        }
     }
 
     public enum EventModifier {
-        NONE("", ""),
-        GENEROUS("§a[ЩЕДРЫЙ] ", "ЩЕДРЫЙ"),
-        CURSED("§c[ПРОКЛЯТЫЙ] ", "ПРОКЛЯТЫЙ"),
-        FAST("§b[БЫСТРЫЙ] ", "БЫСТРЫЙ");
+        NONE("none"),
+        GENEROUS("generous"),
+        CURSED("cursed"),
+        FAST("fast");
 
-        private final String prefix;
-        private final String cleanName;
+        private final String key;
 
-        EventModifier(String prefix, String cleanName) {
-            this.prefix = prefix;
-            this.cleanName = cleanName;
+        EventModifier(String key) {
+            this.key = key;
         }
-        public String getPrefix() { return prefix; }
-        public String getCleanName() { return cleanName; }
+        public String getPrefix() { 
+            if (this == NONE) return "";
+            return AstraSMPPlugin.getInstance().getConfigManager().getMessage("events.modifiers." + key + ".prefix", "§7[" + name() + "] "); 
+        }
+        public String getCleanName() { 
+            if (this == NONE) return "";
+            return AstraSMPPlugin.getInstance().getConfigManager().getMessage("events.modifiers." + key + ".cleanName", name()); 
+        }
     }
 
     public record ActiveEvent(EventType type, EventModifier modifier, Location location, long startedAt, long endsAt, LivingEntity boss, List<ArmorStand> holograms, BossBar bossBar) {
@@ -80,6 +86,7 @@ public final class EventService implements org.bukkit.event.Listener {
     private final Random random = new Random();
     private final java.util.concurrent.CopyOnWriteArrayList<ActiveEvent> activeEvents = new java.util.concurrent.CopyOnWriteArrayList<>();
     private BukkitTask ticker;
+    private int tickCounter = 0;
 
     // --- ПЕРЕМЕННЫЕ ДЛЯ КРОВАВОЙ НОЧИ ---
     private boolean isBloodNightActive = false;
@@ -87,7 +94,9 @@ public final class EventService implements org.bukkit.event.Listener {
     private boolean forcedBloodNight = false;
 
     // Время блокировки сундука в миллисекундах (3 минуты = 180 секунд)
-    private static final long CRATE_LOCK_TIME_MS = 3 * 60 * 1000L;
+    private long getCrateLockTimeMs() {
+        return plugin.getConfig().getLong("events.crate-lock-time-seconds", 180) * 1000L;
+    }
 
     public EventService(AstraSMPPlugin plugin, EconomyService economy, MMRService mmr) {
         this.plugin = plugin;
@@ -193,7 +202,8 @@ public final class EventService implements org.bukkit.event.Listener {
                 if (isBloodNightActive) {
                     isBloodNightActive = false;
                     forcedBloodNight = false;
-                    Bukkit.broadcastMessage(TextUtil.color("&8[&bChetCraft&8] &aКровавая Ночь завершилась. Вы выжили."));
+                    String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+                    Bukkit.broadcastMessage(prefix + TextUtil.color("&aКровавая Ночь завершилась. Вы выжили."));
                 }
             }
         }, 100L, 100L);
@@ -321,7 +331,8 @@ public final class EventService implements org.bukkit.event.Listener {
 
         String title = modifier.getPrefix() + type.getTitle();
         Bukkit.broadcastMessage("");
-        Bukkit.broadcastMessage("§b§lChetCraft §8» §fНа сервере начался ивент: " + title + "§f!");
+        String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+        Bukkit.broadcastMessage(prefix + "§fНа сервере начался ивент: " + title + "§f!");
         
         if (type == EventType.TREASURE) {
             // Скрываем точные координаты для клада
@@ -359,7 +370,7 @@ public final class EventService implements org.bukkit.event.Listener {
     private void animateMeteor(Location target) {
         Location startPos = target.clone().add(-30, 60, -30);
         Vector direction = target.toVector().subtract(startPos.toVector()).normalize();
-        announce("§eВ небе над ChetCraft замечен падающий объект...");
+        announce("§eВ небе над миром замечен падающий объект...");
 
         new BukkitRunnable() {
             Location current = startPos.clone();
@@ -385,7 +396,7 @@ public final class EventService implements org.bukkit.event.Listener {
     // ==========================================
     public long getLockTimeMs(EventModifier modifier) {
         if (modifier == EventModifier.FAST) return 60 * 1000L; // 1 минута
-        return CRATE_LOCK_TIME_MS; // 3 минуты
+        return getCrateLockTimeMs(); // 3 минуты
     }
 
     public ActiveEvent getLockedEventAt(Location loc) {
@@ -512,6 +523,8 @@ public final class EventService implements org.bukkit.event.Listener {
         if (activeEvents.isEmpty()) return;
 
         long now = System.currentTimeMillis();
+        tickCounter++;
+        boolean doMinuteTick = (tickCounter % 60 == 0);
 
         // 1. Управление видимостью BossBar (к ближайшему ивенту)
         for (Player p : Bukkit.getOnlinePlayers()) {
@@ -545,7 +558,7 @@ public final class EventService implements org.bukkit.event.Listener {
         for (ActiveEvent ev : new ArrayList<>(activeEvents)) {
             boolean finished = false;
 
-            if ((now / 60000L) % 1 == 0) { 
+            if (doMinuteTick) { 
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     if (player.getWorld().equals(ev.location().getWorld()) && player.getLocation().distance(ev.location()) <= 30.0) {
                         plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.ATTEND_EVENT, "", 1);
@@ -646,7 +659,8 @@ public final class EventService implements org.bukkit.event.Listener {
             ticker = null;
         }
 
-        Bukkit.broadcast(Component.text("§8[§bChetCraft§8] §aИвент " + ev.type().getCleanName() + " завершен."));
+        String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+        Bukkit.broadcast(Component.text(prefix + "§aИвент " + ev.type().getCleanName() + " завершен."));
         rewardNearby(ev.location());
     }
 
@@ -673,7 +687,8 @@ public final class EventService implements org.bukkit.event.Listener {
     private LivingEntity spawnBoss(Location loc) {
         return (WitherSkeleton) loc.getWorld().spawn(loc, WitherSkeleton.class, entity -> {
             // Титул теперь привязан к самому боссу
-            entity.setCustomName("§c☠ Страж ChetCraft");
+            String bossName = TextUtil.color(plugin.getConfig().getString("messages.boss-name", "§c☠ Страж"));
+            entity.setCustomName(bossName);
             entity.setCustomNameVisible(true);
 
             // ХП уменьшено до 350
@@ -814,10 +829,11 @@ public final class EventService implements org.bukkit.event.Listener {
 
 
     private void useBossSkill(LivingEntity boss, Location loc) {
+        String bossName = TextUtil.color(plugin.getConfig().getString("messages.boss-name", "§c☠ Страж"));
         int skill = random.nextInt(3);
         switch (skill) {
             case 0 -> { // Притягивание
-                announce("§c☠ Страж ChetCraft притягивает врагов!");
+                announce(bossName + " §fпритягивает врагов!");
                 for (Player p : loc.getWorld().getPlayers()) {
                     if (p.getLocation().distanceSquared(loc) < 20 * 20) {
                         org.bukkit.util.Vector dir = loc.toVector().subtract(p.getLocation().toVector()).normalize().multiply(1.5);
@@ -826,7 +842,7 @@ public final class EventService implements org.bukkit.event.Listener {
                 }
             }
             case 1 -> { // Отбрасывание
-                announce("§c☠ Страж ChetCraft отбрасывает всех!");
+                announce(bossName + " §fотбрасывает всех!");
                 loc.getWorld().spawnParticle(Particle.EXPLOSION_EMITTER, loc, 2);
                 loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 2f, 1f);
                 for (Player p : loc.getWorld().getPlayers()) {
@@ -837,7 +853,7 @@ public final class EventService implements org.bukkit.event.Listener {
                 }
             }
             case 2 -> { // Призыв миньонов
-                announce("§c☠ Страж ChetCraft призывает помощников!");
+                announce(bossName + " §fпризывает помощников!");
                 for (int i = 0; i < 3; i++) {
                     loc.getWorld().spawn(loc.clone().add(random.nextInt(4)-2, 0, random.nextInt(4)-2), org.bukkit.entity.Skeleton.class, entity -> {
                         entity.customName(Component.text(TextUtil.color("&7Слуга Стража")));
@@ -851,7 +867,8 @@ public final class EventService implements org.bukkit.event.Listener {
     }
 
     private void announce(String msg) {
-        Bukkit.broadcast(Component.text("§8[§bChetCraft§8] §f" + msg));
+        String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+        Bukkit.broadcast(Component.text(prefix + msg));
     }
 
     public void rewardNearby(Location location) {
@@ -863,7 +880,7 @@ public final class EventService implements org.bukkit.event.Listener {
                 profile.setCoins(profile.getCoins() + 200L);
                 profile.setEventPoints(profile.getEventPoints() + 10);
 
-                TextUtil.send(player, "&a+200 ❂ и 10 очков ивента за участие!");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_7d724b", "&a+200 ❂ и 10 очков ивента за участие!"));
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
 
                 plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.ATTEND_EVENT, "", 1);

@@ -67,6 +67,12 @@ public final class PlayerListener implements Listener {
     // ==========================================
     // ЛОГИКА ВХОДА И ПРИВЕТСТВИЯ
     // ==========================================
+    @EventHandler
+    public void onAsyncPreLogin(org.bukkit.event.player.AsyncPlayerPreLoginEvent event) {
+        // Асинхронно загружаем профиль из БД до входа на сервер
+        services.economy().profile(event.getUniqueId(), event.getName());
+    }
+
     @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
@@ -146,6 +152,14 @@ public final class PlayerListener implements Listener {
 
         // Очищаем кулдаун при выходе, чтобы не засорять память
         totemCooldowns.remove(event.getPlayer().getUniqueId());
+        com.astrasmp.listener.MenuListener.removePrompt(event.getPlayer().getUniqueId());
+        com.astrasmp.commands.MarryCommand.clearPending(event.getPlayer().getUniqueId());
+
+        // Асинхронно выгружаем профиль игрока из памяти
+        String uuid = event.getPlayer().getUniqueId().toString();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            services.store().unloadProfile(uuid);
+        });
     }
 
     // ==========================================
@@ -158,7 +172,8 @@ public final class PlayerListener implements Listener {
         }
         ItemStack compass = new ItemStack(Material.COMPASS);
         var meta = compass.getItemMeta();
-        meta.displayName(Component.text(TextUtil.color("&b&lМеню ChetCraft")));
+        String menuTitle = TextUtil.color(plugin.getConfig().getString("messages.gui-menu-title", "&b&lМеню"));
+        meta.displayName(Component.text(menuTitle));
         meta.lore(java.util.List.of(Component.text(TextUtil.color("&7Нажмите ПКМ, чтобы открыть"))));
         meta.getPersistentDataContainer().set(KEY_MENU_COMPASS, PersistentDataType.BYTE, (byte) 1);
         compass.setItemMeta(meta);
@@ -261,7 +276,7 @@ public final class PlayerListener implements Listener {
 
         if (isRestricted(player)) {
             event.setCancelled(true);
-            TextUtil.send(player, "&cВы не можете писать в чат, пока заморожены.");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_4b5f52", "&cВы не можете писать в чат, пока заморожены."));
             return;
         }
 
@@ -322,7 +337,14 @@ public final class PlayerListener implements Listener {
                 monster.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 999999, 1));
                 monster.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 999999, 0));
                 monster.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 999999, 0));
-                if (Math.random() < 0.5) monster.getWorld().spawnEntity(monster.getLocation(), monster.getType());
+                if (Math.random() < 0.5) {
+                    org.bukkit.entity.Entity spawned = monster.getWorld().spawnEntity(monster.getLocation(), monster.getType());
+                    if (spawned instanceof Monster m2) {
+                        m2.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 999999, 1));
+                        m2.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 999999, 0));
+                        m2.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 999999, 0));
+                    }
+                }
             }
         }
     }
@@ -346,10 +368,15 @@ public final class PlayerListener implements Listener {
         if (isRestricted(player)) { event.setCancelled(true); return; }
 
         Block block = event.getBlock();
-        if (services.store().getAwardAmount(block.getLocation()) != null && !player.isOp()) {
-            event.setCancelled(true);
-            TextUtil.send(player, "&cЭтот блок нельзя сломать!");
-            return;
+        if (services.store().getAwardAmount(block.getLocation()) != null) {
+            if (!player.isOp()) {
+                event.setCancelled(true);
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_e0de11", "&cЭтот блок нельзя сломать!"));
+                return;
+            } else {
+                services.store().removeAwardBlock(block.getLocation());
+                TextUtil.send(player, "&aБлок-награда успешно удален из базы.");
+            }
         }
 
         ItemStack tool = player.getInventory().getItemInMainHand();
@@ -411,14 +438,14 @@ public final class PlayerListener implements Listener {
         if (item.hasItemMeta() && item.getItemMeta().getPersistentDataContainer().has(KEY_AWARD_AMOUNT, PersistentDataType.LONG)) {
             long amount = item.getItemMeta().getPersistentDataContainer().get(KEY_AWARD_AMOUNT, PersistentDataType.LONG);
             services.store().addAwardBlock(event.getBlockPlaced().getLocation(), amount);
-            TextUtil.send(event.getPlayer(), "&aБлок-награда успешно установлен и активен!");
+            TextUtil.send(event.getPlayer(), com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_3aa1e0", "&aБлок-награда успешно установлен и активен!"));
         }
     }
 
     // ==========================================
     // БОЙ И ОРУЖИЕ
     // ==========================================
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onEntityDamage(org.bukkit.event.entity.EntityDamageEvent event) {
         if (event.getEntity() instanceof Player player) {
             NamespacedKey godKey = new NamespacedKey(plugin, "god_mode");
@@ -538,6 +565,7 @@ public final class PlayerListener implements Listener {
                     player.setVelocity(player.getLocation().getDirection().multiply(2.0).setY(0.5));
                     player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
                 } else if (customId.equals("totemExplosion")) {
+                    player.setNoDamageTicks(20);
                     player.getWorld().createExplosion(player.getLocation(), 4f, false, false);
                 } else if (customId.equals("totemLightning")) {
                     player.getNearbyEntities(10, 10, 10).forEach(e -> {

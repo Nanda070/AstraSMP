@@ -59,8 +59,9 @@ public final class DataStore {
         awardBlocks.clear();
         awardHistory.clear();
 
-        // Загрузка данных из реляционной базы данных
-        plugin.getDatabase().loadAllProfiles().forEach(p -> profiles.put(p.getUuid(), p));
+        // Мы БОЛЬШЕ не загружаем все профили сразу в память!
+        // Это решает проблему утечки памяти при старте сервера.
+        // Загружаем только аукционы, контракты и ME сети.
         
         plugin.getDatabase().loadAllLots().forEach(l -> {
             lots.put(l.getId(), l);
@@ -115,7 +116,10 @@ public final class DataStore {
     }
 
     public void saveAllNow() {
-        profiles.values().forEach(plugin.getDatabase()::saveProfile);
+        profiles.values().stream().filter(PlayerProfile::isDirty).forEach(p -> {
+            plugin.getDatabase().saveProfile(p);
+            p.setDirty(false);
+        });
         lots.values().forEach(plugin.getDatabase()::saveLot);
         contracts.values().forEach(plugin.getDatabase()::saveContract);
         meNetworks.values().forEach(plugin.getDatabase()::saveMENetwork);
@@ -267,9 +271,35 @@ public final class DataStore {
     }
 
     public PlayerProfile profile(String uuid, String name) {
-        PlayerProfile p = profiles.computeIfAbsent(uuid, k -> new PlayerProfile(uuid, name, 0L, 50, 0, 0, 0L, 0, "", 1));
+        PlayerProfile p = profiles.computeIfAbsent(uuid, k -> {
+            PlayerProfile dbProfile = plugin.getDatabase().loadProfile(uuid);
+            if (dbProfile != null) {
+                return dbProfile;
+            }
+            String finalName = name;
+            if (finalName == null) {
+                try {
+                    org.bukkit.OfflinePlayer op = org.bukkit.Bukkit.getOfflinePlayer(java.util.UUID.fromString(uuid));
+                    finalName = op.getName() != null ? op.getName() : "Unknown";
+                } catch (Exception e) {
+                    finalName = "Unknown";
+                }
+            }
+            return new PlayerProfile(uuid, finalName, 0L, 50, 0, 0, 0L, 0, "", 1);
+        });
         if (name != null) p.setName(name);
         return p;
+    }
+
+    public void unloadProfile(String uuid) {
+        PlayerProfile p = profiles.get(uuid);
+        if (p != null) {
+            if (p.isDirty()) {
+                plugin.getDatabase().saveProfile(p);
+                p.setDirty(false);
+            }
+            profiles.remove(uuid);
+        }
     }
 
     public LinkRecord link(String uuid) { 
@@ -283,6 +313,15 @@ public final class DataStore {
         LocationKey key = LocationKey.fromLocation(loc);
         if (key != null) awardBlocks.put(key, amount);
     }
+
+    public void removeAwardBlock(Location loc) {
+        LocationKey key = LocationKey.fromLocation(loc);
+        if (key != null) {
+            awardBlocks.remove(key);
+            awardHistory.remove(key);
+        }
+    }
+
 
     public Long getAwardAmount(Location loc) {
         LocationKey key = LocationKey.fromLocation(loc);

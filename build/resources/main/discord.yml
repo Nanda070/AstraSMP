@@ -1,0 +1,32 @@
+enabled: true
+token: "MTQ5MzA4MTU4NjY5Mjc4NDEyOA.GC6Eyu.artmt-_zWsYFJ2oHnr_-6VQb-Skv2VwMqNQEnA"
+guild-id: "1324239354154975252"
+chat-channel-id: "1493114039163818127"
+log-channel-id: "1493114225747558522"
+control-channel-id: "1493114039163818127"
+linked-role-id: "1493411583743885523"
+admin-role-id: "1493411595089346612"
+leader-role-id: "1508625935409086644"
+forum-channel-id: "1508625325985108170"
+event-ping-id: "1493417811765235732"
+event-role-id: "1493417811765235732"
+event-button-role-id: "1493417811765235732"
+bot-activity: "chetcraft.org ✨"
+server-ip: "chetcraft.org"
+embed-footer: "ChetCraft Network"
+prefix: "!as"
+MTQ5MzA4MTU4NjY5Mjc4NDEyOA.GC6Eyu.artmt-_zWsYFJ2oHnr_-6VQb-Skv2VwMqNQEnA
+messages:
+  link-embed:
+    title: "🔗 Привязка Аккаунта"
+    description: "Нажмите на кнопку ниже, чтобы привязать свой Minecraft аккаунт к Discord.\nВам понадобится код, который можно получить в игре командой `/link`."
+    color: "#5865F2"
+    button-text: "Привязать аккаунт"
+  event-embed:
+    title: "🎉 Уведомления об Ивентах"
+    description: "Нажмите на кнопку ниже, чтобы получить роль ивентов и получать упоминания при запуске новых событий на сервере!"
+    color: "#FF4500"
+    button-text: "Получить роль ивентов"
+  success-link: "✅ Кнопка успешно создана!"
+  success-event: "✅ Кнопка ивентов успешно создана!"
+  error-perms: "❌ Недостаточно прав."

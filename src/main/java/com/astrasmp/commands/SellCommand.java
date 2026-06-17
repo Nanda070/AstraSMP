@@ -12,7 +12,7 @@ public final class SellCommand implements org.bukkit.command.TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            TextUtil.send(sender, "&cPlayer only.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_a60b9b", "&cPlayer only."));
             return true;
         }
         
@@ -27,7 +27,7 @@ public final class SellCommand implements org.bukkit.command.TabExecutor {
         else sold = services.economy().sellInventory(player);
         
         if (sold <= 0) {
-            TextUtil.send(player, "&cНечего продавать.");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_cc4778", "&cНечего продавать."));
         } else {
             TextUtil.send(player, "&aПродано на &f" + sold + " coins");
         }

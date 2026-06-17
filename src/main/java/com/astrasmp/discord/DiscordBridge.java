@@ -68,21 +68,23 @@ public final class DiscordBridge {
     }
 
     public boolean isEnabled() {
-        return plugin.getConfig().getBoolean("discord.enabled", false)
-                && !plugin.getConfig().getString("discord.token", "").isBlank();
+        return plugin.getDiscordConfig().getBoolean("enabled", false)
+                && !plugin.getDiscordConfig().getString("token", "").isBlank();
     }
 
+    @SuppressWarnings("null")
     public void connect()
             {
         if (!isEnabled())
             return;
-        String token = plugin.getConfig().getString("discord.token", "");
+        String token = plugin.getDiscordConfig().getString("token", "");
         EnumSet<GatewayIntent> intents = EnumSet.of(
                 GatewayIntent.GUILD_MESSAGES,
                 GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS,
                 GatewayIntent.DIRECT_MESSAGES);
+        String activity = plugin.getDiscordConfig().getString("bot-activity", "AstraSMP ✨");
         jda = JDABuilder.createDefault(token, Objects.requireNonNull(intents))
-                .setActivity(net.dv8tion.jda.api.entities.Activity.watching("chetcraft.org ✨"))
+                .setActivity(net.dv8tion.jda.api.entities.Activity.watching(Objects.requireNonNullElse(activity, "AstraSMP ✨")))
                 .addEventListeners(new BridgeListener())
                 .build();
         plugin.getLogger().info("Discord bridge initialization started.");
@@ -96,22 +98,24 @@ public final class DiscordBridge {
     }
 
     public void sendChat(String player, String message) {
-        sendToChannel("discord.chat-channel-id", "💬 `" + player + "` **»** " + message);
+        sendToChannel("chat-channel-id", "💬 `" + player + "` **»** " + message);
     }
 
     public void sendJoinQuitMessage(String player, boolean join) {
         String icon = join ? "🟢" : "🔴";
         String action = join ? "присоединился к игре" : "покинул сервер";
-        sendToChannel("discord.chat-channel-id", "**[ChetCraft]** " + icon + " **" + player + "** " + action + ".");
+        String prefixRaw = plugin.getConfig().getString("messages.prefix", "AstraSMP » ");
+        String prefix = (prefixRaw != null ? prefixRaw.replaceAll("(?i)[&§][0-9a-fk-or]", "") : "AstraSMP » ").trim();
+        sendToChannel("chat-channel-id", "**[" + prefix + "]** " + icon + " **" + player + "** " + action + ".");
     }
 
     public void sendDeathMessage(String player, String reason) {
-        sendToChannel("discord.chat-channel-id", "☠️ **" + player + "** " + reason);
+        sendToChannel("chat-channel-id", "☠️ **" + player + "** " + reason);
     }
 
     public void sendBountyAnnouncement(String targetName, long reward, boolean isCompleted, String killerName) {
         if (!isEnabled() || jda == null) return;
-        String announceChannelId = plugin.getConfig().getString("discord.announce-channel-id", plugin.getConfig().getString("discord.chat-channel-id", ""));
+        String announceChannelId = plugin.getDiscordConfig().getString("announce-channel-id", plugin.getDiscordConfig().getString("chat-channel-id", ""));
         if (announceChannelId == null || announceChannelId.isBlank()) return;
         
         net.dv8tion.jda.api.entities.channel.concrete.TextChannel channel = jda.getTextChannelById(announceChannelId);
@@ -134,7 +138,7 @@ public final class DiscordBridge {
         if (jda == null)
             return;
             
-        String channelId = Objects.requireNonNullElse(plugin.getConfig().getString("discord.chat-channel-id", ""), "");
+        String channelId = Objects.requireNonNullElse(plugin.getDiscordConfig().getString("chat-channel-id", ""), "");
         if (channelId.isBlank())
             return;
             
@@ -143,8 +147,8 @@ public final class DiscordBridge {
         if (channel == null)
             return;
 
-        String roleId = plugin.getConfig().getString("discord.event-role-id", "");
-        String pingId = plugin.getConfig().getString("discord.event-ping-id", "");
+        String roleId = plugin.getDiscordConfig().getString("event-role-id", "");
+        String pingId = plugin.getDiscordConfig().getString("event-ping-id", "");
         String timeMSK = ZonedDateTime.now(ZoneId.of("Europe/Moscow")).format(DateTimeFormatter.ofPattern("HH:mm"));
 
         EmbedBuilder embed = new EmbedBuilder();
@@ -152,9 +156,11 @@ public final class DiscordBridge {
         embed.setDescription("🔥 **Внимание всем игрокам!** 🔥\nНа сервере только что стартовало событие: **"
                 + eventName + "**!\n\n⚔️ Не упустите шанс принять участие и сразиться за уникальные награды.");
         embed.setColor(new Color(0xFF4500)); // OrangeRed
+        String ip = plugin.getDiscordConfig().getString("server-ip", "play.example.com");
+        String footer = plugin.getDiscordConfig().getString("embed-footer", "AstraSMP");
         embed.addField("🕒 Время (МСК)", "`" + timeMSK + "`", true);
-        embed.addField("🎮 Как зайти?", "`IP: chetcraft.org`", true);
-        embed.setFooter("ChetCraft Network • Участвуй и побеждай!");
+        embed.addField("🎮 Как зайти?", "`IP: " + ip + "`", true);
+        embed.setFooter(footer + " • Участвуй и побеждай!");
 
         String mention = roleId.isBlank() ? "" : "<@&" + roleId + "> ";
         if (!pingId.isBlank()) mention += "<@&" + pingId + ">";
@@ -167,14 +173,14 @@ public final class DiscordBridge {
     }
 
     public void sendLog(String message) {
-        sendToChannel("discord.log-channel-id", message);
+        sendToChannel("log-channel-id", message);
     }
             
 
     private void sendToChannel(String key, String message) {
         if (jda == null)
             return;
-        String channelId = Objects.requireNonNullElse(plugin.getConfig().getString(key, ""), "");
+        String channelId = Objects.requireNonNullElse(plugin.getDiscordConfig().getString(key, ""), "");
         if (channelId.isBlank())
             return;
         TextChannel channel = jda.getTextChannelById(channelId);
@@ -185,7 +191,7 @@ public final class DiscordBridge {
     public void createGuildThread(Guild guild) {
         if (jda == null) return;
 
-        String forumChannelId = plugin.getConfig().getString("discord.forum-channel-id", "");
+        String forumChannelId = plugin.getDiscordConfig().getString("forum-channel-id", "");
         if (forumChannelId.isBlank()) {
             plugin.getLogger().warning("discord.forum-channel-id не настроен в config.yml!");
             return;
@@ -212,11 +218,11 @@ public final class DiscordBridge {
                 return;
             }
             
-            String guildId = plugin.getConfig().getString("discord.guild-id", "");
+            String guildId = plugin.getDiscordConfig().getString("guild-id", "");
             if (guildId == null || guildId.isBlank()) return;
             net.dv8tion.jda.api.entities.Guild discordGuild = jda.getGuildById(guildId);
             if (discordGuild == null) return;
-            String leaderRoleId = plugin.getConfig().getString("discord.leader-role-id", "");
+            String leaderRoleId = plugin.getDiscordConfig().getString("leader-role-id", "");
             if (leaderRoleId.isBlank()) return;
             Role leaderRole = discordGuild.getRoleById(leaderRoleId);
 
@@ -277,7 +283,7 @@ public final class DiscordBridge {
 
         sb.append("🛡️ Регистрация Гильдии: ").append(guild.getName()).append("\n\n");
 
-        String adminRoleId = "1493411595089346612";
+        String adminRoleId = plugin.getDiscordConfig().getString("admin-role-id", "1493411595089346612");
         String ping = "<@&" + adminRoleId + ">";
 
         LinkRecord link = plugin.getServices().store().link(guild.getLeader().toString());
@@ -325,7 +331,7 @@ public final class DiscordBridge {
     private boolean isAdmin(Member member) {
         if (member == null)
             return false;
-        String roleId = plugin.getConfig().getString("discord.admin-role-id", "");
+        String roleId = plugin.getDiscordConfig().getString("admin-role-id", "");
         return !roleId.isBlank() && member.getRoles().stream().anyMatch(role -> role.getId().equals(roleId));
     }
 
@@ -343,6 +349,7 @@ public final class DiscordBridge {
                     Commands.slash("player", "Посмотреть статистику игрока")
                             .addOption(OptionType.STRING, "name", "Ник игрока", true),
                     Commands.slash("setup_link_button", "Создать кнопку привязки (только для администраторов)"),
+                    Commands.slash("setup_event_button", "Создать кнопку подписки на ивенты (только для администраторов)"),
                     Commands.slash("profile", "Сгенерировать карточку профиля (свою или чужую)")
                             .addOption(OptionType.USER, "user", "Пользователь", false))
                     .queue(
@@ -353,7 +360,8 @@ public final class DiscordBridge {
         }
 
         private EmbedBuilder baseEmbed() {
-            return new EmbedBuilder().setFooter("ChetCraft Network", null).setTimestamp(java.time.Instant.now());
+            String footer = plugin.getDiscordConfig().getString("embed-footer", "AstraSMP");
+            return new EmbedBuilder().setFooter(footer, null).setTimestamp(java.time.Instant.now());
         }
 
         private byte[] generateProfileImage(PlayerProfile profile, String discordName, String pName) {
@@ -450,7 +458,7 @@ public final class DiscordBridge {
                     match.setVerified(true);
 
                     String linkedRoleId = Objects
-                            .requireNonNullElse(plugin.getConfig().getString("discord.linked-role-id", ""), "");
+                            .requireNonNullElse(plugin.getDiscordConfig().getString("linked-role-id", ""), "");
                     net.dv8tion.jda.api.entities.Guild g = event.getGuild();
                     Member m = event.getMember();
                     if (!linkedRoleId.isBlank() && g != null && m != null) {
@@ -468,8 +476,8 @@ public final class DiscordBridge {
                     if (player != null) {
                         Bukkit.getScheduler().runTask(plugin, () -> {
                             plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.LINK_DISCORD, "", 1);
-                            TextUtil.send(player,
-                                    "&a&lChetCraft &8» &fАккаунт привязан! Роль в Discord и награда выданы.");
+                            String prefix = com.astrasmp.util.TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+                            TextUtil.send(player, prefix + "Аккаунт привязан! Роль в Discord и награда выданы.");
                         });
                     }
 
@@ -507,9 +515,13 @@ public final class DiscordBridge {
                     }
                     String name = nameOption.getAsString();
                                 
-                    OfflinePlayer target = Bukkit.getOfflinePlayer(name);
-                    PlayerProfile profile = plugin.getServices().store().profile(target.getUniqueId().toString(),
-                            target.getName());
+                    String uuidStr = plugin.getServices().plugin().getDatabase().getUuidByName(name);
+                    if (uuidStr == null) {
+                        event.reply("❌ Игрок никогда не заходил на сервер.").setEphemeral(true).queue();
+                        return;
+                    }
+                    java.util.UUID targetUuid = java.util.UUID.fromString(uuidStr);
+                    PlayerProfile profile = plugin.getServices().store().profile(uuidStr, name);
 
                     EmbedBuilder embed = baseEmbed();
                     embed.setTitle("📊 Статистика: " + name);
@@ -520,7 +532,7 @@ public final class DiscordBridge {
                     embed.addField("✨ Event Points", "`" + profile.getEventPoints() + "`", true);
 
                     Guild g = plugin.getServices().guilds() != null
-                            ? plugin.getServices().guilds().getPlayerGuild(target.getUniqueId())
+                            ? plugin.getServices().guilds().getPlayerGuild(targetUuid)
                             : null;
                     embed.addField("🛡️ Гильдия", g != null ? "`" + g.getName() + "`" : "`Нет`", false);
 
@@ -602,21 +614,50 @@ public final class DiscordBridge {
                 
                 case "setup_link_button" -> {
                     if (!isAdmin(event.getMember())) {
-                        event.reply("❌ Недостаточно прав.").setEphemeral(true).queue();
+                        event.reply(java.util.Objects.requireNonNull(plugin.getDiscordConfig().getString("messages.error-perms", "❌ Недостаточно прав."))).setEphemeral(true).queue();
                         return;
                     }
+                    String title = plugin.getDiscordConfig().getString("messages.link-embed.title", "🔗 Привязка Аккаунта");
+                    String desc = plugin.getDiscordConfig().getString("messages.link-embed.description", "Нажмите на кнопку ниже, чтобы привязать свой Minecraft аккаунт к Discord.");
+                    String colorStr = plugin.getDiscordConfig().getString("messages.link-embed.color", "#5865F2");
+                    String btnText = plugin.getDiscordConfig().getString("messages.link-embed.button-text", "Привязать аккаунт");
+
                     EmbedBuilder embed = baseEmbed()
-                        .setTitle("🔗 Привязка Аккаунта")
-                        .setDescription("Нажмите на кнопку ниже, чтобы привязать свой Minecraft аккаунт к Discord.\nВам понадобится код, который можно получить в игре командой `/link`.")
-                        .setColor(new Color(0x5865F2));
+                        .setTitle(title)
+                        .setDescription(desc)
+                        .setColor(java.awt.Color.decode(colorStr != null ? colorStr : "#5865F2"));
                         
                     MessageCreateData msgData = new MessageCreateBuilder()
                         .setEmbeds(embed.build())
-                        .addComponents(ActionRow.of(Button.primary("btn_link_account", "Привязать аккаунт")))
+                        .addComponents(ActionRow.of(Button.primary("btn_link_account", btnText != null ? btnText : "Привязать аккаунт")))
                         .build();
                     event.getChannel().sendMessage(msgData).queue();
                         
-                    event.reply("✅ Кнопка успешно создана!").setEphemeral(true).queue();
+                    event.reply(java.util.Objects.requireNonNull(plugin.getDiscordConfig().getString("messages.success-link", "✅ Кнопка успешно создана!"))).setEphemeral(true).queue();
+                }
+
+                case "setup_event_button" -> {
+                    if (!isAdmin(event.getMember())) {
+                        event.reply(java.util.Objects.requireNonNull(plugin.getDiscordConfig().getString("messages.error-perms", "❌ Недостаточно прав."))).setEphemeral(true).queue();
+                        return;
+                    }
+                    String title = plugin.getDiscordConfig().getString("messages.event-embed.title", "🎉 Уведомления об Ивентах");
+                    String desc = plugin.getDiscordConfig().getString("messages.event-embed.description", "Нажмите на кнопку ниже, чтобы получить роль ивентов!");
+                    String colorStr = plugin.getDiscordConfig().getString("messages.event-embed.color", "#FF4500");
+                    String btnText = plugin.getDiscordConfig().getString("messages.event-embed.button-text", "Получить роль ивентов");
+
+                    EmbedBuilder embed = baseEmbed()
+                        .setTitle(title)
+                        .setDescription(desc)
+                        .setColor(java.awt.Color.decode(colorStr != null ? colorStr : "#FF4500"));
+                        
+                    MessageCreateData msgData = new MessageCreateBuilder()
+                        .setEmbeds(embed.build())
+                        .addComponents(ActionRow.of(Button.success("btn_event_role", btnText != null ? btnText : "Получить роль ивентов")))
+                        .build();
+                    event.getChannel().sendMessage(msgData).queue();
+                        
+                    event.reply(java.util.Objects.requireNonNull(plugin.getDiscordConfig().getString("messages.success-event", "✅ Кнопка ивентов успешно создана!"))).setEphemeral(true).queue();
                 }
             }
         }
@@ -626,7 +667,7 @@ public final class DiscordBridge {
             if (event.getAuthor().isBot())
                 return;
 
-            String chatChannelId = plugin.getConfig().getString("discord.chat-channel-id", "");
+            String chatChannelId = plugin.getDiscordConfig().getString("chat-channel-id", "");
 
             // Ретрансляция сообщений из Discord в игровой чат
             if (event.getChannel().getId().equals(chatChannelId)) {
@@ -654,6 +695,28 @@ public final class DiscordBridge {
                     .build();
 
                 event.replyModal(modal).queue();
+            } else if (event.getComponentId().equals("btn_event_role")) {
+                String roleId = plugin.getDiscordConfig().getString("event-button-role-id", "1493417811765235732");
+                if (roleId.isBlank()) {
+                    event.reply("❌ Роль для ивентов не настроена.").setEphemeral(true).queue();
+                    return;
+                }
+                net.dv8tion.jda.api.entities.Guild g = event.getGuild();
+                Member m = event.getMember();
+                if (g != null && m != null) {
+                    Role role = g.getRoleById(roleId);
+                    if (role != null) {
+                        if (m.getRoles().contains(role)) {
+                            g.removeRoleFromMember(m, role).queue();
+                            event.reply("🔔 Вы отписались от уведомлений об ивентах!").setEphemeral(true).queue();
+                        } else {
+                            g.addRoleToMember(m, role).queue();
+                            event.reply("🔔 Вы подписались на уведомления об ивентах!").setEphemeral(true).queue();
+                        }
+                    } else {
+                        event.reply("❌ Роль не найдена.").setEphemeral(true).queue();
+                    }
+                }
             }
         }
 
@@ -680,7 +743,7 @@ public final class DiscordBridge {
                 match.setVerified(true);
                 plugin.getServices().store().requestSave();
 
-                String linkedRoleId = plugin.getConfig().getString("discord.linked-role-id", "");
+                String linkedRoleId = plugin.getDiscordConfig().getString("linked-role-id", "");
                 net.dv8tion.jda.api.entities.Guild g = event.getGuild();
                 Member m = event.getMember();
                 if (linkedRoleId != null && !linkedRoleId.isBlank() && g != null && m != null) {
@@ -697,7 +760,8 @@ public final class DiscordBridge {
                 if (player != null) {
                     Bukkit.getScheduler().runTask(plugin, () -> {
                         plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.LINK_DISCORD, "", 1);
-                        TextUtil.send(player, "&a&lChetCraft &8» &fАккаунт успешно привязан к Discord через кнопку!");
+                        String prefix = com.astrasmp.util.TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+                        TextUtil.send(player, prefix + "Аккаунт успешно привязан к Discord через кнопку!");
                     });
                 }
 

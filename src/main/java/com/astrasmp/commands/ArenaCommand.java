@@ -36,7 +36,7 @@ public class ArenaCommand implements TabExecutor {
         if (cmd.equals("arena")) {
             List<String> spawns = plugin.getConfig().getStringList("locations.arena");
             if (spawns.isEmpty()) {
-                TextUtil.send(player, "&cЛокации арены не настроены в config.yml!");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_19ce32", "&cЛокации арены не настроены в config.yml!"));
                 return true;
             }
 
@@ -45,13 +45,13 @@ public class ArenaCommand implements TabExecutor {
 
             if (loc != null) {
                 player.teleport(loc);
-                TextUtil.send(player, "&aВы телепортировались на арену! Для выхода используйте /leave");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_ecf6e6", "&aВы телепортировались на арену! Для выхода используйте /leave"));
             } else {
-                TextUtil.send(player, "&cОшибка парсинга локации арены.");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_94af15", "&cОшибка парсинга локации арены."));
             }
         } else if (cmd.equals("leave")) {
             services.afk().teleportToLocation(player, "spawn");
-            TextUtil.send(player, "&aВы покинули арену и были перемещены на спавн.");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_8c33b8", "&aВы покинули арену и были перемещены на спавн."));
         }
 
         return true;

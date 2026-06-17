@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -27,11 +28,19 @@ public final class MenuListener implements Listener {
     private final ServiceManager services;
 
     // --- STATE MACHINE ДЛЯ ВВОДА В ЧАТ ---
-    public enum PromptType { RENAME_RANK, CREATE_RANK, CHANGE_PRIORITY }
+    public enum PromptType { RENAME_RANK, CREATE_RANK, CHANGE_PRIORITY, ECONOMY_SET, CORRUPTION_SET }
     
     public record ChatPrompt(UUID guildId, String rankId, PromptType type) {}
     
     private static final Map<UUID, ChatPrompt> activePrompts = new ConcurrentHashMap<>();
+
+    public static void addPrompt(UUID uuid, ChatPrompt prompt) {
+        activePrompts.put(uuid, prompt);
+    }
+
+    public static void removePrompt(UUID uuid) {
+        activePrompts.remove(uuid);
+    }
 
     public MenuListener(ServiceManager services) {
         this.services = services;
@@ -47,14 +56,37 @@ public final class MenuListener implements Listener {
         event.setCancelled(true);
         
         String input = event.getMessage().trim();
-        Guild guild = services.guilds().getGuilds().get(prompt.guildId());
         
-        if (guild == null || input.equalsIgnoreCase("отмена")) {
-            TextUtil.send(player, "&cДействие отменено.");
+        if (input.equalsIgnoreCase("отмена")) {
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_c66eaf", "&cДействие отменено."));
             return;
         }
 
         Bukkit.getScheduler().runTask(com.astrasmp.AstraSMPPlugin.getInstance(), () -> {
+            if (prompt.type() == PromptType.ECONOMY_SET) {
+                try {
+                    long amount = Long.parseLong(input);
+                    UUID targetUuid = UUID.fromString(prompt.rankId());
+                    String targetName = Bukkit.getOfflinePlayer(targetUuid).getName();
+                    services.economy().setBalance(targetUuid, targetName, amount);
+                    TextUtil.send(player, "&aБаланс игрока &f" + targetName + " &aустановлен на &e" + amount + " ❂");
+                } catch (NumberFormatException e) {
+                    TextUtil.send(player, "&cСумма должна быть числом!");
+                }
+                return;
+            } else if (prompt.type() == PromptType.CORRUPTION_SET) {
+                if (input.equalsIgnoreCase("отмена") || input.equalsIgnoreCase("cancel")) {
+                    TextUtil.send(player, "&cВвод отменен.");
+                    services.gui().openAdminDarkMagic(player);
+                    return;
+                }
+                player.performCommand("admin corruption add " + input);
+                return;
+            }
+
+            Guild guild = services.guilds().getGuilds().get(prompt.guildId());
+            if (guild == null) return;
+
             try {
                 if (prompt.type() == PromptType.RENAME_RANK) {
                     Guild.Rank rank = guild.getRanks().get(prompt.rankId());
@@ -84,10 +116,18 @@ public final class MenuListener implements Listener {
                     services.gui().openRankSettings(player, guild, id); 
                 }
             } catch (NumberFormatException e) {
-                TextUtil.send(player, "&cОшибка: Приоритет должен быть числом!");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_148d04", "&cОшибка: Приоритет должен быть числом!"));
                 services.gui().openGuildRanksList(player, guild);
             }
         });
+    }
+
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        InventoryHolder topHolder = event.getView().getTopInventory().getHolder();
+        if (topHolder instanceof RecipePreviewHolder || topHolder instanceof GuiManager.MenuHolder) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -108,6 +148,8 @@ public final class MenuListener implements Listener {
         if (!(topHolder instanceof GuiManager.MenuHolder holder)) return;
 
         event.setCancelled(true);
+        if (event.getClickedInventory() != event.getView().getTopInventory()) return;
+        
         ItemStack current = event.getCurrentItem();
         if (current == null || current.getType() == Material.AIR) return;
 
@@ -118,7 +160,13 @@ public final class MenuListener implements Listener {
             switch (event.getSlot()) {
                 case 10 -> services.gui().openGuildMembers(player, guild);
                 case 15 -> services.gui().openGuildTreasury(player, guild);
-                case 16 -> services.gui().openGuildRanksList(player, guild); 
+                case 16 -> {
+                    if (!guild.getLeader().equals(player.getUniqueId())) {
+                        TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_416ff9", "&cТолько лидер гильдии может настраивать права!"));
+                        return;
+                    }
+                    services.gui().openGuildRanksList(player, guild); 
+                }
                 case 22 -> services.gui().openMain(player);
             }
             return;
@@ -130,7 +178,7 @@ public final class MenuListener implements Listener {
 
             if (event.getSlot() == 11) { 
                 if (services.economy().getBalance(player.getUniqueId()) < amount) {
-                    TextUtil.send(player, "&cУ вас недостаточно монет!");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_acc6a9", "&cУ вас недостаточно монет!"));
                     return;
                 }
                 services.economy().addBalance(player.getUniqueId(), player.getName(), -amount);
@@ -140,11 +188,11 @@ public final class MenuListener implements Listener {
             }
             else if (event.getSlot() == 15) { 
                 if (!guild.hasPermission(player.getUniqueId(), "guild.bank")) {
-                    TextUtil.send(player, "&cУ вас нет прав снимать деньги!");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_4791b6", "&cУ вас нет прав снимать деньги!"));
                     return;
                 }
                 if (guild.getBalance() < amount) {
-                    TextUtil.send(player, "&cВ казне недостаточно денег!");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_fbf05a", "&cВ казне недостаточно денег!"));
                     return;
                 }
                 guild.setBalance(guild.getBalance() - amount);
@@ -170,7 +218,7 @@ public final class MenuListener implements Listener {
             UUID targetUuid = meta.getOwningPlayer().getUniqueId();
 
             if (guild == null || !guild.hasPermission(player.getUniqueId(), "guild.promote")) {
-                TextUtil.send(player, "&cУ вас нет прав управлять составом!");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_bb790b", "&cУ вас нет прав управлять составом!"));
                 return;
             }
             
@@ -178,7 +226,7 @@ public final class MenuListener implements Listener {
 
             if (event.isShiftClick() && event.isRightClick()) {
                 if (!guild.hasPermission(player.getUniqueId(), "guild.kick")) {
-                    TextUtil.send(player, "&cУ вас нет прав исключать игроков!");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_8083d4", "&cУ вас нет прав исключать игроков!"));
                     return;
                 }
                 services.guilds().kick(guild, targetUuid);
@@ -193,13 +241,20 @@ public final class MenuListener implements Listener {
 
         if (holder.type() == GuiManager.MenuType.GUILD_RANKS_LIST) {
             if (guild == null) return;
+            if (!guild.getLeader().equals(player.getUniqueId())) {
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_f26722", "&cТолько лидер гильдии может управлять рангами!"));
+                player.closeInventory();
+                return;
+            }
+            
             if (event.getSlot() == 49) {
                 services.gui().openGuildMain(player, guild);
             } else if (event.getSlot() == 53) {
                 activePrompts.put(player.getUniqueId(), new ChatPrompt(guild.getId(), null, PromptType.CREATE_RANK));
                 player.closeInventory();
-                TextUtil.send(player, "&eВведите название нового ранга в чат (или 'отмена' для выхода):");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_33729a", "&eВведите название нового ранга в чат (или 'отмена' для выхода):"));
             } else if (current.getType() == Material.IRON_CHESTPLATE) {
+                if (!current.hasItemMeta() || !current.getItemMeta().hasLore()) return;
                 String rawLore = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(current.getItemMeta().lore().get(0));
                 String rankId = rawLore.replace("ID:", "").trim();
                 services.gui().openRankSettings(player, guild, rankId);
@@ -209,6 +264,11 @@ public final class MenuListener implements Listener {
 
         if (holder.type() == GuiManager.MenuType.GUILD_RANK_SETTINGS) {
             if (guild == null) return;
+            if (!guild.getLeader().equals(player.getUniqueId())) {
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_f26722", "&cТолько лидер гильдии может управлять рангами!"));
+                player.closeInventory();
+                return;
+            }
             String rankId = holder.metadata();
             
             if (event.getSlot() == 22) {
@@ -216,11 +276,11 @@ public final class MenuListener implements Listener {
             } else if (event.getSlot() == 10) {
                 activePrompts.put(player.getUniqueId(), new ChatPrompt(guild.getId(), rankId, PromptType.RENAME_RANK));
                 player.closeInventory();
-                TextUtil.send(player, "&eВведите новое название ранга (можно использовать цвета &c&l) или 'отмена':");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_cde61e", "&eВведите новое название ранга (можно использовать цвета &c&l) или 'отмена':"));
             } else if (event.getSlot() == 14) {
                 activePrompts.put(player.getUniqueId(), new ChatPrompt(guild.getId(), rankId, PromptType.CHANGE_PRIORITY));
                 player.closeInventory();
-                TextUtil.send(player, "&eВведите новый приоритет (число, например 50) или 'отмена':");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_5880da", "&eВведите новый приоритет (число, например 50) или 'отмена':"));
             } else if (event.getSlot() == 12) {
                 services.gui().openRankPermissions(player, guild, rankId);
             } else if (event.getSlot() == 16 && event.isShiftClick()) {
@@ -231,7 +291,7 @@ public final class MenuListener implements Listener {
                     }
                 }
                 services.guilds().saveGuildAsync(guild);
-                TextUtil.send(player, "&cРанг был удален.");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_ec03a8", "&cРанг был удален."));
                 services.gui().openGuildRanksList(player, guild);
             }
             return;
@@ -239,6 +299,11 @@ public final class MenuListener implements Listener {
 
         if (holder.type() == GuiManager.MenuType.GUILD_RANK_PERMISSIONS) {
             if (guild == null) return;
+            if (!guild.getLeader().equals(player.getUniqueId())) {
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_f26722", "&cТолько лидер гильдии может управлять рангами!"));
+                player.closeInventory();
+                return;
+            }
             String rankId = holder.metadata();
 
             if (event.getSlot() == 40) {

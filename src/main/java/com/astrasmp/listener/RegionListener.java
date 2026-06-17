@@ -37,7 +37,7 @@ public class RegionListener implements Listener {
             // Если игрок сломал своё ядро
             if (loc.equals(coreLoc)) {
                 if (!playerGuild.getLeader().equals(player.getUniqueId())) {
-                    TextUtil.send(player, "&cТолько лидер может разрушить Сердце Гильдии!");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d6118b", "&cТолько лидер может разрушить Сердце Гильдии!"));
                     event.setCancelled(true);
                     return;
                 }
@@ -47,7 +47,7 @@ public class RegionListener implements Listener {
                 event.setDropItems(false); // Отключаем обычный дроп обсидиана
                 player.getWorld().dropItemNaturally(loc, ItemRegistry.guildHeart());
 
-                TextUtil.send(player, "&cБаза гильдии снята. Приват отключен.");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_7425aa", "&cБаза гильдии снята. Приват отключен."));
                 return;
             }
         }
@@ -81,19 +81,19 @@ public class RegionListener implements Listener {
 
             // Защита от багов
             if (guild == null) {
-                TextUtil.send(player, "&cУ вас нет гильдии!");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_7f0356", "&cУ вас нет гильдии!"));
                 event.setCancelled(true);
                 return;
             }
 
             if (!guild.getLeader().equals(player.getUniqueId())) {
-                TextUtil.send(player, "&cТолько лидер может установить Сердце Гильдии!");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_bb2e75", "&cТолько лидер может установить Сердце Гильдии!"));
                 event.setCancelled(true);
                 return;
             }
 
             if (guild.getCoreLocation() != null) {
-                TextUtil.send(player, "&cУ вашей гильдии уже установлено Сердце! Чтобы перенести его, сломайте старое.");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_a6be90", "&cУ вашей гильдии уже установлено Сердце! Чтобы перенести его, сломайте старое."));
                 event.setCancelled(true);
                 return;
             }
@@ -105,7 +105,7 @@ public class RegionListener implements Listener {
             guild.setCoreLocation(locStr);
             services.guilds().saveGuildAsync(guild); // Сразу пишем в БД
 
-            TextUtil.send(player, "&d&lВы успешно установили базу гильдии!");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_59a1df", "&d&lВы успешно установили базу гильдии!"));
             TextUtil.send(player, "&7Территория в радиусе &e" + guild.getCoreRadius() + " блоков &7теперь под защитой.");
 
             // Эпичный звук при установке

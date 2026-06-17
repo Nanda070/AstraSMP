@@ -24,11 +24,11 @@ public class RtpBlockCommand implements org.bukkit.command.TabExecutor {
         LocationKey key = LocationKey.fromLocation(loc);
         
         if (services.store().getRtpBlocks().add(key)) {
-            TextUtil.send(player, "&aБлок RTP установлен на ваших координатах!");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_7f192c", "&aБлок RTP установлен на ваших координатах!"));
             services.store().requestSave();
         } else {
             services.store().getRtpBlocks().remove(key);
-            TextUtil.send(player, "&eБлок RTP удален.");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_e3fe44", "&eБлок RTP удален."));
             services.store().requestSave();
         }
         return true;

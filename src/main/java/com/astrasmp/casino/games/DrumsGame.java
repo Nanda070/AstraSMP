@@ -210,7 +210,7 @@ public class DrumsGame implements CasinoGame, Listener, InventoryHolder {
             inv.setItem(34, buildItem(Material.DIAMOND, "&a&lВЫИГРЫШ x" + multiplier));
         } else {
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
-            TextUtil.send(player, "&cКомбинация не собрана.");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_6039a2", "&cКомбинация не собрана."));
             inv.setItem(34, buildItem(Material.BARRIER, "&c&lПРОИГРЫШ"));
         }
     }

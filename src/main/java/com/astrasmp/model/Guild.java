@@ -52,10 +52,20 @@ public class Guild {
     }
 
     private void setupDefaultRanks() {
-        ranks.put("leader",  new Rank("leader",  "§4Лидер",      100, new HashSet<>(List.of("*"))));
-        ranks.put("officer", new Rank("officer", "§cОфицер",      80,  new HashSet<>(List.of("guild.invite", "guild.kick", "guild.bank", "guild.home.set"))));
-        ranks.put("member",  new Rank("member",  "§fУчастник",    50,  new HashSet<>(List.of("guild.home"))));
-        ranks.put("recruit", new Rank("recruit", "§7Новобранец",  10,  new HashSet<>()));
+        org.bukkit.configuration.ConfigurationSection section = com.astrasmp.AstraSMPPlugin.getInstance().getConfig().getConfigurationSection("guilds.default-ranks");
+        if (section != null) {
+            for (String key : section.getKeys(false)) {
+                String name = com.astrasmp.util.TextUtil.color(section.getString(key + ".name", key));
+                int priority = section.getInt(key + ".priority", 10);
+                java.util.List<String> permsList = section.getStringList(key + ".permissions");
+                ranks.put(key, new Rank(key, name, priority, new HashSet<>(permsList)));
+            }
+        } else {
+            ranks.put("leader",  new Rank("leader",  "§4Лидер",      100, new HashSet<>(List.of("*"))));
+            ranks.put("officer", new Rank("officer", "§cОфицер",      80,  new HashSet<>(List.of("guild.invite", "guild.kick", "guild.bank", "guild.home.set"))));
+            ranks.put("member",  new Rank("member",  "§fУчастник",    50,  new HashSet<>(List.of("guild.home"))));
+            ranks.put("recruit", new Rank("recruit", "§7Новобранец",  10,  new HashSet<>(List.of("guild.home"))));
+        }
     }
 
     // ── Права ────────────────────────────────────────────────────────────────

@@ -28,18 +28,18 @@ public final class DuelService implements Listener {
 
     public void handleCommand(Player sender, String[] args) {
         if (args.length == 0) {
-            TextUtil.send(sender, "&cИспользование: /duel <ник>");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_cfe1fe", "&cИспользование: /duel <ник>"));
             return;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null || target.equals(sender)) {
-            TextUtil.send(sender, "&cИгрок не найден или вы указали себя!");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_dd992b", "&cИгрок не найден или вы указали себя!"));
             return;
         }
 
         if (activeDuels.containsKey(sender.getUniqueId())) {
-            TextUtil.send(sender, "&cВы уже находитесь в дуэли!");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_254faf", "&cВы уже находитесь в дуэли!"));
             return;
         }
 
@@ -62,15 +62,15 @@ public final class DuelService implements Listener {
         services.afk().teleportToLocation(p1, "duel_pos1");
         services.afk().teleportToLocation(p2, "duel_pos2");
 
-        TextUtil.send(p1, "&c&lБОЙ НАЧАЛСЯ! Убейте противника!");
-        TextUtil.send(p2, "&c&lБОЙ НАЧАЛСЯ! Убейте противника!");
+        TextUtil.send(p1, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_26a2b0", "&c&lБОЙ НАЧАЛСЯ! Убейте противника!"));
+        TextUtil.send(p2, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_26a2b0", "&c&lБОЙ НАЧАЛСЯ! Убейте противника!"));
     }
 
     private void endDuel(Player loser, Player winner) {
         activeDuels.remove(loser.getUniqueId());
         if (winner != null) {
             activeDuels.remove(winner.getUniqueId());
-            TextUtil.send(winner, "&a&lПОБЕДА! &fВы одолели противника.");
+            TextUtil.send(winner, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_5a1aeb", "&a&lПОБЕДА! &fВы одолели противника."));
             services.afk().teleportToLocation(winner, "spawn"); // Тепаем победителя на спавн
         }
     }

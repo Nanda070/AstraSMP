@@ -55,6 +55,20 @@ public final class ArmorMechanicsListener implements Listener {
                 if (hasFullSet(p, "juggernaut_")) {
                     p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 40, 0, false, false, true));
                 }
+
+                // Тотемы в левой руке
+                org.bukkit.inventory.ItemStack offHand = p.getInventory().getItemInOffHand();
+                if (offHand != null && offHand.hasItemMeta()) {
+                    String id = offHand.getItemMeta().getPersistentDataContainer()
+                            .get(new org.bukkit.NamespacedKey("astrasmp", "custom_id"), org.bukkit.persistence.PersistentDataType.STRING);
+                    if (id != null) {
+                        if (id.equals("totemSpeed")) {
+                            p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 40, 1, false, false, true));
+                        } else if (id.equals("totemShield")) {
+                            p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 40, 1, false, false, true));
+                        }
+                    }
+                }
             }
         }, 20L, 20L); // Проверяем каждую секунду
     }
@@ -143,6 +157,11 @@ public final class ArmorMechanicsListener implements Listener {
     // РЫВОК У КЛАССОВ
     // ==========================================
     private final java.util.Map<java.util.UUID, Long> dashCooldowns = new java.util.HashMap<>();
+
+    @org.bukkit.event.EventHandler
+    public void onQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+        dashCooldowns.remove(event.getPlayer().getUniqueId());
+    }
 
     @EventHandler
     public void onInteract(org.bukkit.event.player.PlayerInteractEvent event) {

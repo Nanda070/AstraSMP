@@ -4,7 +4,7 @@ import com.astrasmp.model.PlayerProfile;
 import com.astrasmp.service.ServiceManager;
 import com.astrasmp.util.TextUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
+
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
@@ -19,33 +19,37 @@ public final class BalanceCommand implements org.bukkit.command.TabExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        OfflinePlayer target;
+        java.util.UUID targetUuid;
+        String targetName;
 
         if (args.length == 0) {
             if (!(sender instanceof Player player)) {
-                TextUtil.send(sender, "&cИспользуйте /balance <игрок> из консоли.");
+                TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_06f00f", "&cИспользуйте /balance <игрок> из консоли."));
                 return true;
             }
-            target = player;
+            targetUuid = player.getUniqueId();
+            targetName = player.getName();
         } else {
-            target = Bukkit.getOfflinePlayer(args[0]);
-            if (!target.hasPlayedBefore() && !target.isOnline()) {
-                TextUtil.send(sender, "&cИгрок никогда не заходил на сервер.");
+            targetName = args[0];
+            String uuidStr = services.plugin().getDatabase().getUuidByName(targetName);
+            if (uuidStr == null) {
+                TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_720a57", "&cИгрок никогда не заходил на сервер."));
                 return true;
             }
+            targetUuid = java.util.UUID.fromString(uuidStr);
         }
 
         // Получаем профиль для доступа ко всем валютам
-        PlayerProfile profile = services.economy().profile(target.getUniqueId(), target.getName());
+        PlayerProfile profile = services.economy().profile(targetUuid, targetName);
 
         if (profile == null) {
-            TextUtil.send(sender, "&cОшибка: не удалось загрузить данные игрока.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_0bb183", "&cОшибка: не удалось загрузить данные игрока."));
             return true;
         }
 
         // Красивый вывод баланса
         TextUtil.send(sender, "");
-        TextUtil.send(sender, "&b&lЭкономика &8» &fБаланс игрока &e" + target.getName() + "&f:");
+        TextUtil.send(sender, "&b&lЭкономика &8» &fБаланс игрока &e" + targetName + "&f:");
         TextUtil.send(sender, " &8• &fМонеты: &e" + profile.getCoins() + " ❂");
         TextUtil.send(sender, " &8• &fИвентовые очки: &d" + profile.getEventPoints() + " EP");
         TextUtil.send(sender, "");

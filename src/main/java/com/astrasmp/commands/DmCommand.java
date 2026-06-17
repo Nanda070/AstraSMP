@@ -14,13 +14,13 @@ public final class DmCommand implements org.bukkit.command.TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length < 2) {
-            TextUtil.send(sender, "&cИспользование: /dm <игрок> <сообщение>");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_7eb352", "&cИспользование: /dm <игрок> <сообщение>"));
             return true;
         }
 
         Player target = Bukkit.getPlayerExact(args[0]);
         if (target == null) {
-            TextUtil.send(sender, "&cИгрок не найден.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_426f15", "&cИгрок не найден."));
             return true;
         }
 

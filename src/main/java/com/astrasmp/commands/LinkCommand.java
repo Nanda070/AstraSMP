@@ -20,7 +20,7 @@ public final class LinkCommand implements org.bukkit.command.TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            TextUtil.send(sender, "&cPlayer only.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_a60b9b", "&cPlayer only."));
             return true;
         }
         String code = generate();

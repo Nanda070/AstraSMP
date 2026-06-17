@@ -16,7 +16,7 @@ public final class AuctionCommand implements org.bukkit.command.TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            TextUtil.send(sender, "&cPlayer only.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_a60b9b", "&cPlayer only."));
             return true;
         }
         if (args.length == 0) {
@@ -26,16 +26,16 @@ public final class AuctionCommand implements org.bukkit.command.TabExecutor {
         switch (args[0].toLowerCase()) {
             case "sell" -> {
                 if (args.length < 2) {
-                    TextUtil.send(player, "&c/ah sell <price> [amount]");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_986684", "&c/ah sell <price> [amount]"));
                     return true;
                 }
                 long price;
                 try { price = Long.parseLong(args[1]); } catch (Exception ex) {
-                    TextUtil.send(player, "&cНеверная цена.");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_6beac8", "&cНеверная цена."));
                     return true;
                 }
                 if (player.getInventory().getItemInMainHand() == null || player.getInventory().getItemInMainHand().getType().isAir()) {
-                    TextUtil.send(player, "&cВозьми предмет в руку.");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_efad46", "&cВозьми предмет в руку."));
                     return true;
                 }
                 int amount = player.getInventory().getItemInMainHand().getAmount();
@@ -50,7 +50,7 @@ public final class AuctionCommand implements org.bukkit.command.TabExecutor {
 
                 if (lot == null) {
                     player.getInventory().addItem(stack);
-                    TextUtil.send(player, "&cНе удалось выставить лот.");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_108d80", "&cНе удалось выставить лот."));
                 } else {
                     // --- КВЕСТ №5: Выставить предмет на аукцион ---
                     services.quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.AH_SELL, "", 1);
@@ -60,16 +60,16 @@ public final class AuctionCommand implements org.bukkit.command.TabExecutor {
                 }
             }
             case "buy" -> {
-                if (args.length < 2) { TextUtil.send(player, "&c/ah buy <id>"); return true; }
+                if (args.length < 2) { TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_df3f27", "&c/ah buy <id>")); return true; }
                 long id = Long.parseLong(args[1]);
-                if (!services.auction().buyLot(player, id)) TextUtil.send(player, "&cПокупка не удалась.");
-                else TextUtil.send(player, "&aПредмет куплен.");
+                if (!services.auction().buyLot(player, id)) TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_a9560c", "&cПокупка не удалась."));
+                else TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d67113", "&aПредмет куплен."));
             }
             case "cancel" -> {
-                if (args.length < 2) { TextUtil.send(player, "&c/ah cancel <id>"); return true; }
+                if (args.length < 2) { TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_63da23", "&c/ah cancel <id>")); return true; }
                 long id = Long.parseLong(args[1]);
-                if (!services.auction().cancelLot(player, id)) TextUtil.send(player, "&cОтмена не удалась.");
-                else TextUtil.send(player, "&aЛот возвращён.");
+                if (!services.auction().cancelLot(player, id)) TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_381045", "&cОтмена не удалась."));
+                else TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_155c15", "&aЛот возвращён."));
             }
             case "search" -> services.gui().openAuction(player, 0, args.length >= 2 ? String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length)) : "");
             default -> services.gui().openAuction(player, 0, "");

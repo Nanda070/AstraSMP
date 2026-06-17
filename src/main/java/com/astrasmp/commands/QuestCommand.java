@@ -17,7 +17,7 @@ public final class QuestCommand implements org.bukkit.command.TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) {
-            TextUtil.send(sender, "&cТолько для игроков.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_6c0497", "&cТолько для игроков."));
             return true;
         }
 

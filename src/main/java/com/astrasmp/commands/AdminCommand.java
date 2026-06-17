@@ -8,7 +8,7 @@ import com.astrasmp.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -32,7 +32,7 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
             if (sender instanceof Player player) {
                 services.gui().openAdmin(player);
             } else {
-                TextUtil.send(sender, "&cЭта команда только для игроков. Используйте подкоманды в консоли.");
+                TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_a71d53", "&cЭта команда только для игроков. Используйте подкоманды в консоли."));
             }
             return true;
         }
@@ -40,19 +40,29 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
         switch (args[0].toLowerCase()) {
             case "reload" -> {
                 services.plugin().reloadConfig();
-                TextUtil.send(sender, "&aКонфигурация плагина успешно перезагружена.");
+                TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_f2e644", "&aКонфигурация плагина успешно перезагружена."));
             }
 
             // Управление монетами
             case "setcoins" -> {
                 if (args.length < 3) return usage(sender, "/admin setcoins <игрок> <количество>");
                 try {
-                    OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
+                    String targetName = args[1];
+                    String uuidStr = services.plugin().getDatabase().getUuidByName(targetName);
+                    if (uuidStr == null) {
+                        TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_720a57", "&cИгрок никогда не заходил на сервер."));
+                        return true;
+                    }
+                    java.util.UUID targetUuid = java.util.UUID.fromString(uuidStr);
                     long amount = Long.parseLong(args[2]);
-                    services.economy().setBalance(target.getUniqueId(), target.getName() == null ? args[1] : target.getName(), amount);
-                    TextUtil.send(sender, "&aБаланс игрока &f" + args[1] + " &aизменен на &f" + amount + " &aмонет.");
+                    if (amount < 0) {
+                        TextUtil.send(sender, "&cЗначение не может быть отрицательным.");
+                        return true;
+                    }
+                    services.economy().setBalance(targetUuid, targetName, amount);
+                    TextUtil.send(sender, "&aБаланс игрока &f" + targetName + " &aизменен на &f" + amount + " &aмонет.");
                 } catch (NumberFormatException e) {
-                    TextUtil.send(sender, "&cОшибка: количество должно быть числом.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_7ae596", "&cОшибка: количество должно быть числом."));
                 }
             }
 
@@ -60,9 +70,19 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
             case "setevent" -> {
                 if (args.length < 3) return usage(sender, "/admin setevent <игрок> <количество>");
                 try {
-                    OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
+                    String targetName = args[1];
+                    String uuidStr = services.plugin().getDatabase().getUuidByName(targetName);
+                    if (uuidStr == null) {
+                        TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_720a57", "&cИгрок никогда не заходил на сервер."));
+                        return true;
+                    }
+                    java.util.UUID targetUuid = java.util.UUID.fromString(uuidStr);
                     int amount = Integer.parseInt(args[2]);
-                    PlayerProfile profile = services.economy().profile(target.getUniqueId(), target.getName() == null ? args[1] : target.getName());
+                    if (amount < 0) {
+                        TextUtil.send(sender, "&cЗначение не может быть отрицательным.");
+                        return true;
+                    }
+                    PlayerProfile profile = services.economy().profile(targetUuid, targetName);
 
                     if (profile != null) {
                         profile.setEventPoints(amount);
@@ -70,7 +90,7 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                         TextUtil.send(sender, "&dEvent Points &aигрока &f" + args[1] + " &aизменены на &f" + amount + "&a.");
                     }
                 } catch (NumberFormatException e) {
-                    TextUtil.send(sender, "&cОшибка: количество должно быть целым числом.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_f1139f", "&cОшибка: количество должно быть целым числом."));
                 }
             }
 
@@ -78,7 +98,7 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                 if (args.length < 3) return usage(sender, "/admin give <игрок> <предмет> [количество]");
                 Player target = Bukkit.getPlayerExact(args[1]);
                 if (target == null) {
-                    TextUtil.send(sender, "&cОшибка: игрок должен быть в сети.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_5a1a68", "&cОшибка: игрок должен быть в сети."));
                     return true;
                 }
 
@@ -89,7 +109,7 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
 
                 ItemStack stack = createItem(args[2], amount);
                 if (stack == null) {
-                    TextUtil.send(sender, "&cОшибка: неизвестный ID предмета.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_df4af7", "&cОшибка: неизвестный ID предмета."));
                     return true;
                 }
 
@@ -101,7 +121,7 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                 if (args.length < 3) return usage(sender, "/admin me <игрок> <компонент> [количество]");
                 Player target = Bukkit.getPlayerExact(args[1]);
                 if (target == null) {
-                    TextUtil.send(sender, "&cОшибка: игрок должен быть в сети.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_5a1a68", "&cОшибка: игрок должен быть в сети."));
                     return true;
                 }
 
@@ -112,7 +132,7 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
 
                 ItemStack stack = getMeItem(args[2], amount);
                 if (stack == null) {
-                    TextUtil.send(sender, "&cОшибка: неизвестный компонент ME-сети. Используйте Tab.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_fed092", "&cОшибка: неизвестный компонент ME-сети. Используйте Tab."));
                     return true;
                 }
 
@@ -123,27 +143,31 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
             // Выдача Флакона Крови
             case "giveblood" -> {
                 if (!(sender instanceof Player p)) {
-                    TextUtil.send(sender, "&cКоманду может использовать только игрок.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d379c0", "&cКоманду может использовать только игрок."));
                     return true;
                 }
                 if (args.length < 2) return usage(sender, "/admin giveblood <имя_игрока>");
                 
                 String targetName = args[1];
-                OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
+                String uuidStr = services.plugin().getDatabase().getUuidByName(targetName);
+                if (uuidStr == null) {
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_720a57", "&cИгрок никогда не заходил на сервер."));
+                    return true;
+                }
                 
-                ItemStack bloodVial = ItemRegistry.bloodVial(target.getName() != null ? target.getName() : targetName, target.getUniqueId().toString());
+                ItemStack bloodVial = ItemRegistry.bloodVial(targetName, uuidStr);
                 p.getInventory().addItem(bloodVial);
                 TextUtil.send(p, "&4[Магия] &cВы получили Флакон Крови игрока &f" + targetName + "&c.");
             }
 
             case "npc" -> {
                 if (!(sender instanceof Player p)) {
-                    TextUtil.send(sender, "&cЭту команду может использовать только игрок.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_ce1bf2", "&cЭту команду может использовать только игрок."));
                     return true;
                 }
                 if (args.length < 2) {
-                    TextUtil.send(p, "&cИспользование: /admin npc <1..8>");
-                    TextUtil.send(p, "&75=Гайд, 6=Рулетка, 7=PvP-Рулетка, 8=ИвентШоп");
+                    TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_a270a9", "&cИспользование: /admin npc <1..8>"));
+                    TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_ed6fb5", "&75=Гайд, 6=Рулетка, 7=PvP-Рулетка, 8=ИвентШоп"));
                     return true;
                 }
                 services.shops().spawnNpc(p, args[1]);
@@ -154,11 +178,11 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
 
                 if (args[1].equalsIgnoreCase("stop")) {
                     if (services.events().active() == null) {
-                        TextUtil.send(sender, "&cВ данный момент нет активных ивентов.");
+                        TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_11f0c0", "&cВ данный момент нет активных ивентов."));
                         return true;
                     }
                     services.events().finish();
-                    TextUtil.send(sender, "&aАктивный ивент был принудительно завершен.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_831121", "&aАктивный ивент был принудительно завершен."));
                     return true;
                 }
 
@@ -173,10 +197,10 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                     if (started) {
                         TextUtil.send(sender, "&aИвент &f" + type.name() + " &aуспешно запущен на случайных координатах.");
                     } else {
-                        TextUtil.send(sender, "&cНе удалось запустить ивент (возможно, другой ивент уже идет).");
+                        TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_20e19c", "&cНе удалось запустить ивент (возможно, другой ивент уже идет)."));
                     }
                 } catch (IllegalArgumentException ex) {
-                    TextUtil.send(sender, "&cОшибка: неизвестный тип ивента.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_83ecf9", "&cОшибка: неизвестный тип ивента."));
                 }
             }
 
@@ -192,16 +216,16 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                     meta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(services.plugin(), "award_amount"), org.bukkit.persistence.PersistentDataType.LONG, amount);
                     block.setItemMeta(meta);
                     p.getInventory().addItem(block);
-                    TextUtil.send(p, "&aСекретный блок выдан! Поставьте его, и первый, кто наступит, получит монеты.");
+                    TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d46dcb", "&aСекретный блок выдан! Поставьте его, и первый, кто наступит, получит монеты."));
                 } catch (NumberFormatException e) {
-                    TextUtil.send(sender, "&cОшибка: сумма должна быть числом.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_025e23", "&cОшибка: сумма должна быть числом."));
                 }
             }
 
             // Спавн ивента прямо на координатах админа
             case "spawnevent" -> {
                 if (!(sender instanceof Player p)) {
-                    TextUtil.send(sender, "&cЭту команду может использовать только игрок.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_ce1bf2", "&cЭту команду может использовать только игрок."));
                     return true;
                 }
                 if (args.length < 2) return usage(sender, "/admin spawnevent <meteor|airdrop|boss|chaos|treasure>");
@@ -212,10 +236,10 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                     if (started) {
                         TextUtil.send(p, "&aИвент &f" + type.name() + " &aзапущен прямо на ваших координатах!");
                     } else {
-                        TextUtil.send(p, "&cНе удалось запустить ивент (возможно, другой ивент уже идет).");
+                        TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_20e19c", "&cНе удалось запустить ивент (возможно, другой ивент уже идет)."));
                     }
                 } catch (IllegalArgumentException ex) {
-                    TextUtil.send(p, "&cОшибка: неизвестный тип ивента.");
+                    TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_83ecf9", "&cОшибка: неизвестный тип ивента."));
                 }
             }
 
@@ -226,16 +250,36 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                 String locData = l.getWorld().getName() + ";" + l.getX() + ";" + l.getY() + ";" + l.getZ() + ";" + l.getYaw() + ";" + l.getPitch();
                 services.plugin().getConfig().set("locations.spawn", locData);
                 services.plugin().saveConfig();
-                TextUtil.send(p, "&aТочка спавна успешно установлена!");
+                TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_e25e65", "&aТочка спавна успешно установлена!"));
+            }
+
+            // Установка точек для дуэлей
+            case "setduel" -> {
+                if (!(sender instanceof Player p)) return true;
+                if (args.length < 2 || (!args[1].equals("1") && !args[1].equals("2"))) {
+                    return usage(sender, "/admin setduel <1|2>");
+                }
+                Location l = p.getLocation();
+                String locData = l.getWorld().getName() + ";" + l.getX() + ";" + l.getY() + ";" + l.getZ() + ";" + l.getYaw() + ";" + l.getPitch();
+                String key = "locations.duel_pos" + args[1];
+                services.plugin().getConfig().set(key, locData);
+                services.plugin().saveConfig();
+                TextUtil.send(p, "&aТочка спавна для дуэли #" + args[1] + " успешно установлена!");
             }
 
             // Управление Скверной
             case "corruption" -> {
                 if (args.length < 4) return usage(sender, "/admin corruption <add|set> <игрок> <количество>");
                 try {
-                    OfflinePlayer target = Bukkit.getOfflinePlayer(args[2]);
+                    String targetName = args[2];
+                    String uuidStr = services.plugin().getDatabase().getUuidByName(targetName);
+                    if (uuidStr == null) {
+                        TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_720a57", "&cИгрок никогда не заходил на сервер."));
+                        return true;
+                    }
+                    java.util.UUID targetUuid = java.util.UUID.fromString(uuidStr);
                     int amount = Integer.parseInt(args[3]);
-                    PlayerProfile profile = services.economy().profile(target.getUniqueId(), target.getName() == null ? args[2] : target.getName());
+                    PlayerProfile profile = services.economy().profile(targetUuid, targetName);
                     if (profile != null) {
                         if (args[1].equalsIgnoreCase("add")) {
                             profile.setCorruption(profile.getCorruption() + amount);
@@ -246,24 +290,24 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
                         TextUtil.send(sender, "&5[Скверна] &dУровень скверны игрока &f" + args[2] + " &dтеперь: &f" + profile.getCorruption());
                     }
                 } catch (NumberFormatException e) {
-                    TextUtil.send(sender, "&cОшибка: количество должно быть числом.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_7ae596", "&cОшибка: количество должно быть числом."));
                 }
             }
 
             // Управление Вратами Бездны
             case "rift" -> {
                 if (!(sender instanceof Player p)) {
-                    TextUtil.send(sender, "&cЭту команду может использовать только игрок.");
+                    TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_ce1bf2", "&cЭту команду может использовать только игрок."));
                     return true;
                 }
                 if (args.length < 2) return usage(sender, "/admin rift <spawn>");
                 if (args[1].equalsIgnoreCase("spawn")) {
                     services.rift().createRift(p.getLocation());
-                    TextUtil.send(p, "&4[Врата] &cВрата Бездны открыты на ваших координатах.");
+                    TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_5f5dd2", "&4[Врата] &cВрата Бездны открыты на ваших координатах."));
                 }
             }
 
-            default -> TextUtil.send(sender, "&cНеизвестная подкоманда. Используйте: reload, setcoins, setevent, give, me, event, spawnevent, npc, awardblock, setspawn, corruption, rift.");
+            default -> TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_f731a5", "&cНеизвестная подкоманда. Используйте: reload, setcoins, setevent, give, me, event, spawnevent, npc, awardblock, setspawn, setduel, corruption, rift."));
         }
         return true;
     }
@@ -389,7 +433,7 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
     }
 
     private boolean noPerm(CommandSender sender) {
-        TextUtil.send(sender, "&cУ вас недостаточно прав для выполнения этой команды.");
+        TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_467cb1", "&cУ вас недостаточно прав для выполнения этой команды."));
         return true;
     }
 
@@ -403,7 +447,7 @@ public final class AdminCommand implements org.bukkit.command.TabExecutor {
         if (!sender.isOp()) return List.of();
 
         if (args.length == 1) {
-            return List.of("reload", "setcoins", "setevent", "spawnevent", "give", "giveblood", "me", "event", "npc", "awardblock", "setspawn", "corruption", "rift").stream()
+            return List.of("reload", "setcoins", "setevent", "spawnevent", "give", "giveblood", "me", "event", "npc", "awardblock", "setspawn", "setduel", "corruption", "rift").stream()
                     .filter(s -> s.startsWith(args[0].toLowerCase())).toList();
         }
 

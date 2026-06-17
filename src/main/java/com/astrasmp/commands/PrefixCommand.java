@@ -22,13 +22,13 @@ public class PrefixCommand implements org.bukkit.command.TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (args.length < 3) {
-            TextUtil.send(sender, "&cИспользование: /prefix <игрок> <текст> <цвет>");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_1be08a", "&cИспользование: /prefix <игрок> <текст> <цвет>"));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            TextUtil.send(sender, "&cИгрок не найден.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_426f15", "&cИгрок не найден."));
             return true;
         }
 

@@ -35,7 +35,8 @@ public final class GuiManager {
 
     public enum MenuType {
         MAIN, AUCTION, ITEMS, RECIPE_VIEW, STATS, CONTRACTS, ADMIN, SELL_RESOURCES, SELL_FOOD, SELL_DROPS,
-        ADMIN_PLAYERS, GUILD_UPGRADE, ADMIN_GUILDS, ADMIN_GIVE_ITEMS, GUILD, GUILD_MEMBERS, GUILD_RANKS_LIST, GUILD_RANK_SETTINGS, GUILD_RANK_PERMISSIONS, GUILD_TREASURY, QUESTS, RITUAL_GUIDE, VOODOO_DOLL
+        ADMIN_PLAYERS, GUILD_UPGRADE, ADMIN_GUILDS, ADMIN_GIVE_ITEMS, GUILD, GUILD_MEMBERS, GUILD_RANKS_LIST, GUILD_RANK_SETTINGS, GUILD_RANK_PERMISSIONS, GUILD_TREASURY, QUESTS, RITUAL_GUIDE, VOODOO_DOLL,
+        ADMIN_DARK_MAGIC, ADMIN_EVENTS, ADMIN_ECONOMY, ADMIN_ARENAS
     }
 
     public record MenuHolder(MenuType type, int page, String query, String metadata) implements InventoryHolder {
@@ -66,7 +67,8 @@ public final class GuiManager {
     }
 
     private Component title(String text) {
-        return Component.text(TextUtil.color(plugin.getConfig().getString("gui.title-color", "&8") + text));
+        String translated = AstraSMPPlugin.getInstance().getConfigManager().getMessage("gui.titles." + text.replaceAll("[^a-zA-Z0-9а-яА-Я]+", "_").toLowerCase(), text);
+        return Component.text(TextUtil.color(plugin.getConfig().getString("gui.title-color", "&8") + translated));
     }
 
     private ItemStack button(Material material, String name, String... lore) {
@@ -112,7 +114,8 @@ public final class GuiManager {
         int[] borders = {0,1,7,8,9,17,36,44,45,46,52,53};
         for (int b : borders) inv.setItem(b, decor);
 
-        inv.setItem(4, button(Material.NETHER_STAR, "&e&lChetCraft", "&7Главное меню сервера"));
+        String serverName = services.plugin().getConfig().getString("server.name", "AstraSMP");
+        inv.setItem(4, button(Material.NETHER_STAR, "&e&l" + serverName, "&7Главное меню сервера"));
 
         inv.setItem(19, button(Material.MINECART, "&aЕжедневные Награды", "&7Забирай призы каждый день!"));
         inv.setItem(20, services.quests().createQuestItem(player));
@@ -352,16 +355,63 @@ public final class GuiManager {
 
         inv.setItem(4, button(Material.COMMAND_BLOCK, "&c&lУправление Сервером", "&7Главная панель"));
 
-        inv.setItem(20, button(Material.BEACON,  "&e⚡ Ивенты",          "&7Запуск глобальных ивентов", "&7/admin event <тип>"));
+        inv.setItem(20, button(Material.BEACON,  "&e⚡ Ивенты",          "&7Запуск глобальных ивентов"));
         inv.setItem(21, button(Material.CHEST,           "&6Выдача предметов",   "&7Меню выдачи кастомных вещей"));
-        inv.setItem(22, button(Material.GOLD_BLOCK,      "&aЭкономика",          "&7Управление балансами игроков", "&7/admin setcoins <игрок> <сумма>"));
+        inv.setItem(22, button(Material.GOLD_BLOCK,      "&aЭкономика",          "&7Управление балансами игроков"));
         
-        inv.setItem(29, button(Material.WHITE_BANNER,    "&dГильдии",            "&7Управление гильдиями", "&7/admin guildadmin"));
-        inv.setItem(30, button(Material.DIAMOND_SWORD,   "&cPVP / Арены",        "&7Управление PvP аренами", "&7/admin addduelspawn"));
-        inv.setItem(31, button(Material.CRYING_OBSIDIAN, "&5Темная Магия",       "&7Ритуалы, Скверна и Луна", "&7(Активно)"));
-        inv.setItem(32, button(Material.PLAYER_HEAD,     "&bИгроки",             "&7Модерация: бан, мут, инвентарь", "&7/admin invsee"));
-        inv.setItem(33, button(Material.COMPARATOR,      "&cСистемное",          "&7Перезагрузка конфигов", "&7/admin reload"));
+        inv.setItem(29, button(Material.WHITE_BANNER,    "&dГильдии",            "&7Управление гильдиями"));
+        inv.setItem(30, button(Material.DIAMOND_SWORD,   "&cPVP / Арены",        "&7Управление PvP аренами"));
+        inv.setItem(31, button(Material.CRYING_OBSIDIAN, "&5Темная Магия",       "&7Ритуалы, Скверна и Луна"));
+        inv.setItem(32, button(Material.PLAYER_HEAD,     "&bИгроки",             "&7Модерация: бан, мут, инвентарь"));
+        inv.setItem(33, button(Material.COMPARATOR,      "&cСистемное",          "&7Перезагрузка конфигов"));
 
+        player.openInventory(inv);
+    }
+
+    public void openAdminDarkMagic(Player player) {
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.ADMIN_DARK_MAGIC, 0, "", ""), 36, title("§5Управление Темной Магией"));
+        fill(inv);
+        inv.setItem(11, button(Material.CRIMSON_NYLIUM, "&4Кровавая Луна", "&7Запустить или остановить", "&7Кровавую Луну на сервере"));
+        inv.setItem(13, button(Material.SOUL_SOIL, "&8Управление Скверной", "&7Добавить скверну или", "&7очистить мир"));
+        inv.setItem(15, button(Material.END_PORTAL_FRAME, "&dАстральное Измерение", "&7Открыть разлом в", "&7Астральное измерение"));
+        inv.setItem(31, button(Material.ARROW, "&cНазад в панель"));
+        player.openInventory(inv);
+    }
+
+    public void openAdminEvents(Player player) {
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.ADMIN_EVENTS, 0, "", ""), 36, title("§6Управление Ивентами"));
+        fill(inv);
+        inv.setItem(11, button(Material.CHEST, "&bЗапустить Airdrop", "&7Заспавнить сундук с лутом", "&7в случайном месте"));
+        inv.setItem(13, button(Material.OAK_BOAT, "&eЗапустить Galleon", "&7Заспавнить корабль-призрак"));
+        inv.setItem(15, button(Material.WITHER_SKELETON_SKULL, "&cЗапустить Босса", "&7Заспавнить мирового босса"));
+        inv.setItem(31, button(Material.ARROW, "&cНазад в панель"));
+        player.openInventory(inv);
+    }
+
+    public void openAdminEconomy(Player player) {
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.ADMIN_ECONOMY, 0, "", ""), 54, title("§aЭкономика: Выбор игрока"));
+        fill(inv);
+        int slot = 0;
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (slot >= 45) break;
+            ItemStack icon = button(Material.PLAYER_HEAD, "&f" + p.getName(), "&7Баланс: &e" + services.economy().getBalance(p.getUniqueId()) + " ❂", "", "&eЛКМ &7— Установить баланс");
+            icon.editMeta(meta -> {
+                org.bukkit.inventory.meta.SkullMeta skull = (org.bukkit.inventory.meta.SkullMeta) meta;
+                skull.setOwningPlayer(p);
+                skull.getPersistentDataContainer().set(new org.bukkit.NamespacedKey("astrasmp", "target_uuid"), org.bukkit.persistence.PersistentDataType.STRING, p.getUniqueId().toString());
+            });
+            inv.setItem(slot++, icon);
+        }
+        inv.setItem(49, button(Material.ARROW, "&cНазад в панель"));
+        player.openInventory(inv);
+    }
+
+    public void openAdminArenas(Player player) {
+        Inventory inv = Bukkit.createInventory(new MenuHolder(MenuType.ADMIN_ARENAS, 0, "", ""), 36, title("§cPVP и Арены"));
+        fill(inv);
+        inv.setItem(11, button(Material.IRON_SWORD, "&cУстановить точку дуэли", "&7Игроки будут телепортироваться", "&7сюда при принятии дуэли"));
+        inv.setItem(15, button(Material.BEACON, "&bУстановить Хаб", "&7Установить главную точку", "&7возрождения"));
+        inv.setItem(31, button(Material.ARROW, "&cНазад в панель"));
         player.openInventory(inv);
     }
 
@@ -1073,7 +1123,7 @@ public final class GuiManager {
                     case 31 -> Bukkit.getScheduler().runTask(plugin, () -> {
                         Guild guild = services.guilds().getPlayerGuild(player.getUniqueId());
                         if (guild != null) openGuildMain(player, guild);
-                        else TextUtil.send(player, "&cУ вас нет гильдии! Создайте её: /guild create <название>");
+                        else TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_065684", "&cУ вас нет гильдии! Создайте её: /guild create <название>"));
                     });
                     case 33 -> Bukkit.getScheduler().runTask(plugin, () -> openRitualGuide(player));
                     
@@ -1106,7 +1156,7 @@ public final class GuiManager {
                         player.updateInventory();
                         services.quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.SELL_ITEM, "", 1);
                     } else {
-                        TextUtil.send(player, "&cУ вас нет этого предмета!");
+                        TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_a13c9f", "&cУ вас нет этого предмета!"));
                     }
                 }
             }
@@ -1136,14 +1186,68 @@ public final class GuiManager {
             }
             case ADMIN -> {
                 switch (event.getSlot()) {
-                    case 20 -> { player.closeInventory(); TextUtil.send(player, "&eИспользуйте: &f/admin event <тип> &7или &f/admin spawnevent <тип>"); }
+                    case 20 -> openAdminEvents(player);
                     case 21 -> openAdminItems(player, "Броня");
-                    case 22 -> { player.closeInventory(); TextUtil.send(player, "&eИспользуйте: &f/admin setcoins <игрок> <сумма>"); }
+                    case 22 -> openAdminEconomy(player);
                     case 29 -> openAdminGuilds(player);
-                    case 30 -> { player.closeInventory(); TextUtil.send(player, "&eИспользуйте: &f/admin addduelspawn &7или &f/admin sethub"); }
-                    case 31 -> { player.closeInventory(); TextUtil.send(player, "&5Управление темной магией в разработке."); }
+                    case 30 -> openAdminArenas(player);
+                    case 31 -> openAdminDarkMagic(player);
                     case 32 -> openPlayerList(player, "invsee");
                     case 33 -> { player.performCommand("admin reload"); player.closeInventory(); }
+                }
+            }
+            case ADMIN_DARK_MAGIC -> {
+                if (event.getSlot() == 31) openAdmin(player);
+                else if (event.getSlot() == 11) {
+                    player.performCommand("admin event bloodmoon");
+                    player.closeInventory();
+                }
+                else if (event.getSlot() == 13) {
+                    player.closeInventory();
+                    com.astrasmp.listener.MenuListener.addPrompt(player.getUniqueId(), new com.astrasmp.listener.MenuListener.ChatPrompt(null, null, com.astrasmp.listener.MenuListener.PromptType.CORRUPTION_SET));
+                    TextUtil.send(player, "&eВведите: &f<игрок> <кол-во> &e(Например: Notch 50)");
+                }
+                else if (event.getSlot() == 15) {
+                    player.performCommand("admin rift spawn");
+                    player.closeInventory();
+                }
+            }
+            case ADMIN_EVENTS -> {
+                if (event.getSlot() == 31) openAdmin(player);
+                else if (event.getSlot() == 11) {
+                    player.performCommand("admin spawnevent airdrop");
+                    player.closeInventory();
+                }
+                else if (event.getSlot() == 13) {
+                    player.performCommand("admin spawnevent galleon");
+                    player.closeInventory();
+                }
+                else if (event.getSlot() == 15) {
+                    player.performCommand("admin spawnevent boss");
+                    player.closeInventory();
+                }
+            }
+            case ADMIN_ARENAS -> {
+                if (event.getSlot() == 31) openAdmin(player);
+                else if (event.getSlot() == 11) {
+                    player.closeInventory();
+                    TextUtil.send(player, "&eИспользуйте команду: &f/admin setduel <1|2>");
+                }
+                else if (event.getSlot() == 15) {
+                    player.performCommand("admin setspawn");
+                    player.closeInventory();
+                }
+            }
+            case ADMIN_ECONOMY -> {
+                if (event.getSlot() == 49) openAdmin(player);
+                else if (event.getSlot() < 45 && clicked.getType() == Material.PLAYER_HEAD) {
+                    org.bukkit.inventory.meta.ItemMeta meta = clicked.getItemMeta();
+                    if (meta != null && meta.getPersistentDataContainer().has(new org.bukkit.NamespacedKey("astrasmp", "target_uuid"), org.bukkit.persistence.PersistentDataType.STRING)) {
+                        String targetUuidStr = meta.getPersistentDataContainer().get(new org.bukkit.NamespacedKey("astrasmp", "target_uuid"), org.bukkit.persistence.PersistentDataType.STRING);
+                        player.closeInventory();
+                        com.astrasmp.listener.MenuListener.addPrompt(player.getUniqueId(), new com.astrasmp.listener.MenuListener.ChatPrompt(null, targetUuidStr, com.astrasmp.listener.MenuListener.PromptType.ECONOMY_SET));
+                        TextUtil.send(player, "&eВведите сумму баланса в чат (или 'отмена'):");
+                    }
                 }
             }
             case ADMIN_GIVE_ITEMS -> {
@@ -1165,7 +1269,7 @@ public final class GuiManager {
                     openAdminItems(player, "Ритуалы");
                 } else if (event.getSlot() < 45) {
                     player.getInventory().addItem(clicked.clone());
-                    TextUtil.send(player, "&a&l[!] &aВы выдали себе предмет!");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_27c628", "&a&l[!] &aВы выдали себе предмет!"));
                     player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
                 }
             }
@@ -1197,7 +1301,7 @@ public final class GuiManager {
                 else if (event.getSlot() < 45) {
                     long id = extractLotId(clicked);
                     if (id > 0 && auction.buyLot(player, id)) {
-                        TextUtil.send(player, "&aУспешная покупка!");
+                        TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_8b1177", "&aУспешная покупка!"));
                         openAuction(player, holder.page(), holder.query());
                     }
                 }
@@ -1223,15 +1327,17 @@ public final class GuiManager {
                     if (meta != null && meta.getPersistentDataContainer().has(targetNameKey, PersistentDataType.STRING)) {
                         String targetName = meta.getPersistentDataContainer().get(targetNameKey, PersistentDataType.STRING);
                         if (targetName != null) {
+                            String uuidStr = services.plugin().getDatabase().getUuidByName(targetName);
+                            if (uuidStr == null) return true;
+                            UUID targetUuid = UUID.fromString(uuidStr);
+
                             if (event.isShiftClick() && event.isRightClick()) {
                                 services.gui().openGuildMembers(player, guild);
                                 player.closeInventory();
                             } else if (event.isLeftClick()) {
-                                UUID targetUuid = Bukkit.getOfflinePlayer(targetName).getUniqueId();
                                 services.guilds().promote(guild, targetUuid);
                                 player.closeInventory();
                             } else if (event.isRightClick()) {
-                                UUID targetUuid = Bukkit.getOfflinePlayer(targetName).getUniqueId();
                                 services.guilds().demote(guild, targetUuid);
                                 player.closeInventory();
                             }
@@ -1261,7 +1367,7 @@ public final class GuiManager {
                 } else if (event.getSlot() == 16) {
                     // Снять
                     if (!guild.hasPermission(player.getUniqueId(), "guild.bank")) {
-                        TextUtil.send(player, "&cУ вас нет прав снимать деньги из казны!");
+                        TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_7d2932", "&cУ вас нет прав снимать деньги из казны!"));
                         return true;
                     }
                     if (guild.getBalance() < amount) {
@@ -1321,7 +1427,7 @@ public final class GuiManager {
                         + " &7| XP: &f" + targetGuild.getXp() + "/" + targetGuild.getXpForNextLevel());
                     TextUtil.send(player, "&7Казна: &a" + targetGuild.getBalance() + " ❂");
                     TextUtil.send(player, "&7Участников: &f" + targetGuild.getMembers().size());
-                    TextUtil.send(player, "&7Команды: &8/admin guildlevel <id> <уровень>");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_c63559", "&7Команды: &8/admin guildlevel <id> <уровень>"));
                 }
                 return true;
             }
@@ -1333,7 +1439,8 @@ public final class GuiManager {
                     openGuildMain(player, guild);
                 } else if (event.getSlot() == 53) {
                     player.closeInventory();
-                    TextUtil.send(player, "&eВведите команду: /guild rank create <название>");
+                    com.astrasmp.listener.MenuListener.addPrompt(player.getUniqueId(), new com.astrasmp.listener.MenuListener.ChatPrompt(guild.getId(), null, com.astrasmp.listener.MenuListener.PromptType.CREATE_RANK));
+                    TextUtil.send(player, "&eВведите название нового ранга в чат (или 'отмена'):");
                 } else if (event.getSlot() < 45 && clicked.getType() != Material.NETHER_STAR) {
                     ItemMeta meta = clicked.getItemMeta();
                     if (meta != null && meta.getPersistentDataContainer().has(rankIdKey, PersistentDataType.STRING)) {
@@ -1352,12 +1459,14 @@ public final class GuiManager {
                 switch (event.getSlot()) {
                     case 10 -> {
                         player.closeInventory();
-                        TextUtil.send(player, "&eИспользуйте команду: /guild rank rename " + rankId + " <имя>");
+                        com.astrasmp.listener.MenuListener.addPrompt(player.getUniqueId(), new com.astrasmp.listener.MenuListener.ChatPrompt(guild.getId(), rankId, com.astrasmp.listener.MenuListener.PromptType.RENAME_RANK));
+                        TextUtil.send(player, "&eВведите новое имя для ранга в чат (или 'отмена'):");
                     }
                     case 12 -> openRankPermissions(player, guild, rankId);
                     case 14 -> {
                         player.closeInventory();
-                        TextUtil.send(player, "&eИспользуйте команду: /guild rank setweight " + rankId + " <вес>");
+                        com.astrasmp.listener.MenuListener.addPrompt(player.getUniqueId(), new com.astrasmp.listener.MenuListener.ChatPrompt(guild.getId(), rankId, com.astrasmp.listener.MenuListener.PromptType.CHANGE_PRIORITY));
+                        TextUtil.send(player, "&eВведите новый приоритет (число) в чат (или 'отмена'):");
                     }
                     case 16 -> {
                         if (event.isShiftClick() && event.isLeftClick()) {
@@ -1396,6 +1505,44 @@ public final class GuiManager {
                     return true;
                 }
 
+                org.bukkit.NamespacedKey usesKey = new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "voodoo_uses");
+                org.bukkit.NamespacedKey targetKey = new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "voodoo_target_uuid");
+                
+                boolean foundDoll = false;
+                for (int i = 0; i < player.getInventory().getSize(); i++) {
+                    ItemStack item = player.getInventory().getItem(i);
+                    if (item != null && item.hasItemMeta()) {
+                        org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+                        org.bukkit.persistence.PersistentDataContainer data = meta.getPersistentDataContainer();
+                        if (data.has(usesKey, org.bukkit.persistence.PersistentDataType.INTEGER) && data.has(targetKey, org.bukkit.persistence.PersistentDataType.STRING)) {
+                            String uuidStr = data.get(targetKey, org.bukkit.persistence.PersistentDataType.STRING);
+                            if (targetUuid.equals(uuidStr)) {
+                                foundDoll = true;
+                                int uses = data.get(usesKey, org.bukkit.persistence.PersistentDataType.INTEGER);
+                                if (uses <= 1) {
+                                    player.getInventory().setItem(i, null);
+                                    player.sendMessage("§c[Вуду] Кукла рассыпалась в прах.");
+                                } else {
+                                    data.set(usesKey, org.bukkit.persistence.PersistentDataType.INTEGER, uses - 1);
+                                    List<Component> lore = meta.lore();
+                                    if (lore != null && lore.size() > 2) {
+                                        lore.set(2, Component.text(TextUtil.color("&cПрочность: " + (uses - 1) + "/3")));
+                                        meta.lore(lore);
+                                    }
+                                    item.setItemMeta(meta);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!foundDoll) {
+                    player.sendMessage("§c[Вуду] Кукла не найдена в инвентаре!");
+                    player.closeInventory();
+                    return true;
+                }
+
                 if (event.getSlot() == 11) { // Укол
                     target.damage(8.5); // +40% (было 6.0)
                     target.sendMessage("§4[Вуду] §cНевидимая игла пронзила вашу плоть!");
@@ -1415,30 +1562,6 @@ public final class GuiManager {
                 
                 player.getWorld().playSound(player.getLocation(), Sound.ENTITY_WITCH_CELEBRATE, 1f, 0.5f);
                 target.getWorld().playSound(target.getLocation(), Sound.ENTITY_GHAST_HURT, 1f, 0.5f);
-
-                // Уменьшаем прочность куклы Вуду
-                ItemStack doll = player.getInventory().getItemInMainHand();
-                if (doll != null && doll.getItemMeta() != null) {
-                    org.bukkit.inventory.meta.ItemMeta meta = doll.getItemMeta();
-                    org.bukkit.persistence.PersistentDataContainer data = meta.getPersistentDataContainer();
-                    org.bukkit.NamespacedKey usesKey = new org.bukkit.NamespacedKey(com.astrasmp.AstraSMPPlugin.getInstance(), "voodoo_uses");
-                    if (data.has(usesKey, org.bukkit.persistence.PersistentDataType.INTEGER)) {
-                        int uses = data.get(usesKey, org.bukkit.persistence.PersistentDataType.INTEGER);
-                        if (uses <= 1) {
-                            player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                            player.sendMessage("§c[Вуду] Кукла рассыпалась в прах.");
-                            player.closeInventory();
-                        } else {
-                            data.set(usesKey, org.bukkit.persistence.PersistentDataType.INTEGER, uses - 1);
-                            List<Component> lore = meta.lore();
-                            if (lore != null) {
-                                lore.set(2, Component.text(TextUtil.color("&cПрочность: " + (uses - 1) + "/3")));
-                                meta.lore(lore);
-                            }
-                            doll.setItemMeta(meta);
-                        }
-                    }
-                }
                 player.closeInventory();
             }
             default -> {}

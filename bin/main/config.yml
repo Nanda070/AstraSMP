@@ -19,19 +19,6 @@ storage:
     password: "+rGV80M.dB63FuuYLVX.ytw5"
     pool-size: 8
 
-discord:
-  enabled: true
-  token: "MTQ5MzA4MTU4NjY5Mjc4NDEyOA.GC6Eyu.artmt-_zWsYFJ2oHnr_-6VQb-Skv2VwMqNQEnA"
-  guild-id: "1324239354154975252"
-  chat-channel-id: "1493114039163818127"
-  log-channel-id: "1493114225747558522"
-  control-channel-id: "1493114039163818127"
-  linked-role-id: "1493411583743885523"
-  admin-role-id: "1493411595089346612"
-  leader-role-id: "1508625935409086644"
-  forum-channel-id: "1508625325985108170"
-  event-ping-id: "1493417811765235732"
-  prefix: "!as"
 
 economy:
   prices:
@@ -160,3 +147,29 @@ rewards:
   monthly-items:
     - "NETHERITE_INGOT:1"
     - "ENCHANTED_GOLDEN_APPLE:2"
+
+guilds:
+  default-ranks:
+    leader:
+      name: "&4Лидер"
+      priority: 100
+      permissions:
+        - "*"
+    officer:
+      name: "&cОфицер"
+      priority: 80
+      permissions:
+        - "guild.invite"
+        - "guild.kick"
+        - "guild.bank"
+        - "guild.home.set"
+    member:
+      name: "&fУчастник"
+      priority: 50
+      permissions:
+        - "guild.home"
+    recruit:
+      name: "&7Новобранец"
+      priority: 10
+      permissions:
+        - "guild.home"

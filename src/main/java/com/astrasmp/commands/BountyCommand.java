@@ -36,18 +36,18 @@ public class BountyCommand implements CommandExecutor {
         }
 
         if (args.length < 2) {
-            TextUtil.send(player, "&cИспользование: /bounty <игрок> <сумма>");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_5945fa", "&cИспользование: /bounty <игрок> <сумма>"));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            TextUtil.send(player, "&cИгрок не найден или не в сети!");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_ad54b4", "&cИгрок не найден или не в сети!"));
             return true;
         }
         
         if (target.equals(player)) {
-            TextUtil.send(player, "&cВы не можете объявить охоту на самого себя!");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_eaff94", "&cВы не можете объявить охоту на самого себя!"));
             return true;
         }
 
@@ -55,12 +55,12 @@ public class BountyCommand implements CommandExecutor {
         try {
             reward = Long.parseLong(args[1]);
         } catch (NumberFormatException e) {
-            TextUtil.send(player, "&cСумма должна быть числом!");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_68a06f", "&cСумма должна быть числом!"));
             return true;
         }
 
         if (reward < 1000) {
-            TextUtil.send(player, "&cМинимальная награда: 1,000 ❂");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_1388b4", "&cМинимальная награда: 1,000 ❂"));
             return true;
         }
 
@@ -75,7 +75,7 @@ public class BountyCommand implements CommandExecutor {
 
         ContractRecord record = services.contracts().createBounty(player, target, reward, "Bounty created via /bounty");
         if (record == null) {
-            TextUtil.send(player, "&cПроизошла ошибка при создании заказа.");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_bc81e5", "&cПроизошла ошибка при создании заказа."));
             return true;
         }
 

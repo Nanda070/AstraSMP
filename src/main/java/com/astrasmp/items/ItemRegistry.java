@@ -88,6 +88,15 @@ public final class ItemRegistry {
 
     @SuppressWarnings("deprecation")
     public static ItemStack build(String id, Material material, String name, List<String> lore, int customModelData, boolean glowing) {
+        org.bukkit.configuration.file.FileConfiguration cfg = AstraSMPPlugin.getInstance().getConfigManager().getConfig("items.yml");
+        if (cfg != null) {
+            name = TextUtil.color(cfg.getString(id + ".name", name));
+            List<String> cfgLore = cfg.getStringList(id + ".lore");
+            if (cfgLore != null && !cfgLore.isEmpty()) {
+                lore = TextUtil.colorList(cfgLore);
+            }
+        }
+
         ItemStack stack = new ItemStack(material);
         ItemMeta meta = stack.getItemMeta();
         if (meta == null) return stack;

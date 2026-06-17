@@ -144,7 +144,7 @@ public class BlacksmithGui implements Listener {
 
             int currentLevel = ItemRegistry.getUpgradeLevel(target);
             if (currentLevel >= 5) {
-                TextUtil.send(player, "&cЭтот артефакт уже максимального уровня!");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_279ba6", "&cЭтот артефакт уже максимального уровня!"));
                 return;
             }
 
@@ -158,13 +158,13 @@ public class BlacksmithGui implements Listener {
             PlayerProfile profile = services.economy().profile(player.getUniqueId(), player.getName());
 
             if (profile.getCoins() < coinsCost) {
-                TextUtil.send(player, "&cНедостаточно монет!");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_7c7c2a", "&cНедостаточно монет!"));
                 player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
                 return;
             }
 
             if (profile.getEventPoints() < epCost) {
-                TextUtil.send(player, "&cНедостаточно очков ивента (EP)!");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_e52dd5", "&cНедостаточно очков ивента (EP)!"));
                 player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
                 return;
             }
@@ -185,12 +185,12 @@ public class BlacksmithGui implements Listener {
                 // Success
                 ItemRegistry.setUpgradeLevel(target, nextLevel);
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1, 1);
-                TextUtil.send(player, "&aУлучшение прошло успешно! Ваше оружие стало сильнее.");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d34df0", "&aУлучшение прошло успешно! Ваше оружие стало сильнее."));
                 updateButton(event.getInventory(), target);
             } else {
                 // Fail
                 player.playSound(player.getLocation(), Sound.BLOCK_GLASS_BREAK, 1, 1);
-                TextUtil.send(player, "&cЗаточка не удалась... Вы потеряли ресурсы, но артефакт цел.");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_9c101c", "&cЗаточка не удалась... Вы потеряли ресурсы, но артефакт цел."));
             }
         }
     }

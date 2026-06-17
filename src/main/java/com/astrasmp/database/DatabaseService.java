@@ -217,6 +217,108 @@ public class DatabaseService {
         }
     }
 
+    // --- БЕЗОПАСНОЕ ИЗВЛЕЧЕНИЕ ДАННЫХ ---
+    private String getStringSafe(ResultSet rs, String column, String def) {
+        try { return rs.getString(column); } catch (SQLException e) { return def; }
+    }
+    private int getIntSafe(ResultSet rs, String column, int def) {
+        try { return rs.getInt(column); } catch (SQLException e) { return def; }
+    }
+    private long getLongSafe(ResultSet rs, String column, long def) {
+        try { return rs.getLong(column); } catch (SQLException e) { return def; }
+    }
+    private boolean getBooleanSafe(ResultSet rs, String column, boolean def) {
+        try { return rs.getBoolean(column); } catch (SQLException e) { return def; }
+    }
+
+    private PlayerProfile parseProfile(ResultSet rs) throws SQLException {
+        PlayerProfile p = new PlayerProfile(
+                rs.getString("uuid"), getStringSafe(rs, "name", "Unknown"), getLongSafe(rs, "coins", 0L), getIntSafe(rs, "mmr", 50),
+                getIntSafe(rs, "kills", 0), getIntSafe(rs, "deaths", 0), getLongSafe(rs, "sold_value", 0L), getIntSafe(rs, "event_points", 0),
+                getStringSafe(rs, "faction", ""), getIntSafe(rs, "base_level", 1)
+        );
+        p.setQuestStep(getIntSafe(rs, "quest_step", 1));
+        p.setQuestProgress(getIntSafe(rs, "quest_progress", 0));
+        p.setCustomPrefix(getStringSafe(rs, "prefix", ""));
+        p.setPrefixColor(getStringSafe(rs, "prefix_color", ""));
+        
+        String dailyQuestsJson = getStringSafe(rs, "daily_quests", null);
+        if (dailyQuestsJson != null && !dailyQuestsJson.isEmpty()) {
+            try {
+                Type mapType = new TypeToken<Map<String, Integer>>(){}.getType();
+                Map<String, Integer> dQuests = gson.fromJson(dailyQuestsJson, mapType);
+                if (dQuests != null) {
+                    p.getDailyQuests().putAll(dQuests);
+                }
+            } catch (Exception e) {
+                plugin.getLogger().warning("Ошибка парсинга ежедневных квестов для " + p.getName());
+            }
+        }
+        String dDate = getStringSafe(rs, "daily_quest_date", null);
+        if (dDate != null) p.setDailyQuestDate(dDate);
+
+        p.setLoginStreak(getIntSafe(rs, "login_streak", 0));
+        String lastLogin = getStringSafe(rs, "last_login_date", null);
+        if (lastLogin != null) p.setLastLoginDate(lastLogin);
+        
+        int rewardDay = getIntSafe(rs, "daily_reward_day", 1);
+        if (rewardDay > 0) p.setDailyRewardDay(rewardDay);
+
+        String talentsJson = getStringSafe(rs, "talents", null);
+        if (talentsJson != null && !talentsJson.isEmpty()) {
+            try {
+                Type mapType = new TypeToken<Map<String, Integer>>(){}.getType();
+                Map<String, Integer> tMap = gson.fromJson(talentsJson, mapType);
+                if (tMap != null) {
+                    p.getTalents().putAll(tMap);
+                }
+            } catch (Exception e) {
+                plugin.getLogger().warning("Ошибка парсинга талантов для " + p.getName());
+            }
+        }
+
+        p.setCorruption(getIntSafe(rs, "corruption", 0));
+        String pactType = getStringSafe(rs, "pact_type", null);
+        if (pactType != null && !pactType.isEmpty()) {
+            p.setPactType(pactType);
+        } else if (getBooleanSafe(rs, "has_pact", false)) {
+            p.setPactType("BLOOD");
+        }
+        
+        p.setDirty(false); // Only when loaded from DB it's not dirty
+        return p;
+    }
+
+    public PlayerProfile loadProfile(String uuid) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM profiles WHERE uuid = ?")) {
+            ps.setString(1, uuid);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return parseProfile(rs);
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "Ошибка загрузки профиля из БД", e);
+        }
+        return null;
+    }
+
+    public String getUuidByName(String name) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT uuid FROM profiles WHERE LOWER(name) = LOWER(?) LIMIT 1")) {
+            ps.setString(1, name);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("uuid");
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "Ошибка при поиске UUID по нику", e);
+        }
+        return null;
+    }
+
     // --- ПРОФИЛИ ИГРОКОВ ---
     public List<PlayerProfile> loadAllProfiles() {
         List<PlayerProfile> loaded = new ArrayList<>();
@@ -224,67 +326,7 @@ public class DatabaseService {
              Statement s = conn.createStatement();
              ResultSet rs = s.executeQuery("SELECT * FROM profiles")) {
             while (rs.next()) {
-                PlayerProfile p = new PlayerProfile(
-                        rs.getString("uuid"), rs.getString("name"), rs.getLong("coins"), rs.getInt("mmr"),
-                        rs.getInt("kills"), rs.getInt("deaths"), rs.getLong("sold_value"), rs.getInt("event_points"),
-                        rs.getString("faction"), rs.getInt("base_level")
-                );
-                p.setQuestStep(rs.getInt("quest_step"));
-                p.setQuestProgress(rs.getInt("quest_progress"));
-                p.setCustomPrefix(rs.getString("prefix"));
-                p.setPrefixColor(rs.getString("prefix_color"));
-                
-                String dailyQuestsJson = rs.getString("daily_quests");
-                if (dailyQuestsJson != null && !dailyQuestsJson.isEmpty()) {
-                    try {
-                        Type mapType = new TypeToken<Map<String, Integer>>(){}.getType();
-                        Map<String, Integer> dQuests = gson.fromJson(dailyQuestsJson, mapType);
-                        if (dQuests != null) {
-                            p.getDailyQuests().putAll(dQuests);
-                        }
-                    } catch (Exception e) {
-                        plugin.getLogger().warning("Ошибка парсинга ежедневных квестов для " + p.getName());
-                    }
-                }
-                String dDate = rs.getString("daily_quest_date");
-                if (dDate != null) p.setDailyQuestDate(dDate);
-
-                p.setLoginStreak(rs.getInt("login_streak"));
-                String lastLogin = rs.getString("last_login_date");
-                if (lastLogin != null) p.setLastLoginDate(lastLogin);
-                
-                int rewardDay = rs.getInt("daily_reward_day");
-                if (rewardDay > 0) p.setDailyRewardDay(rewardDay);
-
-                String talentsJson = rs.getString("talents");
-                if (talentsJson != null && !talentsJson.isEmpty()) {
-                    try {
-                        Type mapType = new TypeToken<Map<String, Integer>>(){}.getType();
-                        Map<String, Integer> tMap = gson.fromJson(talentsJson, mapType);
-                        if (tMap != null) {
-                            p.getTalents().putAll(tMap);
-                        }
-                    } catch (Exception e) {
-                        plugin.getLogger().warning("Ошибка парсинга талантов для " + p.getName());
-                    }
-                }
-
-                p.setCorruption(rs.getInt("corruption"));
-                try {
-                    String pactType = rs.getString("pact_type");
-                    if (pactType != null && !pactType.isEmpty()) {
-                        p.setPactType(pactType);
-                    }
-                } catch (SQLException ignored) {
-                    // Fallback for old DBs with has_pact boolean column
-                    try {
-                        if (rs.getBoolean("has_pact")) {
-                            p.setPactType("BLOOD");
-                        }
-                    } catch (SQLException ignored2) {}
-                }
-
-                loaded.add(p);
+                loaded.add(parseProfile(rs));
             }
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "Ошибка загрузки профилей из БД", e);
@@ -335,11 +377,11 @@ public class DatabaseService {
                 loaded.add(new AuctionLot(
                         rs.getLong("id"),
                         rs.getString("seller_uuid"),
-                        ItemSerializer.fromBase64(rs.getString("item")),
-                        rs.getLong("price"),
-                        rs.getLong("created_at"),
-                        rs.getLong("expires_at"),
-                        rs.getBoolean("sold")
+                        ItemSerializer.fromBase64(getStringSafe(rs, "item", "")),
+                        getLongSafe(rs, "price", 0L),
+                        getLongSafe(rs, "created_at", 0L),
+                        getLongSafe(rs, "expires_at", 0L),
+                        getBooleanSafe(rs, "sold", false)
                 ));
             }
         } catch (SQLException e) {
@@ -375,11 +417,11 @@ public class DatabaseService {
                         rs.getLong("id"),
                         rs.getString("creator_uuid"),
                         rs.getString("target_uuid"),
-                        rs.getLong("reward"),
-                        rs.getString("type"),
-                        rs.getString("note"),
-                        rs.getBoolean("active"),
-                        rs.getLong("created_at")
+                        getLongSafe(rs, "reward", 0L),
+                        getStringSafe(rs, "type", "UNKNOWN"),
+                        getStringSafe(rs, "note", ""),
+                        getBooleanSafe(rs, "active", false),
+                        getLongSafe(rs, "created_at", 0L)
                 ));
             }
         } catch (SQLException e) {
@@ -414,18 +456,18 @@ public class DatabaseService {
 
             while (rs.next()) {
                 UUID id = UUID.fromString(rs.getString("id"));
-                String name = rs.getString("name");
+                String name = getStringSafe(rs, "name", "Unknown Guild");
                 UUID leader = UUID.fromString(rs.getString("leader"));
 
                 Guild guild = new Guild(id, name, leader);
-                guild.setBalance(rs.getLong("balance"));
-                guild.setLevel(rs.getInt("level"));
-                guild.setXp(rs.getLong("xp"));
-                guild.setHomeLocation(rs.getString("home_location"));
-                guild.setForumThreadId(rs.getString("forum_thread_id")); 
+                guild.setBalance(getLongSafe(rs, "balance", 0L));
+                guild.setLevel(getIntSafe(rs, "level", 1));
+                guild.setXp(getLongSafe(rs, "xp", 0L));
+                guild.setHomeLocation(getStringSafe(rs, "home_location", null));
+                guild.setForumThreadId(getStringSafe(rs, "forum_thread_id", null)); 
 
                 // Десериализация кастомных рангов
-                String permsJson = rs.getString("permissions");
+                String permsJson = getStringSafe(rs, "permissions", null);
                 if (permsJson != null && permsJson.startsWith("{")) {
                     try {
                         Type rankType = new TypeToken<Map<String, Guild.Rank>>(){}.getType();
@@ -551,7 +593,7 @@ public class DatabaseService {
                 UUID id = UUID.fromString(rs.getString("id"));
                 UUID owner = UUID.fromString(rs.getString("owner"));
                 MENetwork net = new MENetwork(id, owner);
-                net.setMaxCapacity(rs.getLong("capacity"));
+                net.setMaxCapacity(getLongSafe(rs, "capacity", 0L));
                 networks.add(net);
             }
             
@@ -665,7 +707,7 @@ public class DatabaseService {
                 int x = rs.getInt("x");
                 int y = rs.getInt("y");
                 int z = rs.getInt("z");
-                int amount = rs.getInt("amount");
+                int amount = getIntSafe(rs, "amount", 0);
                 org.bukkit.World world = org.bukkit.Bukkit.getWorld(worldName);
                 if (world != null) {
                     tanks.put(new org.bukkit.Location(world, x, y, z), amount);

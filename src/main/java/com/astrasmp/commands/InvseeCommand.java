@@ -12,17 +12,17 @@ public class InvseeCommand implements org.bukkit.command.TabExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player admin)) return true;
         if (!admin.isOp()) {
-            TextUtil.send(admin, "&cУ вас нет прав!");
+            TextUtil.send(admin, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_9d10f8", "&cУ вас нет прав!"));
             return true;
         }
         if (args.length < 1) {
-            TextUtil.send(admin, "&eИспользование: &f/invsee <ник>");
+            TextUtil.send(admin, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_c87fa1", "&eИспользование: &f/invsee <ник>"));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            TextUtil.send(admin, "&cИгрок не найден или оффлайн!");
+            TextUtil.send(admin, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_2c5110", "&cИгрок не найден или оффлайн!"));
             return true;
         }
 

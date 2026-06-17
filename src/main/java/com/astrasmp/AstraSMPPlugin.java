@@ -7,15 +7,8 @@ import com.astrasmp.items.ItemRegistry;
 import com.astrasmp.listener.*;
 import com.astrasmp.service.RecipeService;
 import com.astrasmp.service.ServiceManager;
-import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 public final class AstraSMPPlugin extends JavaPlugin {
 
@@ -23,6 +16,8 @@ public final class AstraSMPPlugin extends JavaPlugin {
 
     private ServiceManager services;
     private DatabaseService database;
+
+    private com.astrasmp.config.ConfigManager configManager;
 
     @Override
     public org.bukkit.generator.ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
@@ -36,10 +31,15 @@ public final class AstraSMPPlugin extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
+        if (!getDataFolder().exists()) {
+            getDataFolder().mkdirs();
+        }
+
+        configManager = new com.astrasmp.config.ConfigManager(this);
+        configManager.setup();
+
         ItemRegistry.init(this);
 
-        saveDefaultConfig();
-        saveResource("messages.yml", false);
 
         database = new DatabaseService(this);
         database.connect();
@@ -95,7 +95,7 @@ public final class AstraSMPPlugin extends JavaPlugin {
             pocketWorld.setStorm(false);
         }
 
-        startPassiveEffectsTask();
+
 
         getLogger().info("=======================================");
         getLogger().info("   AstraSMP успешно запущен (2026)");
@@ -140,7 +140,14 @@ public final class AstraSMPPlugin extends JavaPlugin {
         return database;
     }
 
-    private static final NamespacedKey KEY_CUSTOM_ID = new NamespacedKey("astrasmp", "custom_id");
+    public org.bukkit.configuration.file.FileConfiguration getDiscordConfig() {
+        return configManager.getConfig("discord.yml");
+    }
+
+    public com.astrasmp.config.ConfigManager getConfigManager() {
+        return configManager;
+    }
+
 
     @SuppressWarnings("removal")
     private void applyPocketWorldRules(org.bukkit.World world) {
@@ -148,25 +155,7 @@ public final class AstraSMPPlugin extends JavaPlugin {
         world.setGameRule(org.bukkit.GameRule.DO_WEATHER_CYCLE, false);
     }
 
-    private void startPassiveEffectsTask() {
-        Bukkit.getScheduler().runTaskTimer(this, () -> {
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                ItemStack offHand = p.getInventory().getItemInOffHand();
-                if (offHand == null || !offHand.hasItemMeta()) continue;
 
-                String id = offHand.getItemMeta().getPersistentDataContainer()
-                        .get(KEY_CUSTOM_ID, PersistentDataType.STRING);
-
-                if (id == null) continue;
-
-                if (id.equals("totemSpeed")) {
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 40, 1, false, false, true));
-                } else if (id.equals("totemShield")) {
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 40, 1, false, false, true));
-                }
-            }
-        }, 200L, 1200L);
-    }
 
     private void registerCommands() {
         bind("guild", new GuildCommand(services));

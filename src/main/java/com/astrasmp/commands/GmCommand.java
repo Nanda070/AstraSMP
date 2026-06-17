@@ -11,17 +11,17 @@ public final class GmCommand implements org.bukkit.command.TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player) && args.length < 2) {
-            TextUtil.send(sender, "&cКонсоль должна указывать ник игрока.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_3d20e4", "&cКонсоль должна указывать ник игрока."));
             return true;
         }
 
         if (!sender.hasPermission("astrasmp.admin")) {
-            TextUtil.send(sender, "&cУ вас нет прав для использования этой команды.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_34bdb4", "&cУ вас нет прав для использования этой команды."));
             return true;
         }
 
         if (args.length == 0) {
-            TextUtil.send(sender, "&cИспользование: /gm <0|1|2|3> [игрок]");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_49dcee", "&cИспользование: /gm <0|1|2|3> [игрок]"));
             return true;
         }
 
@@ -45,7 +45,7 @@ public final class GmCommand implements org.bukkit.command.TabExecutor {
         };
 
         if (gm == null) {
-            TextUtil.send(sender, "&cНеверный режим игры. Используйте 0, 1, 2 или 3.");
+            TextUtil.send(sender, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_4ce5db", "&cНеверный режим игры. Используйте 0, 1, 2 или 3."));
             return true;
         }
 

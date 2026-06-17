@@ -40,10 +40,10 @@ public class FreezeCommand implements org.bukkit.command.TabExecutor {
 
         if (freeze) {
             TextUtil.send(sender, "&bВы заморозили игрока &f" + target.getName());
-            TextUtil.send(target, "&b&lВНИМАНИЕ! &cВы были заморожены администратором. Запрещено двигаться и взаимодействовать с миром.");
+            TextUtil.send(target, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_ba5988", "&b&lВНИМАНИЕ! &cВы были заморожены администратором. Запрещено двигаться и взаимодействовать с миром."));
         } else {
             TextUtil.send(sender, "&aВы разморозили игрока &f" + target.getName());
-            TextUtil.send(target, "&a&lВНИМАНИЕ! &aВы были разморожены.");
+            TextUtil.send(target, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_c88f0c", "&a&lВНИМАНИЕ! &aВы были разморожены."));
         }
 
         return true;

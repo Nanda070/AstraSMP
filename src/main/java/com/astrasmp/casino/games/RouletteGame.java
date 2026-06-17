@@ -127,7 +127,7 @@ public class RouletteGame implements CasinoGame, Listener, InventoryHolder {
 
     private void startSpin(Player player, PlayerSession session, Inventory inv) {
         if (session.targetColor == null) {
-            TextUtil.send(player, "&cВыберите цвет для ставки!");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_a290bb", "&cВыберите цвет для ставки!"));
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
             return;
         }

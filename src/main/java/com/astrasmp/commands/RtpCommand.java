@@ -33,13 +33,13 @@ public final class RtpCommand implements org.bukkit.command.TabExecutor {
                 break;
             }
             if (i == maxAttempts - 1) {
-                TextUtil.send(player, "&cНе удалось найти безопасную локацию, попробуйте еще раз.");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_3a1628", "&cНе удалось найти безопасную локацию, попробуйте еще раз."));
                 return true;
             }
         }
 
         player.teleport(loc);
-        TextUtil.send(player, "&bВы успешно телепортированы!");
+        TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d1d176", "&bВы успешно телепортированы!"));
 
         // ГАЗ: Засчитываем квест №8
         services.quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.USE_RTP, "", 1);

@@ -25,7 +25,7 @@ public class SpawnCommand implements org.bukkit.command.TabExecutor {
         // 1. Проверка на заморозку
         var profile = services.economy().profile(player.getUniqueId(), player.getName());
         if (profile != null && profile.isFrozen()) {
-            TextUtil.send(player, "&cВы не можете использовать телепортацию сейчас!");
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_9047db", "&cВы не можете использовать телепортацию сейчас!"));
             return true;
         }
 
@@ -33,7 +33,7 @@ public class SpawnCommand implements org.bukkit.command.TabExecutor {
         // Этот метод автоматически берет данные из "locations.spawn" в config.yml
         services.afk().teleportToLocation(player, "spawn");
 
-        TextUtil.send(player, "&aВы были телепортированы на спавн!");
+        TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_c956d2", "&aВы были телепортированы на спавн!"));
 
         return true;
     }

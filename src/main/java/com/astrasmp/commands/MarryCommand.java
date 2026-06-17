@@ -4,7 +4,7 @@ import com.astrasmp.model.PlayerProfile;
 import com.astrasmp.service.ServiceManager;
 import com.astrasmp.util.TextUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
+
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,7 +16,12 @@ import java.util.*;
 public final class MarryCommand implements org.bukkit.command.TabExecutor {
     private final ServiceManager services;
     // Карта для хранения активных предложений: Кому пришло -> Кто отправил
-    private final Map<UUID, UUID> pendingRequests = new HashMap<>();
+    private static final Map<UUID, UUID> pendingRequests = new HashMap<>();
+
+    public static void clearPending(UUID uuid) {
+        pendingRequests.remove(uuid);
+        pendingRequests.values().remove(uuid);
+    }
 
     public MarryCommand(ServiceManager services) {
         this.services = services;
@@ -36,15 +41,20 @@ public final class MarryCommand implements org.bukkit.command.TabExecutor {
         switch (sub) {
             case "status" -> {
                 String targetName = args.length > 1 ? args[1] : player.getName();
-                OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
-                PlayerProfile profile = services.economy().profile(target.getUniqueId(), target.getName());
+                String uuidStr = services.plugin().getDatabase().getUuidByName(targetName);
+                if (uuidStr == null) {
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_426f15", "&cИгрок не найден."));
+                    return true;
+                }
+                UUID targetUuid = UUID.fromString(uuidStr);
+                PlayerProfile profile = services.economy().profile(targetUuid, targetName);
 
                 if (profile.getPartnerUuid() == null || profile.getPartnerUuid().isEmpty()) {
                     TextUtil.send(player, "&f" + targetName + " &7сейчас одинок(а).");
                 } else {
                     UUID partnerUuid = UUID.fromString(profile.getPartnerUuid());
-                    OfflinePlayer partner = Bukkit.getOfflinePlayer(partnerUuid);
-                    TextUtil.send(player, "&f" + targetName + " &7в браке с &d" + (partner.getName() != null ? partner.getName() : "неизвестным игроком"));
+                    PlayerProfile partnerProfile = services.economy().profile(partnerUuid, "Unknown");
+                    TextUtil.send(player, "&f" + targetName + " &7в браке с &d" + (partnerProfile.getName() != null ? partnerProfile.getName() : "неизвестным игроком"));
                 }
                 return true;
             }
@@ -52,13 +62,13 @@ public final class MarryCommand implements org.bukkit.command.TabExecutor {
             case "acc" -> {
                 UUID requesterId = pendingRequests.remove(player.getUniqueId());
                 if (requesterId == null) {
-                    TextUtil.send(player, "&cУ вас нет активных предложений.");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d85939", "&cУ вас нет активных предложений."));
                     return true;
                 }
 
                 Player requester = Bukkit.getPlayer(requesterId);
                 if (requester == null) {
-                    TextUtil.send(player, "&cИгрок, сделавший предложение, вышел из сети.");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_ac6d08", "&cИгрок, сделавший предложение, вышел из сети."));
                     return true;
                 }
 
@@ -68,17 +78,17 @@ public final class MarryCommand implements org.bukkit.command.TabExecutor {
 
             case "dec" -> {
                 if (pendingRequests.remove(player.getUniqueId()) == null) {
-                    TextUtil.send(player, "&cУ вас нет активных предложений.");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_d85939", "&cУ вас нет активных предложений."));
                     return true;
                 }
-                TextUtil.send(player, "&7Вы отклонили предложение.");
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_31c72d", "&7Вы отклонили предложение."));
                 return true;
             }
 
             case "unmarry" -> {
                 PlayerProfile profile = services.economy().profile(player.getUniqueId(), player.getName());
                 if (profile.getPartnerUuid().isEmpty()) {
-                    TextUtil.send(player, "&cВы не состоите в браке.");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_e1f8b4", "&cВы не состоите в браке."));
                     return true;
                 }
 
@@ -98,12 +108,12 @@ public final class MarryCommand implements org.bukkit.command.TabExecutor {
                 // Если аргумент не подкоманда, значит это ник игрока
                 Player target = Bukkit.getPlayer(args[0]);
                 if (target == null) {
-                    TextUtil.send(player, "&cИгрок не найден.");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_426f15", "&cИгрок не найден."));
                     return true;
                 }
 
                 if (target.equals(player)) {
-                    TextUtil.send(player, "&cВы не можете жениться на самом себе.");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_9e5242", "&cВы не можете жениться на самом себе."));
                     return true;
                 }
 
@@ -111,11 +121,11 @@ public final class MarryCommand implements org.bukkit.command.TabExecutor {
                 PlayerProfile p2 = services.economy().profile(target.getUniqueId(), target.getName());
 
                 if (!p1.getPartnerUuid().isEmpty()) {
-                    TextUtil.send(player, "&cВы уже женаты/замужем.");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_899984", "&cВы уже женаты/замужем."));
                     return true;
                 }
                 if (!p2.getPartnerUuid().isEmpty()) {
-                    TextUtil.send(player, "&cЭтот игрок уже в браке.");
+                    TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_f818f1", "&cЭтот игрок уже в браке."));
                     return true;
                 }
 
@@ -147,12 +157,12 @@ public final class MarryCommand implements org.bukkit.command.TabExecutor {
     }
 
     private boolean sendUsage(Player p) {
-        TextUtil.send(p, "&d&lСвадьбы:");
-        TextUtil.send(p, "&e/marry <ник> &7- сделать предложение");
-        TextUtil.send(p, "&e/marry status [ник] &7- проверить статус");
-        TextUtil.send(p, "&e/marry acc &7- принять предложение");
-        TextUtil.send(p, "&e/marry dec &7- отказать");
-        TextUtil.send(p, "&e/unmarry &7- развестись");
+        TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_2e5a0c", "&d&lСвадьбы:"));
+        TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_ff79d2", "&e/marry <ник> &7- сделать предложение"));
+        TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_a666eb", "&e/marry status [ник] &7- проверить статус"));
+        TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_63a92b", "&e/marry acc &7- принять предложение"));
+        TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_9fedca", "&e/marry dec &7- отказать"));
+        TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_4f28aa", "&e/unmarry &7- развестись"));
         return true;
     }
 

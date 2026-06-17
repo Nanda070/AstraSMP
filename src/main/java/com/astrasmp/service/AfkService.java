@@ -72,7 +72,7 @@ public class AfkService {
                 if (p.getWorld().equals(afkLocation.getWorld()) && p.getLocation().distance(afkLocation) <= 15.0) {
                     PlayerProfile profile = services.economy().profile(p.getUniqueId(), p.getName());
                     profile.setCoins(profile.getCoins() + 5);
-                    TextUtil.send(p, "&e&lAFK &8» &aВам начислено 5 ❂ за нахождение в зоне отдыха.");
+                    TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_05480a", "&e&lAFK &8» &aВам начислено 5 ❂ за нахождение в зоне отдыха."));
                     p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 1.5f);
                     services.store().requestSave();
                 }

@@ -1,0 +1,134 @@
+controller:
+  name: "&bME Контроллер"
+drive:
+  name: "&bME Дисковод"
+terminal:
+  name: "&bME Терминал"
+cell_4k:
+  name: "&eME Ячейка хранения [4K]"
+cell_16k:
+  name: "&6ME Ячейка хранения [16K]"
+cell_64k:
+  name: "&cME Ячейка хранения [64K]"
+mercenary_helmet:
+  name: "&8Капюшон Наемника"
+mercenary_chestplate:
+  name: "&8Куртка Наемника"
+mercenary_leggings:
+  name: "&8Штаны Наемника"
+mercenary_boots:
+  name: "&8Ботинки Наемника"
+berserker_helmet:
+  name: "&cШлем Берсерка"
+berserker_chestplate:
+  name: "&cНагрудник Берсерка"
+berserker_leggings:
+  name: "&cПоножи Берсерка"
+berserker_boots:
+  name: "&cБотинки Берсерка"
+inquisitor_helmet:
+  name: "&eШлем Инквизитора"
+inquisitor_chestplate:
+  name: "&eНагрудник Инквизитора"
+inquisitor_leggings:
+  name: "&eПоножи Инквизитора"
+inquisitor_boots:
+  name: "&eСапоги Инквизитора"
+juggernaut_helmet:
+  name: "&8Шлем Джаггернаута"
+juggernaut_chestplate:
+  name: "&8Нагрудник Джаггернаута"
+juggernaut_leggings:
+  name: "&8Поножи Джаггернаута"
+juggernaut_boots:
+  name: "&8Сапоги Джаггернаута"
+miner_helmet:
+  name: "&bЭкзоскелет: Шлем"
+miner_chestplate:
+  name: "&bЭкзоскелет: Корпус"
+miner_leggings:
+  name: "&bЭкзоскелет: Поножи"
+miner_boots:
+  name: "&bЭкзоскелет: Ботинки"
+bloodhunter_helmet:
+  name: "&4Шлем Кровавой Ночи"
+bloodhunter_chestplate:
+  name: "&4Нагрудник Кровавой Ночи"
+bloodhunter_leggings:
+  name: "&4Поножи Кровавой Ночи"
+bloodhunter_boots:
+  name: "&4Сапоги Кровавой Ночи"
+mining3x3:
+  name: "&dКрушитель 3x3+"
+mining5x5:
+  name: "&5Шахтер 5x5+"
+veinMiner:
+  name: "&dЖильный шахтер+"
+autoSmelt:
+  name: "&6Авто-плавка+"
+magnet:
+  name: "&eМагнит+"
+shadowBlade:
+  name: "&8Теневой клинок"
+thunderHammer:
+  name: "&bМолот грома"
+vampireDagger:
+  name: "&cVampire Dagger"
+infernoSword:
+  name: "&6Меч инферно"
+frostAxe:
+  name: "&9Ледяной топор"
+venomBow:
+  name: "&2Ядовитый Лук"
+reaperScythe:
+  name: "&5Коса Жнеца"
+totemSpeed:
+  name: "&bТотем скорости"
+totemShield:
+  name: "&7Тотем щита"
+totemLightning:
+  name: "&eТотем молнии"
+totemExplosion:
+  name: "&cТотем взрыва"
+totemTeleport:
+  name: "&dТотем телепорта"
+sacrificialDagger:
+  name: "&4Ритуальный Кинжал"
+bloodDrop:
+  name: "&cКапля Крови"
+seedOfAbyss:
+  name: "&5Семя Бездны"
+astralCrystal:
+  name: "&dАстральный Кристалл"
+demonSoul:
+  name: "&5Душа Демона"
+pactOfBlood:
+  name: "&4Контракт Крови"
+pactOfVoid:
+  name: "&5Контракт Бездны"
+pactOfShadow:
+  name: "&8Контракт Теней"
+bloodCauldron:
+  name: "&4Кровавый Котел"
+ritualAltar:
+  name: "&5Ядро Алтаря"
+cleansingTotem:
+  name: "&eТотем Очищения"
+bloodChalice:
+  name: "&4Карманная Чаша Крови"
+bloodVial:
+  name: "&4Флакон с кровью: &c"
+voodooDoll:
+  name: "&5Кукла Вуду: &d"
+soulFragment:
+  name: "&bОсколок Души: &3"
+madnessSphere:
+  name: "&5Сфера Безумия: &d"
+bloodStainedNote:
+  name: "&4Испачканная кровью записка"
+trampoline:
+  name: "&aУлучшенный Батут"
+soulOfNanda:
+  name: "&cДуша Нанды"
+eventCompass:
+  name: "&bМагический Компас"

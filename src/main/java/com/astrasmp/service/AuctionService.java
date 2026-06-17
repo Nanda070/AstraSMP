@@ -53,39 +53,46 @@ public final class AuctionService {
 
     public boolean cancelLot(Player seller, long id) {
         AuctionLot lot = store.lots().get(id);
-        if (lot == null || lot.isSold()) return false;
-        if (!lot.getSellerUuid().equals(seller.getUniqueId().toString()) && !seller.hasPermission("astrasmp.admin")) return false;
-        lot.setSold(true);
-        seller.getInventory().addItem(lot.getItem().clone());
-        store.requestSave();
-        return true;
+        if (lot == null) return false;
+        synchronized (lot) {
+            if (lot.isSold()) return false;
+            if (!lot.getSellerUuid().equals(seller.getUniqueId().toString()) && !seller.hasPermission("astrasmp.admin")) return false;
+            lot.setSold(true);
+            seller.getInventory().addItem(lot.getItem().clone());
+            store.requestSave();
+            return true;
+        }
     }
 
     public boolean buyLot(Player buyer, long id) {
         AuctionLot lot = store.lots().get(id);
-        if (lot == null || lot.isSold()) return false;
+        if (lot == null) return false;
         
-        PlayerProfile profile = store.profile(buyer.getUniqueId().toString(), buyer.getName());
-        if (profile.getCoins() < lot.getPrice()) return false;
+        synchronized (lot) {
+            if (lot.isSold()) return false;
+            
+            PlayerProfile profile = store.profile(buyer.getUniqueId().toString(), buyer.getName());
+            if (profile.getCoins() < lot.getPrice()) return false;
 
-        long tax = Math.max(1L, Math.round(lot.getPrice() * plugin.getConfig().getDouble("server.tax-rate", 0.08)));
-        long sellerGain = Math.max(0L, lot.getPrice() - tax);
+            long tax = Math.max(1L, Math.round(lot.getPrice() * plugin.getConfig().getDouble("server.tax-rate", 0.08)));
+            long sellerGain = Math.max(0L, lot.getPrice() - tax);
 
-        // Списываем деньги у покупателя
-        profile.setCoins(profile.getCoins() - lot.getPrice());
-        
-        // ПОТОКОБЕЗОПАСНЫЙ ФИКС: Берем профиль продавца напрямую из нашего кэша/БД.
-        // Если игрок есть в базе, его реальное имя подтянется автоматически.
-        // Никаких обращений к Bukkit API.
-        PlayerProfile sellerProfile = store.profile(lot.getSellerUuid(), "Unknown");
-        sellerProfile.setCoins(sellerProfile.getCoins() + sellerGain);
-        
-        lot.setSold(true);
-        var leftover = buyer.getInventory().addItem(lot.getItem().clone());
-        leftover.values().forEach(stack -> buyer.getWorld().dropItemNaturally(buyer.getLocation(), stack));
-        
-        store.requestSave();
-        return true;
+            // Списываем деньги у покупателя
+            profile.setCoins(profile.getCoins() - lot.getPrice());
+            
+            // ПОТОКОБЕЗОПАСНЫЙ ФИКС: Берем профиль продавца напрямую из нашего кэша/БД.
+            // Если игрок есть в базе, его реальное имя подтянется автоматически.
+            // Никаких обращений к Bukkit API.
+            PlayerProfile sellerProfile = store.profile(lot.getSellerUuid(), "Unknown");
+            sellerProfile.setCoins(sellerProfile.getCoins() + sellerGain);
+            
+            lot.setSold(true);
+            var leftover = buyer.getInventory().addItem(lot.getItem().clone());
+            leftover.values().forEach(stack -> buyer.getWorld().dropItemNaturally(buyer.getLocation(), stack));
+            
+            store.requestSave();
+            return true;
+        }
     }
 
     @SuppressWarnings("deprecation")
