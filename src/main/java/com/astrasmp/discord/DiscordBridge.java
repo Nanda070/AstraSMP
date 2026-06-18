@@ -104,8 +104,8 @@ public final class DiscordBridge {
     public void sendJoinQuitMessage(String player, boolean join) {
         String icon = join ? "🟢" : "🔴";
         String action = join ? "присоединился к игре" : "покинул сервер";
-        String prefixRaw = plugin.getConfig().getString("messages.prefix", "AstraSMP » ");
-        String prefix = (prefixRaw != null ? prefixRaw.replaceAll("(?i)[&§][0-9a-fk-or]", "") : "AstraSMP » ").trim();
+        String prefixRaw = plugin.getConfig().getString("messages.prefix", "ChetCraft » ");
+        String prefix = (prefixRaw != null ? prefixRaw.replaceAll("(?i)[&§][0-9a-fk-or]", "") : "ChetCraft » ").trim();
         sendToChannel("chat-channel-id", "**[" + prefix + "]** " + icon + " **" + player + "** " + action + ".");
     }
 
