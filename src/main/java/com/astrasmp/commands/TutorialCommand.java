@@ -67,6 +67,11 @@ public class TutorialCommand implements org.bukkit.command.TabExecutor {
 
     @Override
     public java.util.List<String> onTabComplete(org.bukkit.command.CommandSender sender, org.bukkit.command.Command command, String alias, String[] args) {
+        if (args.length == 1) {
+            java.util.List<String> completions = new java.util.ArrayList<>(java.util.List.of("classes", "quarry", "me"));
+            completions.removeIf(c -> !c.startsWith(args[0].toLowerCase()));
+            return completions;
+        }
         return java.util.Collections.emptyList();
     }
 }

@@ -104,7 +104,7 @@ public final class DiscordBridge {
     public void sendJoinQuitMessage(String player, boolean join) {
         String icon = join ? "🟢" : "🔴";
         String action = join ? "присоединился к игре" : "покинул сервер";
-        String prefixRaw = plugin.getConfig().getString("messages.prefix", "ChetCraft » ");
+        String prefixRaw = plugin.getConfigManager().getMessage("prefix", "ChetCraft » ");
         String prefix = (prefixRaw != null ? prefixRaw.replaceAll("(?i)[&§][0-9a-fk-or]", "") : "ChetCraft » ").trim();
         sendToChannel("chat-channel-id", "**[" + prefix + "]** " + icon + " **" + player + "** " + action + ".");
     }
@@ -163,7 +163,7 @@ public final class DiscordBridge {
         embed.setFooter(footer + " • Участвуй и побеждай!");
 
         String mention = roleId.isBlank() ? "" : "<@&" + roleId + "> ";
-        if (!pingId.isBlank()) mention += "<@&" + pingId + ">";
+        if (!pingId.isBlank() && !pingId.equals(roleId)) mention += "<@&" + pingId + ">";
         String finalMention = mention.trim();
         if (finalMention.isEmpty()) {
             channel.sendMessageEmbeds(embed.build()).queue();
@@ -476,7 +476,7 @@ public final class DiscordBridge {
                     if (player != null) {
                         Bukkit.getScheduler().runTask(plugin, () -> {
                             plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.LINK_DISCORD, "", 1);
-                            String prefix = com.astrasmp.util.TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+                            String prefix = plugin.getConfigManager().getMessage("prefix", "&b&lChetCraft &8» ");
                             TextUtil.send(player, prefix + "Аккаунт привязан! Роль в Discord и награда выданы.");
                         });
                     }
@@ -760,7 +760,7 @@ public final class DiscordBridge {
                 if (player != null) {
                     Bukkit.getScheduler().runTask(plugin, () -> {
                         plugin.getServices().quests().processAction(player, com.astrasmp.service.QuestManager.QuestAction.LINK_DISCORD, "", 1);
-                        String prefix = com.astrasmp.util.TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+                        String prefix = plugin.getConfigManager().getMessage("prefix", "&b&lChetCraft &8» ");
                         TextUtil.send(player, prefix + "Аккаунт успешно привязан к Discord через кнопку!");
                     });
                 }

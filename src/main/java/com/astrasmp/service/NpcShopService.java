@@ -98,6 +98,13 @@ public final class NpcShopService implements Listener {
                                 .getRegistry(io.papermc.paper.registry.RegistryKey.ENCHANTMENT);
                         Enchantment ench = enchReg.getOrThrow(NamespacedKey.minecraft(enchStr));
                         item = buildBook(ench, level, price);
+                    } else if ("potion".equals(type)) {
+                        String potionTypeStr = (String) map.get("potion_type");
+                        Object amountObj = map.get("amount");
+                        int amount = amountObj != null ? (Integer) amountObj : 1;
+                        String name = (String) map.get("name");
+                        org.bukkit.potion.PotionType potionType = org.bukkit.potion.PotionType.valueOf(potionTypeStr);
+                        item = buildPotion(potionType, amount, name, price, currency);
                     }
                     if (item != null) items.add(item);
                 } catch (Exception e) {
@@ -334,22 +341,40 @@ public final class NpcShopService implements Listener {
         ItemStack giveItem = event.getCurrentItem().clone();
         ItemMeta giveMeta = giveItem.getItemMeta();
 
-        // Если это кастомный предмет (с custom_id) — восстанавливаем лор из ItemRegistry
-        // чтобы не затирать описание предмета при очистке служебных данных магазина
+        // Восстанавливаем чистый предмет: для кастомных — пересоздаём из ItemRegistry,
+        // для обычных материалов — просто убираем служебные данные магазина
         String customId = giveMeta.getPersistentDataContainer().get(
                 new NamespacedKey(services.plugin(), "custom_id"),
                 org.bukkit.persistence.PersistentDataType.STRING);
         if (customId == null) {
-            // Для кастомного id из другого namespace
             customId = giveMeta.getPersistentDataContainer().get(
                     new NamespacedKey("astrasmp", "custom_id"),
                     org.bukkit.persistence.PersistentDataType.STRING);
         }
 
-        if (customId != null && customId.equals("trampoline")) {
-            giveItem = com.astrasmp.items.ItemRegistry.trampoline();
-            giveItem.setAmount(1);
+        if (customId != null) {
+            // Кастомный предмет: пересоздаём из ItemRegistry, чтобы сохранить лор
+            boolean restored = false;
+            try {
+                java.lang.reflect.Method m = ItemRegistry.class.getMethod(customId);
+                giveItem = (ItemStack) m.invoke(null);
+                restored = true;
+            } catch (NoSuchMethodException ignored) {
+                // relic/artifact — убираем только служебные строки
+            } catch (Exception ignored) {}
+
+            if (!restored) {
+                List<Component> lore = giveMeta.hasLore()
+                        ? new java.util.ArrayList<>(giveMeta.lore()) : new java.util.ArrayList<>();
+                // Убираем 3 служебные строки магазина (пустая, цена, "Нажмите, чтобы купить")
+                for (int i = 0; i < 3 && !lore.isEmpty(); i++) lore.remove(lore.size() - 1);
+                giveMeta.lore(lore.isEmpty() ? null : lore);
+                giveMeta.getPersistentDataContainer().remove(priceKey);
+                giveMeta.getPersistentDataContainer().remove(currencyKey);
+                giveItem.setItemMeta(giveMeta);
+            }
         } else {
+            // Обычный материал/книга/зелье — лор был только ценой
             giveMeta.lore(null);
             giveMeta.getPersistentDataContainer().remove(priceKey);
             giveMeta.getPersistentDataContainer().remove(currencyKey);
@@ -415,6 +440,21 @@ public final class NpcShopService implements Listener {
         meta.lore(lore);
         meta.getPersistentDataContainer().set(priceKey, PersistentDataType.INTEGER, price);
         meta.getPersistentDataContainer().set(currencyKey, PersistentDataType.STRING, "coins");
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private ItemStack buildPotion(org.bukkit.potion.PotionType potionType, int amount, String name, int price, String currency) {
+        ItemStack item = new ItemStack(Material.POTION, amount);
+        org.bukkit.inventory.meta.PotionMeta meta = (org.bukkit.inventory.meta.PotionMeta) item.getItemMeta();
+        meta.setBasePotionType(potionType);
+        meta.displayName(Component.text(TextUtil.color(name)));
+        List<Component> lore = new ArrayList<>();
+        String currencyStr = currency.equals("events") ? "&dEvent Points" : "&e❂";
+        lore.add(Component.text(TextUtil.color("§7Цена: " + price + " " + currencyStr)));
+        meta.lore(lore);
+        meta.getPersistentDataContainer().set(priceKey, PersistentDataType.INTEGER, price);
+        meta.getPersistentDataContainer().set(currencyKey, PersistentDataType.STRING, currency);
         item.setItemMeta(meta);
         return item;
     }

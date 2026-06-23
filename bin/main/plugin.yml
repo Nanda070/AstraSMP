@@ -128,6 +128,23 @@ commands:
   dm:
     description: Написать личное сообщение игроку
     usage: /dm <игрок> <текст>
+  warp:
+    description: Меню и телепортация на варпы
+    usage: /warp [название|set|remove] [название]
+  home:
+    description: Телепортация домой
+    usage: /home [название]
+  sethome:
+    description: Установить точку дома
+    usage: /sethome [название]
+  delhome:
+    description: Удалить точку дома
+    usage: /delhome [название]
+  homelist:
+    description: Список ваших домов
+  homesreload:
+    description: Перезагрузка конфигурации домов
+    permission: astrasmp.admin
 
 permissions:
   astrasmp.admin:

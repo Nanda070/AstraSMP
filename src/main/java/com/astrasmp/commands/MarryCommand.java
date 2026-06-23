@@ -169,9 +169,16 @@ public final class MarryCommand implements org.bukkit.command.TabExecutor {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length == 1) {
-            return List.of("status", "acc", "dec", "unmarry");
+            List<String> completions = new java.util.ArrayList<>(List.of("status", "acc", "dec", "unmarry"));
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                completions.add(p.getName());
+            }
+            return completions.stream().filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase())).toList();
         }
-        return null;
+        if (args.length == 2 && args[0].equalsIgnoreCase("status")) {
+            return null; // autocomplete players
+        }
+        return Collections.emptyList();
     }
 
 }

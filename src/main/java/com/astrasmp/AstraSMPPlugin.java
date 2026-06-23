@@ -198,9 +198,19 @@ public final class AstraSMPPlugin extends JavaPlugin {
         bind("unfreeze", freezeExecutor);
 
         bind("spawn", new SpawnCommand(this, services));
-        bind("rtp", new RtpCommand(services));
+        com.astrasmp.gui.RtpGui rtpGui = new com.astrasmp.gui.RtpGui(this, services);
+        bind("rtp", new RtpCommand(rtpGui));
         bind("setrtpblock", new RtpBlockCommand(services));
         bind("help", new HelpCommand(services));
+        
+        bind("warp", new WarpCommand(services));
+        
+        HomeCommand homeCmd = new HomeCommand(services);
+        bind("home", homeCmd);
+        bind("sethome", homeCmd);
+        bind("delhome", homeCmd);
+        bind("homelist", homeCmd);
+        bind("homesreload", homeCmd);
 
         bind("gm", new GmCommand());
         bind("god", new GodCommand(this));

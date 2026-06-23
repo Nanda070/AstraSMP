@@ -19,6 +19,12 @@ shops:
       - { type: custom, id: minerChestplate, price: 1500, currency: coins }
       - { type: custom, id: minerLeggings, price: 1300, currency: coins }
       - { type: custom, id: minerBoots, price: 1000, currency: coins }
+      - { type: material, material: SHIELD, amount: 1, name: "&fЩит", price: 300, currency: coins }
+      - { type: material, material: SADDLE, amount: 1, name: "&6Седло", price: 1000, currency: coins }
+      - { type: material, material: LEATHER_HORSE_ARMOR, amount: 1, name: "&eКонская броня (кожа)", price: 800, currency: coins }
+      - { type: potion, potion_type: REGENERATION, amount: 3, name: "&cЗелье Регенерации", price: 500, currency: coins }
+      - { type: potion, potion_type: SWIFTNESS, amount: 2, name: "&bЗелье Скорости", price: 400, currency: coins }
+      - { type: potion, potion_type: FIRE_RESISTANCE, amount: 1, name: "&6Зелье Огнестойкости", price: 350, currency: coins }
 
   "2":
     name: "&eДекоратор"
@@ -51,7 +57,17 @@ shops:
       - { type: material, material: IRON_BARS, amount: 16, name: "&7Железная решетка", price: 300, currency: coins }
       - { type: material, material: AMETHYST_BLOCK, amount: 64, name: "&dАметистовый блок", price: 500, currency: coins }
       - { type: material, material: COPPER_BLOCK, amount: 64, name: "&6Медный блок", price: 400, currency: coins }
-      - { type: custom, id: trampoline, price: 50000, currency: coins }
+      - { type: material, material: DIRT, amount: 64, name: "&6Земля", price: 100, currency: coins }
+      - { type: material, material: PODZOL, amount: 64, name: "&2Подзол", price: 200, currency: coins }
+      - { type: material, material: ROOTED_DIRT, amount: 64, name: "&6Корневая земля", price: 200, currency: coins }
+      - { type: material, material: SAND, amount: 64, name: "&eПесок", price: 150, currency: coins }
+      - { type: material, material: RED_SAND, amount: 64, name: "&6Красный песок", price: 150, currency: coins }
+      - { type: material, material: GRAVEL, amount: 64, name: "&7Гравий", price: 100, currency: coins }
+      - { type: material, material: POPPY, amount: 16, name: "&cМак", price: 200, currency: coins }
+      - { type: material, material: CORNFLOWER, amount: 16, name: "&9Василёк", price: 200, currency: coins }
+      - { type: material, material: ALLIUM, amount: 16, name: "&dДекоративный лук", price: 200, currency: coins }
+      - { type: material, material: SUNFLOWER, amount: 16, name: "&eПодсолнух", price: 200, currency: coins }
+      - { type: custom, id: trampoline, price: 15000, currency: coins }
 
   "3":
     name: "&dБиблиотекарь"
@@ -66,6 +82,11 @@ shops:
       - { type: book, enchantment: silk_touch, level: 1, price: 1500, currency: coins }
       - { type: book, enchantment: feather_falling, level: 2, price: 1700, currency: coins }
       - { type: book, enchantment: looting, level: 2, price: 1000, currency: coins }
+      - { type: book, enchantment: respiration, level: 3, price: 1500, currency: coins }
+      - { type: book, enchantment: aqua_affinity, level: 1, price: 1200, currency: coins }
+      - { type: book, enchantment: sweeping_edge, level: 3, price: 2000, currency: coins }
+      - { type: book, enchantment: thorns, level: 2, price: 1800, currency: coins }
+      - { type: book, enchantment: infinity, level: 1, price: 2500, currency: coins }
 
   "4":
     name: "&6Фермер"
@@ -81,6 +102,14 @@ shops:
       - { type: material, material: CACTUS, amount: 12, name: "&2Кактус", price: 400, currency: coins }
       - { type: material, material: BONE_MEAL, amount: 12, name: "&fКостная мука", price: 300, currency: coins }
       - { type: material, material: MUSHROOM_STEW, amount: 1, name: "&6Грибной суп", price: 300, currency: coins }
+      - { type: material, material: HONEYCOMB, amount: 16, name: "&6Пчелиные соты", price: 400, currency: coins }
+      - { type: material, material: OAK_SAPLING, amount: 8, name: "&aСаженец дуба", price: 300, currency: coins }
+      - { type: material, material: SPRUCE_SAPLING, amount: 8, name: "&2Саженец ели", price: 300, currency: coins }
+      - { type: material, material: BIRCH_SAPLING, amount: 8, name: "&fСаженец берёзы", price: 300, currency: coins }
+      - { type: material, material: DARK_OAK_SAPLING, amount: 8, name: "&8Саженец тёмного дуба", price: 300, currency: coins }
+      - { type: material, material: CHERRY_SAPLING, amount: 8, name: "&dСаженец вишни", price: 400, currency: coins }
+      - { type: material, material: JUNGLE_SAPLING, amount: 8, name: "&aСаженец джунглей", price: 350, currency: coins }
+      - { type: material, material: COCOA_BEANS, amount: 16, name: "&6Какао-бобы", price: 350, currency: coins }
 
   "8":
     name: "&5Ивент Магазин"

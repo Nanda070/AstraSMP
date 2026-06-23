@@ -239,7 +239,11 @@ public final class PlayerListener implements Listener {
             services.afk().updateActivity(player);
             Location loc = player.getLocation().getBlock().getLocation();
 
-            if (services.store().getRtpBlocks().contains(com.astrasmp.util.LocationKey.fromLocation(loc))) player.performCommand("rtp");
+            if (services.store().getRtpBlocks().contains(com.astrasmp.util.LocationKey.fromLocation(loc))) {
+                player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_BEACON_ACTIVATE, 1f, 2f);
+                player.spawnParticle(org.bukkit.Particle.END_ROD, player.getLocation().add(0, 1, 0), 20, 0.5, 0.5, 0.5, 0.05);
+                player.performCommand("rtp");
+            }
 
             Location locBelow = player.getLocation().clone().subtract(0, 0.5, 0).getBlock().getLocation();
             Long awardAmount = services.store().getAwardAmount(locBelow);
@@ -304,6 +308,14 @@ public final class PlayerListener implements Listener {
         services.mmr().adjustOnDeath(victim);
 
         if (victim.getKiller() != null) {
+            // Drop head
+            ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+            org.bukkit.inventory.meta.SkullMeta headMeta = (org.bukkit.inventory.meta.SkullMeta) head.getItemMeta();
+            headMeta.setOwningPlayer(victim);
+            headMeta.displayName(net.kyori.adventure.text.Component.text(TextUtil.color("&eГолова игрока &f" + victim.getName())));
+            head.setItemMeta(headMeta);
+            event.getDrops().add(head);
+            
             Player killer = victim.getKiller();
             PlayerProfile killerProfile = services.economy().profile(killer.getUniqueId(), killer.getName());
             killerProfile.setKills(killerProfile.getKills() + 1);
@@ -380,6 +392,32 @@ public final class PlayerListener implements Listener {
         }
 
         ItemStack tool = player.getInventory().getItemInMainHand();
+        
+        // SilkSpawners
+        if (block.getType() == Material.SPAWNER) {
+            if (tool != null && tool.containsEnchantment(org.bukkit.enchantments.Enchantment.SILK_TOUCH)) {
+                if (block.getState() instanceof org.bukkit.block.CreatureSpawner spawner) {
+                    org.bukkit.entity.EntityType type = spawner.getSpawnedType();
+                    if (type != null) {
+                        ItemStack spawnerItem = new ItemStack(Material.SPAWNER);
+                        org.bukkit.inventory.meta.BlockStateMeta bsm = (org.bukkit.inventory.meta.BlockStateMeta) spawnerItem.getItemMeta();
+                        org.bukkit.block.CreatureSpawner dummy = (org.bukkit.block.CreatureSpawner) bsm.getBlockState();
+                        dummy.setSpawnedType(type);
+                        bsm.setBlockState(dummy);
+                        bsm.displayName(net.kyori.adventure.text.Component.text(TextUtil.color("&eСпавнер: &f" + type.name())));
+                        spawnerItem.setItemMeta(bsm);
+                        
+                        event.setExpToDrop(0);
+                        event.setDropItems(false);
+                        block.setType(Material.AIR);
+                        block.getWorld().dropItemNaturally(block.getLocation(), spawnerItem);
+                        
+                        TextUtil.send(player, "&aВы аккуратно добыли спавнер!");
+                        return; // Останавливаем остальную обработку добычи
+                    }
+                }
+            }
+        }
         String customId = getCustomId(tool);
 
         if (customId != null) {
@@ -435,6 +473,20 @@ public final class PlayerListener implements Listener {
         event.getBlockPlaced().setMetadata("placed_by_player", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
 
         ItemStack item = event.getItemInHand();
+        
+        // SilkSpawners
+        if (event.getBlockPlaced().getType() == Material.SPAWNER) {
+            if (item.hasItemMeta() && item.getItemMeta() instanceof org.bukkit.inventory.meta.BlockStateMeta meta) {
+                if (meta.getBlockState() instanceof org.bukkit.block.CreatureSpawner spawnerMeta) {
+                    org.bukkit.entity.EntityType type = spawnerMeta.getSpawnedType();
+                    if (type != null && event.getBlockPlaced().getState() instanceof org.bukkit.block.CreatureSpawner blockSpawner) {
+                        blockSpawner.setSpawnedType(type);
+                        blockSpawner.update();
+                    }
+                }
+            }
+        }
+        
         if (item.hasItemMeta() && item.getItemMeta().getPersistentDataContainer().has(KEY_AWARD_AMOUNT, PersistentDataType.LONG)) {
             long amount = item.getItemMeta().getPersistentDataContainer().get(KEY_AWARD_AMOUNT, PersistentDataType.LONG);
             services.store().addAwardBlock(event.getBlockPlaced().getLocation(), amount);

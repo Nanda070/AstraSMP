@@ -7,12 +7,11 @@ import com.astrasmp.service.ServiceManager;
 import com.astrasmp.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class BountyCommand implements CommandExecutor {
+public class BountyCommand implements org.bukkit.command.TabExecutor {
     private final AstraSMPPlugin plugin;
     private final ServiceManager services;
     private final BountiesGui bountiesGui;
@@ -24,7 +23,8 @@ public class BountyCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label,
+            @NotNull String[] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Только для игроков.");
             return true;
@@ -36,18 +36,21 @@ public class BountyCommand implements CommandExecutor {
         }
 
         if (args.length < 2) {
-            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_5945fa", "&cИспользование: /bounty <игрок> <сумма>"));
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_5945fa",
+                    "&cИспользование: /bounty <игрок> <сумма>"));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_ad54b4", "&cИгрок не найден или не в сети!"));
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_ad54b4",
+                    "&cИгрок не найден или не в сети!"));
             return true;
         }
-        
+
         if (target.equals(player)) {
-            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_eaff94", "&cВы не можете объявить охоту на самого себя!"));
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_eaff94",
+                    "&cВы не можете объявить охоту на самого себя!"));
             return true;
         }
 
@@ -55,12 +58,14 @@ public class BountyCommand implements CommandExecutor {
         try {
             reward = Long.parseLong(args[1]);
         } catch (NumberFormatException e) {
-            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_68a06f", "&cСумма должна быть числом!"));
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_68a06f",
+                    "&cСумма должна быть числом!"));
             return true;
         }
 
         if (reward < 1000) {
-            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_1388b4", "&cМинимальная награда: 1,000 ❂"));
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_1388b4",
+                    "&cМинимальная награда: 1,000 ❂"));
             return true;
         }
 
@@ -69,13 +74,15 @@ public class BountyCommand implements CommandExecutor {
         long total = reward + fee;
 
         if (services.economy().getBalance(player.getUniqueId()) < total) {
-            TextUtil.send(player, "&cНедостаточно средств! С учетом комиссии (" + (feeRate*100) + "%) нужно &f" + total + " ❂");
+            TextUtil.send(player,
+                    "&cНедостаточно средств! С учетом комиссии (" + (feeRate * 100) + "%) нужно &f" + total + " ❂");
             return true;
         }
 
         ContractRecord record = services.contracts().createBounty(player, target, reward, "Bounty created via /bounty");
         if (record == null) {
-            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_bc81e5", "&cПроизошла ошибка при создании заказа."));
+            TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_bc81e5",
+                    "&cПроизошла ошибка при создании заказа."));
             return true;
         }
 
@@ -90,5 +97,17 @@ public class BountyCommand implements CommandExecutor {
         }
 
         return true;
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
+            @NotNull String alias, String[] args) {
+        if (args.length == 1) {
+            return null; // default online players
+        }
+        if (args.length == 2) {
+            return java.util.List.of("<сумма>");
+        }
+        return java.util.Collections.emptyList();
     }
 }

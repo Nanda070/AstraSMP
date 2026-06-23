@@ -1,5 +1,5 @@
 server:
-  name: AstraSMP
+  name: ChetCraft
   currency-name: Coins
   tax-rate: 0.02
   auction-limit-per-player: 12

@@ -39,6 +39,9 @@ public final class DataStore {
     private final Map<LocationKey, Long> awardBlocks = new ConcurrentHashMap<>();
     private final Map<LocationKey, Set<UUID>> awardHistory = new ConcurrentHashMap<>();
 
+    private final Map<String, LocationKey> warps = new ConcurrentHashMap<>();
+    private final Map<UUID, Map<String, LocationKey>> homes = new ConcurrentHashMap<>();
+
     private final AtomicBoolean saveQueued = new AtomicBoolean(false);
 
     private final java.util.concurrent.atomic.AtomicLong nextLotIdCounter = new java.util.concurrent.atomic.AtomicLong(1L);
@@ -58,6 +61,8 @@ public final class DataStore {
         meNetworks.clear();
         awardBlocks.clear();
         awardHistory.clear();
+        warps.clear();
+        homes.clear();
 
         // Мы БОЛЬШЕ не загружаем все профили сразу в память!
         // Это решает проблему утечки памяти при старте сервера.
@@ -80,6 +85,8 @@ public final class DataStore {
         loadRtpBlocks();
         loadTrampolines();
         loadAwards();
+        loadWarps();
+        loadHomes();
     }
 
     private File file(String name) {
@@ -95,6 +102,8 @@ public final class DataStore {
     public Set<LocationKey> getRtpBlocks() { return rtpBlocks; }
     public Set<LocationKey> getTrampolineBlocks() { return trampolineBlocks; }
     public Map<UUID, MENetwork> meNetworks() { return meNetworks; }
+    public Map<String, LocationKey> getWarps() { return warps; }
+    public Map<UUID, Map<String, LocationKey>> getHomes() { return homes; }
 
     public Collection<AuctionLot> activeLots() {
         return lots.values().stream()
@@ -128,6 +137,8 @@ public final class DataStore {
         saveRtpBlocks();
         saveTrampolines();
         saveAwards();
+        saveWarps();
+        saveHomes();
     }
 
     private void saveAll() {
@@ -268,6 +279,70 @@ public final class DataStore {
         } catch (IOException e) { 
             plugin.getLogger().log(Level.SEVERE, "Критическая ошибка сохранения файла awards.yml", e); 
         }
+    }
+
+    private void loadWarps() {
+        File f = file("warps.yml");
+        if (!f.exists()) return;
+        YamlConfiguration yml = YamlConfiguration.loadConfiguration(f);
+        var sec = yml.getConfigurationSection("warps");
+        if (sec != null) {
+            for (String key : sec.getKeys(false)) {
+                String locStr = sec.getString(key);
+                if (locStr != null) {
+                    String[] p = locStr.split(",");
+                    if (p.length == 4) {
+                        warps.put(key.toLowerCase(), new LocationKey(p[0], Integer.parseInt(p[1]), Integer.parseInt(p[2]), Integer.parseInt(p[3])));
+                    }
+                }
+            }
+        }
+    }
+
+    private void saveWarps() {
+        File f = file("warps.yml");
+        YamlConfiguration yml = new YamlConfiguration();
+        warps.forEach((name, loc) -> {
+            yml.set("warps." + name, loc.worldName() + "," + loc.x() + "," + loc.y() + "," + loc.z());
+        });
+        try { yml.save(f); } catch (IOException e) { plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения warps.yml", e); }
+    }
+
+    private void loadHomes() {
+        File f = file("homes.yml");
+        if (!f.exists()) return;
+        YamlConfiguration yml = YamlConfiguration.loadConfiguration(f);
+        var sec = yml.getConfigurationSection("homes");
+        if (sec != null) {
+            for (String uuidStr : sec.getKeys(false)) {
+                UUID uuid = UUID.fromString(uuidStr);
+                var homeSec = sec.getConfigurationSection(uuidStr);
+                if (homeSec != null) {
+                    Map<String, LocationKey> playerHomes = new ConcurrentHashMap<>();
+                    for (String homeName : homeSec.getKeys(false)) {
+                        String locStr = homeSec.getString(homeName);
+                        if (locStr != null) {
+                            String[] p = locStr.split(",");
+                            if (p.length == 4) {
+                                playerHomes.put(homeName.toLowerCase(), new LocationKey(p[0], Integer.parseInt(p[1]), Integer.parseInt(p[2]), Integer.parseInt(p[3])));
+                            }
+                        }
+                    }
+                    homes.put(uuid, playerHomes);
+                }
+            }
+        }
+    }
+
+    private void saveHomes() {
+        File f = file("homes.yml");
+        YamlConfiguration yml = new YamlConfiguration();
+        homes.forEach((uuid, playerHomes) -> {
+            playerHomes.forEach((homeName, loc) -> {
+                yml.set("homes." + uuid.toString() + "." + homeName, loc.worldName() + "," + loc.x() + "," + loc.y() + "," + loc.z());
+            });
+        });
+        try { yml.save(f); } catch (IOException e) { plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения homes.yml", e); }
     }
 
     public PlayerProfile profile(String uuid, String name) {
