@@ -3,7 +3,7 @@ version: 1.0.0
 main: com.astrasmp.AstraSMPPlugin
 api-version: '1.21'
 author: CheterinTeam
-softdepend: [PlaceholderAPI]
+softdepend: [PlaceholderAPI, CustomWorldHeight, SitAndLay]
 
 commands:
   menu:
@@ -74,6 +74,10 @@ commands:
     usage: /prunus [invite|join] [игрок]
   malus:
     description: Покинуть Карманное Измерение
+  sit:
+    description: Сесть на месте
+  lay:
+    description: Лечь на месте
   rewards:
     description: Ежедневные награды
     aliases: [reward, daily, календарь]

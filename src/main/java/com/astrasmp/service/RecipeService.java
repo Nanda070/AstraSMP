@@ -20,7 +20,7 @@ public final class RecipeService implements Listener {
     }
 
     public void registerAll() {
-        Bukkit.getConsoleSender().sendMessage("§b[AstraSMP] Регистрация рецептов (С ручной NBT-валидацией)...");
+        Bukkit.getConsoleSender().sendMessage("§b[ChetCraft] Регистрация рецептов (С ручной NBT-валидацией)...");
 
         // --- ИНСТРУМЕНТЫ ---
         register("miner_3x3", ItemRegistry.mining3x3(), " D ", "DND", " D ",

@@ -52,7 +52,7 @@ public final class StatsCommand implements org.bukkit.command.TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n -> n.startsWith(args[0])).toList() : List.of();
+        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().map(p -> p.getName()).filter(n -> n.startsWith(args[0])).toList() : List.of();
     }
 
 }

@@ -18,6 +18,7 @@ public final class AstraSMPPlugin extends JavaPlugin {
     private DatabaseService database;
 
     private com.astrasmp.config.ConfigManager configManager;
+    private com.astrasmp.service.SitLayService sitLayService;
 
     @Override
     public org.bukkit.generator.ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
@@ -25,6 +26,12 @@ public final class AstraSMPPlugin extends JavaPlugin {
             return new com.astrasmp.util.VoidChunkGenerator();
         }
         return super.getDefaultWorldGenerator(worldName, id);
+    }
+
+    @Override
+    public void onLoad() {
+        com.astrasmp.service.WorldHeightService worldHeightService = new com.astrasmp.service.WorldHeightService(this);
+        worldHeightService.setupDatapacks();
     }
 
     @Override
@@ -63,6 +70,9 @@ public final class AstraSMPPlugin extends JavaPlugin {
         pm.registerEvents(new MenuListener(services), this);
         pm.registerEvents(new ItemAbilityListener(this, services), this);
         pm.registerEvents(new ArmorMechanicsListener(this, services), this);
+        
+        sitLayService = new com.astrasmp.service.SitLayService(this);
+        pm.registerEvents(sitLayService, this);
         pm.registerEvents(new RegionListener(services), this);
         pm.registerEvents(new MEBlockListener(services), this);
         pm.registerEvents(new TrampolineListener(this, services.store()), this);
@@ -98,7 +108,7 @@ public final class AstraSMPPlugin extends JavaPlugin {
 
 
         getLogger().info("=======================================");
-        getLogger().info("   AstraSMP успешно запущен (2026)");
+        getLogger().info("   ChetCraft успешно запущен (2026)");
         getLogger().info("   ME-Система: АКТИВИРОВАНА");
         getLogger().info("   Статус БД: ПОДКЛЮЧЕНО");
         getLogger().info("=======================================");
@@ -106,6 +116,10 @@ public final class AstraSMPPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (sitLayService != null) {
+            sitLayService.shutdown();
+        }
+
         getLogger().info("[!] Сохранение данных перед выключением...");
 
         if (services != null) {
@@ -120,7 +134,7 @@ public final class AstraSMPPlugin extends JavaPlugin {
             database.close();
         }
 
-        getLogger().info("=== AstraSMP выключен. Данные сохранены. ===");
+        getLogger().info("=== ChetCraft выключен. Данные сохранены. ===");
     }
 
     public static AstraSMPPlugin getInstance() {
@@ -158,6 +172,8 @@ public final class AstraSMPPlugin extends JavaPlugin {
 
 
     private void registerCommands() {
+        bind("sit", new SitCommand(sitLayService, this));
+        bind("lay", new LayCommand(sitLayService, this));
         bind("guild", new GuildCommand(services));
         bind("menu", new MenuCommand(services));
         bind("balance", new BalanceCommand(services));

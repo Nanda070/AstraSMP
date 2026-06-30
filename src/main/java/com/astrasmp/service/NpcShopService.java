@@ -188,7 +188,7 @@ public final class NpcShopService implements Listener {
     private void sendGuideInfo(Player p) {
         p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_TRADE, 1f, 1f);
         TextUtil.send(p, "");
-        String prefix = TextUtil.color(services.plugin().getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+        String prefix = TextUtil.color(services.plugin().getConfig().getString("messages.prefix", "&8[&dChetCraft&8] &7"));
         TextUtil.send(p, prefix + "Приветствую, путник! Я местный гид.");
         TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_3362f1", "&fНаш сервер — это выживание с уникальными предметами и экономикой."));
         TextUtil.send(p, "");

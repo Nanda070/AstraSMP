@@ -134,7 +134,7 @@ public class GuildService {
         if (plugin.getDiscord().isEnabled()) plugin.getDiscord().updateGuildRoster(guild);
 
         // Уведомляем участников
-        String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+        String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dChetCraft&8] &7"));
         String announcement = prefix + TextUtil.color("&fИгрок &b"
             + player.getName() + " &fвступил в гильдию!");
         guild.getMembers().keySet().stream()
@@ -185,7 +185,7 @@ public class GuildService {
         Guild.Rank next = guild.getRanks().values().stream()
             .filter(r -> !r.getId().equals("leader"))        // лидерский ранг недостижим через promote
             .filter(r -> r.getPriority() > currentRank.getPriority())
-            .min(Comparator.comparingInt(Guild.Rank::getPriority)) // ближайший выше
+            .min(Comparator.comparingInt(r -> r.getPriority())) // ближайший выше
             .orElse(null);
 
         if (next == null) {
@@ -212,7 +212,7 @@ public class GuildService {
         // Ближайший ранг с меньшим приоритетом
         Guild.Rank prev = guild.getRanks().values().stream()
             .filter(r -> r.getPriority() < currentRank.getPriority())
-            .max(Comparator.comparingInt(Guild.Rank::getPriority))
+            .max(Comparator.comparingInt(r -> r.getPriority()))
             .orElse(null);
 
         if (prev == null) {
@@ -249,7 +249,7 @@ public class GuildService {
         
         Guild.Rank nextRank = guild.getRanks().values().stream()
             .filter(r -> !r.getId().equals("leader"))
-            .max(Comparator.comparingInt(Guild.Rank::getPriority))
+            .max(Comparator.comparingInt(r -> r.getPriority()))
             .orElse(null);
             
         String rankId = nextRank != null ? nextRank.getId() : "member";

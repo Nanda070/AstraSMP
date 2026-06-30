@@ -108,14 +108,14 @@ public final class DataStore {
     public Collection<AuctionLot> activeLots() {
         return lots.values().stream()
                 .filter(l -> !l.isSold())
-                .sorted(Comparator.comparingLong(AuctionLot::getId).reversed())
+                .sorted(Comparator.comparingLong((com.astrasmp.model.AuctionLot l) -> l.getId()).reversed())
                 .toList();
     }
 
     public Collection<ContractRecord> activeContracts() {
         return contracts.values().stream()
-                .filter(ContractRecord::isActive)
-                .sorted(Comparator.comparingLong(ContractRecord::getId).reversed())
+                .filter(c -> c.isActive())
+                .sorted(Comparator.comparingLong((com.astrasmp.model.ContractRecord c) -> c.getId()).reversed())
                 .toList();
     }
 
@@ -125,7 +125,7 @@ public final class DataStore {
     }
 
     public void saveAllNow() {
-        profiles.values().stream().filter(PlayerProfile::isDirty).forEach(p -> {
+        profiles.values().stream().filter(p -> p.isDirty()).forEach(p -> {
             plugin.getDatabase().saveProfile(p);
             p.setDirty(false);
         });

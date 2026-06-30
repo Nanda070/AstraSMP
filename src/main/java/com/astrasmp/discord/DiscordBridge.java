@@ -82,9 +82,9 @@ public final class DiscordBridge {
                 GatewayIntent.GUILD_MESSAGES,
                 GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS,
                 GatewayIntent.DIRECT_MESSAGES);
-        String activity = plugin.getDiscordConfig().getString("bot-activity", "AstraSMP ✨");
+        String activity = plugin.getDiscordConfig().getString("bot-activity", "ChetCraft ✨");
         jda = JDABuilder.createDefault(token, Objects.requireNonNull(intents))
-                .setActivity(net.dv8tion.jda.api.entities.Activity.watching(Objects.requireNonNullElse(activity, "AstraSMP ✨")))
+                .setActivity(net.dv8tion.jda.api.entities.Activity.watching(Objects.requireNonNullElse(activity, "ChetCraft ✨")))
                 .addEventListeners(new BridgeListener())
                 .build();
         plugin.getLogger().info("Discord bridge initialization started.");
@@ -157,7 +157,7 @@ public final class DiscordBridge {
                 + eventName + "**!\n\n⚔️ Не упустите шанс принять участие и сразиться за уникальные награды.");
         embed.setColor(new Color(0xFF4500)); // OrangeRed
         String ip = plugin.getDiscordConfig().getString("server-ip", "play.example.com");
-        String footer = plugin.getDiscordConfig().getString("embed-footer", "AstraSMP");
+        String footer = plugin.getDiscordConfig().getString("embed-footer", "ChetCraft");
         embed.addField("🕒 Время (МСК)", "`" + timeMSK + "`", true);
         embed.addField("🎮 Как зайти?", "`IP: " + ip + "`", true);
         embed.setFooter(footer + " • Участвуй и побеждай!");
@@ -360,7 +360,7 @@ public final class DiscordBridge {
         }
 
         private EmbedBuilder baseEmbed() {
-            String footer = plugin.getDiscordConfig().getString("embed-footer", "AstraSMP");
+            String footer = plugin.getDiscordConfig().getString("embed-footer", "ChetCraft");
             return new EmbedBuilder().setFooter(footer, null).setTimestamp(java.time.Instant.now());
         }
 

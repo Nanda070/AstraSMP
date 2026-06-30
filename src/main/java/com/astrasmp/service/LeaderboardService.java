@@ -18,35 +18,35 @@ public final class LeaderboardService {
 
     public List<PlayerProfile> topCoins(int limit) {
         return store.profiles().values().stream()
-                .sorted(Comparator.comparingLong(PlayerProfile::getCoins).reversed())
+                .sorted(Comparator.comparingLong((PlayerProfile p) -> p.getCoins()).reversed())
                 .limit(limit)
                 .collect(Collectors.toList());
     }
 
     public List<PlayerProfile> topKills(int limit) {
         return store.profiles().values().stream()
-                .sorted(Comparator.comparingInt(PlayerProfile::getKills).reversed())
+                .sorted(Comparator.comparingInt((PlayerProfile p) -> p.getKills()).reversed())
                 .limit(limit)
                 .collect(Collectors.toList());
     }
 
     public List<PlayerProfile> topSold(int limit) {
         return store.profiles().values().stream()
-                .sorted(Comparator.comparingLong(PlayerProfile::getSoldValue).reversed())
+                .sorted(Comparator.comparingLong((PlayerProfile p) -> p.getSoldValue()).reversed())
                 .limit(limit)
                 .collect(Collectors.toList());
     }
 
     public List<PlayerProfile> topEvents(int limit) {
         return store.profiles().values().stream()
-                .sorted(Comparator.comparingInt(PlayerProfile::getEventPoints).reversed())
+                .sorted(Comparator.comparingInt((PlayerProfile p) -> p.getEventPoints()).reversed())
                 .limit(limit)
                 .collect(Collectors.toList());
     }
 
     public List<PlayerProfile> topMmr(int limit) {
         return store.profiles().values().stream()
-                .sorted(Comparator.comparingInt(PlayerProfile::getMmr).reversed())
+                .sorted(Comparator.comparingInt((PlayerProfile p) -> p.getMmr()).reversed())
                 .limit(limit)
                 .collect(Collectors.toList());
     }

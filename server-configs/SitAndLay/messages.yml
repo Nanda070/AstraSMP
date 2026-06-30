@@ -1,0 +1,34 @@
+#Messages for /sitandlay reload and generic command responses
+root:
+  #Shown when command is executed from console
+  only-player: "<red>Эта команда доступна только игрокам.</red>"
+  #Shown when permission check fails
+  no-permission: "<red>Недостаточно прав.</red>"
+  #Shown for unknown /sitandlay subcommand
+  invalid-subcommand: "<red>Использование: /sitandlay reload</red>"
+  #Shown after successful /sitandlay reload
+  reloaded: "<green>Конфигурация перезагружена.</green>"
+
+#Messages used only by /sit flow
+sit:
+  #Shown when /sit is applied
+  enabled: "<green>Вы сели.</green>"
+  #Shown when /sit toggles off
+  disabled: "<yellow>Сидение отключено.</yellow>"
+  blocked-vehicle: "<red>Невозможно сесть, находясь в транспорте.</red>"
+  blocked-passengers: "<red>Невозможно сесть с пассажирами.</red>"
+  not-on-ground: "<red>Необходимо стоять на твердом блоке.</red>"
+  apply-failed: "<red>Не удалось применить сидение в текущей позиции.</red>"
+  cancelled: "<yellow>Ваше сидение отменено.</yellow>"
+
+#Messages used only by /lay flow
+lay:
+  #Shown when /lay is applied
+  enabled: "<green>Вы легли.</green>"
+  #Shown when /lay toggles off
+  disabled: "<yellow>Лежание отключено.</yellow>"
+  blocked-vehicle: "<red>Невозможно лечь, находясь в транспорте.</red>"
+  blocked-passengers: "<red>Невозможно лечь с пассажирами.</red>"
+  not-on-ground: "<red>Необходимо стоять на твердом блоке.</red>"
+  apply-failed: "<red>Не удалось применить лежание в текущей позиции.</red>"
+  cancelled: "<yellow>Ваше лежание отменено.</yellow>"

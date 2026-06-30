@@ -48,7 +48,7 @@ public class TutorialCommand implements org.bukkit.command.TabExecutor {
                 break;
             case "me":
                 TextUtil.send(player, "");
-                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_bb2f84", "&b&l[AstraSMP] Цифровая память (МЭ Сеть)"));
+                TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_bb2f84", "&b&l[ChetCraft] Цифровая память (МЭ Сеть)"));
                 TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_411b9b", "&7МЭ Сеть позволяет хранить миллионы предметов в одном блоке!"));
                 TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_28de16", "&7Для старта скрафтите &eМЭ Терминал&7, &eМЭ Накопитель&7 и &eЯчейки памяти&7."));
                 TextUtil.send(player, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_353d13", "&7Вставьте ячейку в накопитель и подключите терминал для доступа ко всем вещам."));

@@ -25,12 +25,14 @@ public class ConfigManager {
         ConfigUpdater.updateConfig(plugin, "messages.yml");
         ConfigUpdater.updateConfig(plugin, "discord.yml");
         ConfigUpdater.updateConfig(plugin, "items.yml");
+        ConfigUpdater.updateConfig(plugin, "worldheight.yml");
 
         plugin.reloadConfig();
         
         loadConfig("messages.yml");
         loadConfig("discord.yml");
         loadConfig("items.yml");
+        loadConfig("worldheight.yml");
     }
 
     public void loadConfig(String fileName) {

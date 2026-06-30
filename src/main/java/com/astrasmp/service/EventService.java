@@ -202,7 +202,7 @@ public final class EventService implements org.bukkit.event.Listener {
                 if (isBloodNightActive) {
                     isBloodNightActive = false;
                     forcedBloodNight = false;
-                    String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+                    String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dChetCraft&8] &7"));
                     Bukkit.broadcastMessage(prefix + TextUtil.color("&aКровавая Ночь завершилась. Вы выжили."));
                 }
             }
@@ -331,7 +331,7 @@ public final class EventService implements org.bukkit.event.Listener {
 
         String title = modifier.getPrefix() + type.getTitle();
         Bukkit.broadcastMessage("");
-        String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+        String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dChetCraft&8] &7"));
         Bukkit.broadcastMessage(prefix + "§fНа сервере начался ивент: " + title + "§f!");
         
         if (type == EventType.TREASURE) {
@@ -659,7 +659,7 @@ public final class EventService implements org.bukkit.event.Listener {
             ticker = null;
         }
 
-        String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+        String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dChetCraft&8] &7"));
         Bukkit.broadcast(Component.text(prefix + "§aИвент " + ev.type().getCleanName() + " завершен."));
         rewardNearby(ev.location());
     }
@@ -867,7 +867,7 @@ public final class EventService implements org.bukkit.event.Listener {
     }
 
     private void announce(String msg) {
-        String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+        String prefix = TextUtil.color(plugin.getConfig().getString("messages.prefix", "&8[&dChetCraft&8] &7"));
         Bukkit.broadcast(Component.text(prefix + msg));
     }
 

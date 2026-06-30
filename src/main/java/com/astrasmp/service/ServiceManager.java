@@ -84,7 +84,7 @@ public final class ServiceManager {
         this.afk = new AfkService(plugin, this);
         this.duels = new DuelService(plugin, this);
 
-        // 6. Нативный гемблинг AstraSMP
+        // 6. Нативный гемблинг ChetCraft
         this.casinoService = new CasinoService(plugin, this);
         this.classicGame = new ClassicGame(this.casinoService);
         this.rouletteGame = new RouletteGame(this.casinoService);
@@ -114,7 +114,7 @@ public final class ServiceManager {
         if (leaderboard != null) leaderboard.startUpdateTask();
         if (tab != null) tab.start();
 
-        plugin.getLogger().info("=== Все сервисы AstraSMP успешно запущены! ===");
+        plugin.getLogger().info("=== Все сервисы ChetCraft успешно запущены! ===");
     }
 
     public void shutdown() {

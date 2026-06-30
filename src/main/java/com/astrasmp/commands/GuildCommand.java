@@ -187,7 +187,7 @@ public class GuildCommand implements org.bukkit.command.TabExecutor {
                     return true;
                 }
                 services.guilds().disbandGuild(player, guild);
-                String prefix = TextUtil.color(com.astrasmp.AstraSMPPlugin.getInstance().getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+                String prefix = TextUtil.color(com.astrasmp.AstraSMPPlugin.getInstance().getConfig().getString("messages.prefix", "&8[&dChetCraft&8] &7"));
                 Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(
                     prefix + TextUtil.color("&fГильдия &c" + guild.getName() + " &fбыла распущена.")));
             }
@@ -222,7 +222,7 @@ public class GuildCommand implements org.bukkit.command.TabExecutor {
     }
 
     private void sendFancyInvite(Player sender, Player target, Guild guild) {
-        String prefix = TextUtil.color(com.astrasmp.AstraSMPPlugin.getInstance().getConfig().getString("messages.prefix", "&8[&dAstraSMP&8] &7"));
+        String prefix = TextUtil.color(com.astrasmp.AstraSMPPlugin.getInstance().getConfig().getString("messages.prefix", "&8[&dChetCraft&8] &7"));
         Component inviteMsg = Component.text(TextUtil.color(
             "\n" + prefix + "&fИгрок &b" + sender.getName() +
             " &fприглашает вас в гильдию &b" + guild.getName() + "&f!\n" +
@@ -261,7 +261,7 @@ public class GuildCommand implements org.bukkit.command.TabExecutor {
 
         } else if (args.length == 2 && (args[0].equalsIgnoreCase("invite") || args[0].equalsIgnoreCase("transfer"))) {
             Bukkit.getOnlinePlayers().stream()
-                .map(Player::getName)
+                .map(p -> p.getName())
                 .filter(n -> n.toLowerCase().startsWith(args[1].toLowerCase()))
                 .forEach(completions::add);
         }

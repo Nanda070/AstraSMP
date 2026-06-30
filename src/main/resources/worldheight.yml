@@ -1,0 +1,8 @@
+world-height:
+  expanded-world:
+    world: 'world'
+    min-y: -64
+    height: 1072
+    logical-height: 1072
+    cloud-height: 400
+    dimension-type: 'custom'

@@ -22,7 +22,7 @@ public final class TextUtil {
     }
 
     public static String prefix(String message) {
-        return color("&8[&dAstraSMP&8] &7") + color(message);
+        return color("&8[&dChetCraft&8] &7") + color(message);
     }
 
     public static List<String> colorList(List<String> lines) {

@@ -114,7 +114,7 @@ public final class GuiManager {
         int[] borders = {0,1,7,8,9,17,36,44,45,46,52,53};
         for (int b : borders) inv.setItem(b, decor);
 
-        String serverName = services.plugin().getConfig().getString("server.name", "AstraSMP");
+        String serverName = services.plugin().getConfig().getString("server.name", "ChetCraft");
         inv.setItem(4, button(Material.NETHER_STAR, "&e&l" + serverName, "&7Главное меню сервера"));
 
         inv.setItem(19, button(Material.MINECART, "&aЕжедневные Награды", "&7Забирай призы каждый день!"));

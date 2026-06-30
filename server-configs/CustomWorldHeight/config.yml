@@ -1,0 +1,64 @@
+# You can set to anything you want, will be used to generate Identifier (ResourceLocation)
+example-namespace:
+
+  # Set the value for certain world
+  world: 'example-world-value'
+
+  # Min Y position
+  min-y: -64
+
+  # Height (max Y position = min-y + height - 1)
+  height: 1024
+
+  # Height for Chorus Fruit teleport and etc. See wiki for details
+  logical-height: 512
+
+  # Height for the cloud (empty -> do not have cloud, default -> use default height)
+  # This feature is only for 1.21.6+
+  cloud-height: 'default'
+
+  # This will let the plugin process registration data when world load
+  dimension-type: 'custom'
+
+# You can set to anything you want, will be used to generate Identifier (ResourceLocation)
+example-regex:
+
+  # This plugin also support Regex matching
+  regex: '^test_\w+'
+
+  # Min Y position
+  min-y: -64
+
+  # Height (max Y position = min-y + height - 1)
+  height: 1024
+
+  # Height for Chorus Fruit teleport and etc. See wiki for details
+  logical-height: 512
+
+  # Height for the cloud (empty -> do not have cloud, default -> use default height)
+  # This feature is only for 1.21.6+
+  cloud-height: 256
+
+  # For 'overworld', 'the_nether', 'the_end', 'overworld_cave', this will use built in data to generate before world is initializing
+  dimension-type: 'overworld'
+
+# Кастомный блок для лимита высоты в ~1000 блоков
+astra-expanded-world:
+
+  # Укажи точное название целевого мира
+  world: 'world'
+
+  # Ванильное дно для сохранения целостности генерации
+  min-y: -64
+
+  # Общая высота (кратна 16). Дает фактический лимит строительства Y = 1007
+  height: 1072
+
+  # Логическая высота (синхронизирована с height для корректной механики хорусов и порталов)
+  logical-height: 1072
+
+  # Поднятые облака, чтобы не проходили сквозь высотные постройки (только для 1.21.6+)
+  cloud-height: 400
+
+  # Регистрация кастомных параметров при инициализации мира
+  dimension-type: 'custom'

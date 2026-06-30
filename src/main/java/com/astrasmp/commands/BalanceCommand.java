@@ -61,7 +61,7 @@ public final class BalanceCommand implements org.bukkit.command.TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
             return Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
+                    .map(p -> p.getName())
                     .filter(n -> n.toLowerCase().startsWith(args[0].toLowerCase()))
                     .toList();
         }

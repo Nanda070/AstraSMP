@@ -256,7 +256,7 @@ public class RitualService {
                 .collect(Collectors.toList());
 
         List<ItemStack> groundItemStacks = nearbyItems.stream()
-                .map(Item::getItemStack)
+                .map(item -> item.getItemStack())
                 .collect(Collectors.toList());
 
         for (RitualRecipe recipe : recipes) {
