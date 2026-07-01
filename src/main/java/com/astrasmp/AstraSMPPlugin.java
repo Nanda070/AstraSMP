@@ -63,6 +63,9 @@ public final class AstraSMPPlugin extends JavaPlugin {
         recipeService.registerAll();
         getServer().getPluginManager().registerEvents(recipeService, this);
 
+        // SitLayService must be initialized BEFORE registerCommands()
+        sitLayService = new com.astrasmp.service.SitLayService(this);
+
         registerCommands();
 
         var pm = getServer().getPluginManager();
@@ -70,8 +73,6 @@ public final class AstraSMPPlugin extends JavaPlugin {
         pm.registerEvents(new MenuListener(services), this);
         pm.registerEvents(new ItemAbilityListener(this, services), this);
         pm.registerEvents(new ArmorMechanicsListener(this, services), this);
-        
-        sitLayService = new com.astrasmp.service.SitLayService(this);
         pm.registerEvents(sitLayService, this);
         pm.registerEvents(new RegionListener(services), this);
         pm.registerEvents(new MEBlockListener(services), this);

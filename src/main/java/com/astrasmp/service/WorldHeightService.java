@@ -100,10 +100,8 @@ public class WorldHeightService {
           "monster_spawn_block_light_limit": 0,
           "monster_spawn_light_level": {
             "type": "minecraft:uniform",
-            "value": {
-              "min_inclusive": 0,
-              "max_inclusive": 7
-            }
+            "min_inclusive": 0,
+            "max_inclusive": 7
           }
         }
         """.formatted(minY, height, logicalHeight);

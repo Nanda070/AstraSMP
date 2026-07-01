@@ -76,14 +76,14 @@ public class SitLayService implements Listener {
             return false;
         }
 
-        // Adjust location for ArmorStand
-        Location seatLoc = loc.clone().subtract(0, 1.7, 0);
+        // ArmorStand marker: player visual appears ~1.8 blocks above spawn point.
+        // Subtract 1.0 so the player sits on the surface they're standing on.
+        Location seatLoc = loc.clone().subtract(0, 1.0, 0);
         ArmorStand stand = seatLoc.getWorld().spawn(seatLoc, ArmorStand.class, s -> {
             s.setVisible(false);
             s.setGravity(false);
             s.setMarker(true);
             s.setInvulnerable(true);
-            s.setSmall(true); // Adjusts height nicely for sitting
         });
 
         stand.addPassenger(player);
@@ -115,8 +115,8 @@ public class SitLayService implements Listener {
             return false;
         }
 
-        // Laying down requires pushing the player down and rotating
-        Location layLoc = loc.clone().subtract(0, 1.2, 0); // Need fine-tuning
+        // Same offset logic as sit: subtract 1.0 so player lies on the surface.
+        Location layLoc = loc.clone().subtract(0, 1.0, 0);
         ArmorStand stand = layLoc.getWorld().spawn(layLoc, ArmorStand.class, s -> {
             s.setVisible(false);
             s.setGravity(false);
@@ -179,10 +179,13 @@ public class SitLayService implements Listener {
             Block block = event.getClickedBlock();
             Player player = event.getPlayer();
             if (block != null && block.getType().name().contains("STAIRS") && !player.isSneaking()) {
-                if (player.getInventory().getItemInMainHand().getType().isAir()) { // optionally require empty hand
+                if (player.getInventory().getItemInMainHand().getType().isAir()) {
                     if (!seatedPlayers.containsKey(player.getUniqueId())) {
-                        Location center = block.getLocation().add(0.5, 0.5, 0.5);
-                        center.setYaw(player.getLocation().getYaw() + 180f); // face the other way
+                        // Place the ArmorStand at the top surface of the stair block (block.Y + 1.0),
+                        // centered on X/Z. sit() will subtract 1.0 so the stand ends up at block.Y,
+                        // which puts the player visually sitting on top of the stair.
+                        Location center = block.getLocation().add(0.5, 1.0, 0.5);
+                        center.setYaw(player.getLocation().getYaw() + 180f);
                         sit(player, center);
                         event.setCancelled(true);
                     }
