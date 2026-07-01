@@ -45,7 +45,7 @@ public class MENetwork {
     }
 
     public long getCurrentLoad() {
-        return storage.values().stream().mapToLong(Long::longValue).sum();
+        return storage.values().stream().mapToLong(v -> v != null ? v : 0L).sum();
     }
 
     public boolean canAcceptItem(long amount) {

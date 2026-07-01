@@ -187,7 +187,7 @@ public final class NpcShopService implements Listener {
     // ==========================================
     private void sendGuideInfo(Player p) {
         p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 1.2f);
-        p.spawnParticle(org.bukkit.Particle.VILLAGER_HAPPY, p.getLocation().add(0, 1, 0), 15, 0.5, 0.5, 0.5, 0.1);
+        p.spawnParticle(org.bukkit.Particle.HAPPY_VILLAGER, p.getLocation().add(0, 1, 0), 15, 0.5, 0.5, 0.5, 0.1);
 
         TextUtil.send(p, "");
         String prefix = TextUtil.color(services.plugin().getConfig().getString("messages.prefix", "&8[&dChetCraft&8] &7"));
@@ -202,12 +202,9 @@ public final class NpcShopService implements Listener {
         TextUtil.send(p, com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_0eac8f", " &8• &a/spawn &7- Вернуться на спавн"));
         TextUtil.send(p, "");
 
-        String discordText = TextUtil.color(com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_c3fe66", "&9&lНаш Discord: &nНажми сюда&9&l!"));
-        net.md_5.bungee.api.chat.BaseComponent[] components = net.md_5.bungee.api.chat.TextComponent.fromLegacyText(discordText);
-        for (net.md_5.bungee.api.chat.BaseComponent component : components) {
-            component.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(net.md_5.bungee.api.chat.ClickEvent.Action.OPEN_URL, "https://discord.gg/cheterin"));
-        }
-        p.spigot().sendMessage(components);
+        String discordText = com.astrasmp.AstraSMPPlugin.getInstance().getConfigManager().getMessage("msg_c3fe66", "&9&lНаш Discord: &nНажми сюда&9&l!");
+        p.sendMessage(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand().deserialize(discordText)
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.openUrl("https://discord.gg/cheterin")));
         
         TextUtil.send(p, "");
         p.performCommand("tutorial");
