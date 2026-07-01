@@ -252,6 +252,27 @@ public final class AstraSMPPlugin extends JavaPlugin {
 
         bind("prunus", new PrunusCommand(services));
         bind("malus", new MalusCommand(services));
+
+        // ─── Новые административные команды ──────────────────────────────
+        BanCommand banCmd = new BanCommand();
+        bind("ban", banCmd);
+        bind("unban", banCmd);
+        bind("banip", banCmd);
+        bind("kick", banCmd);
+
+        bind("weather", new WeatherCommand());
+        bind("discord", new DiscordCommand());
+        bind("repair", new RepairCommand());
+        bind("fly", new FlyCommand());
+        bind("tpme", new TpmeCommand());
+
+        JailCommand jailCmd = new JailCommand(this);
+        bind("jail", jailCmd);
+        bind("unjail", jailCmd);
+        bind("setjail", jailCmd);
+        bind("deljail", jailCmd);
+        bind("jailedplayers", jailCmd);
+        getServer().getPluginManager().registerEvents(jailCmd, this);
     }
 
     private void bind(String name, org.bukkit.command.CommandExecutor executor) {

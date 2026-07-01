@@ -149,6 +149,60 @@ commands:
   homesreload:
     description: Перезагрузка конфигурации домов
     permission: astrasmp.admin
+  ban:
+    description: Заблокировать игрока
+    usage: /ban <игрок> [причина]
+    permission: astrasmp.admin
+  unban:
+    description: Разблокировать игрока
+    usage: /unban <игрок>
+    permission: astrasmp.admin
+  banip:
+    description: Заблокировать игрока по IP
+    usage: /banip <игрок|IP> [причина]
+    permission: astrasmp.admin
+  kick:
+    description: Кикнуть игрока с сервера
+    usage: /kick <игрок> [причина]
+    permission: astrasmp.admin
+  weather:
+    description: Установить погоду в текущем мире
+    usage: /weather <clear|rain|thunder|storm>
+    permission: astrasmp.admin
+  discord:
+    description: Получить/отправить ссылку на Discord сервер
+    usage: /discord [игрок]
+  repair:
+    description: Починить предмет в основной руке
+    usage: /repair
+    permission: astrasmp.admin
+  fly:
+    description: Включить/выключить полёт
+    usage: /fly [игрок]
+    permission: astrasmp.admin
+  tpme:
+    description: Телепортировать игрока к себе
+    usage: /tpme <игрок>
+    permission: astrasmp.admin
+  jail:
+    description: Заключить игрока в тюрьму
+    usage: /jail <игрок> <тюрьма>
+    permission: astrasmp.admin
+  unjail:
+    description: Освободить игрока из тюрьмы
+    usage: /unjail <игрок>
+    permission: astrasmp.admin
+  setjail:
+    description: Создать тюрьму на текущей позиции
+    usage: /setjail <название> [радиус]
+    permission: astrasmp.admin
+  deljail:
+    description: Удалить тюрьму
+    usage: /deljail <название>
+    permission: astrasmp.admin
+  jailedplayers:
+    description: Список всех заключённых
+    permission: astrasmp.admin
 
 permissions:
   astrasmp.admin:
