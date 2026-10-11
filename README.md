@@ -8,7 +8,10 @@
 
 Высокотехнологичное бэкенд-ядро для сервера **ChetCraft**, написанное на Java под **Minecraft 1.21 (Paper API)**. Плагин заменяет целую сборку тяжёлых модов, реализуя полноценный RPG-функционал, МЕ-сети, казино, тюремную систему, кровавые ритуалы и карманные измерения.
 
-[AstraBuild](https://github.com/Nanda070/AstraBuild)
+Ссылки на плагины дополнения:
+- [AstraBuild](https://github.com/Nanda070/AstraBuild)
+- [AstraOR](https://github.com/Nanda070/AstraOP)
+- [AstraIP](https://github.com/Nanda070/AstraIP)
 ---
 
 ## 📋 Содержание
